@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="PhenixSdk">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/app/AndroidSDK/libs/PhenixSdk.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

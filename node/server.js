@@ -1,0 +1,119 @@
+/**
+ * Copyright 2016 PhenixP2P Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+var argv = require('minimist')(process.argv.slice(2));
+var appId = argv.a, secret = argv.s;
+if (appId === undefined || secret === undefined) {
+    console.log("usage: npm start -- -a=<appId> -s=<secret>");
+    process.exit(1);
+}
+
+var request = require('request');
+var express = require('express');
+var bodyParser = require('body-parser');
+var backoff = require('backoff');
+require('log-timestamp');
+
+var app = express();
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
+var validCredentials = {'demo-user':'demo-password'};
+
+// to test from the command line: curl --data "name=demo-username&password=demo-password" 127.0.0.1:3000/login
+app.post('/login', function (req, res) {
+    console.log('POST login');
+    var name = req.body.name;
+    var password = req.body.password;
+    if (validCredentials[name] !== password) {
+        console.log('\tinvalid credentials: ' + Object.keys(req.body));
+        res.sendStatus(403);
+    } else {
+        requestWithBackoff(adminAuth, req, res);
+    }
+});
+
+function requestWithBackoff(requester, req, res) {
+    var call = backoff.call(requester, req, res, function(err, res) {
+        console.log('Num retries: ' + call.getNumRetries());
+        if (err) {
+            res.sendStatus(err.status);
+        } else {
+            console.log('Status: ' + res.statusCode);
+        }
+    });
+    call.retryIf(function(err) { return err.status >= 500 && err.status != 503; });
+    call.setStrategy(new backoff.FibonacciStrategy({initialDelay: 1000}));
+    call.failAfter(3);
+    call.start();
+}
+
+function adminAuth(req, res) {
+    request.post(
+        'https://pcast.phenixp2p.com/pcast/auth',
+        {
+            form: {
+                applicationId: appId,
+                'secret': secret
+            }
+        },
+        makeHandler(res)
+    );
+}
+
+function makeHandler(res) {
+    var handler = (function() {
+        var responseToSend = res;
+        return function(error, response, body) {
+            if (!error && response.statusCode === 200) {
+                console.log('\tsuccess');
+                responseToSend.send(body);
+            } else if (response === undefined) {
+                console.log('\tno response from server');
+                responseToSend.sendStatus(500);
+            } else {
+                console.log('\tfail:' + response.statusCode);
+                responseToSend.sendStatus(response.statusCode);
+            }
+        };
+    })();
+    return handler;
+}
+
+app.post('/stream', function (req, res) {
+    console.log('POST pcast/stream');
+    requestWithBackoff(adminStream, req, res);
+});
+
+function adminStream(req, res) {
+    request.post(
+        'https://pcast.phenixp2p.com/pcast/stream',
+        {
+            form: {
+                applicationId: appId,
+                'secret':secret,
+                sessionId: req.body.sessionId,
+                originStreamId: req.body.originStreamId,
+                capabilities:req.body.capabilities
+            }
+        },
+        makeHandler(res)
+    );
+}
+
+app.listen(3000, function () {
+    console.log('Example app listening on port 3000!');
+});

@@ -1,0 +1,6 @@
+[submodule "iOSSDK"]
+	path = ios/iOSSDK
+	url = git@github.com:PhenixP2P/iOSSDK.git
+[submodule "AndroidSDK"]
+	path = android/AndroidSDK
+	url = git@github.com:PhenixP2P/AndroidSDK.git
