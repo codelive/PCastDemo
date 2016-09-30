@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,26 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.phenixp2p.demo;
+package com.phenixp2p.demo.ui.activities;
 
 import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.PixelFormat;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.phenixp2p.demo.HTTPtask;
+import com.phenixp2p.demo.R;
+import com.phenixp2p.demo.presenters.MainPresenter;
+import com.phenixp2p.demo.presenters.inter.IMainPresenter;
+import com.phenixp2p.demo.ui.view.IMainView;
 import com.phenixp2p.pcast.FacingMode;
 import com.phenixp2p.pcast.MediaStream;
 import com.phenixp2p.pcast.PCast;
@@ -48,9 +56,9 @@ import com.phenixp2p.pcast.android.AndroidVideoRenderSurface;
 
 import org.json.JSONObject;
 
-import static com.phenixp2p.demo.Utilities.hasInternet;
+import static com.phenixp2p.demo.utils.Utilities.hasInternet;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements IMainView{
 
   private final static String serverAddress = "https://demo.phenixp2p.com/demoApp/";
   private final static String TAG = "PCast";
@@ -67,25 +75,36 @@ public class MainActivity extends AppCompatActivity {
   private static final int NUM_STEPS = 8;
   private int steps = 0;
 
+  private IMainPresenter presenter;
+  private View decorView;
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+    decorView = getWindow().getDecorView();
+    showSystemUI();
     setContentView(R.layout.activity_main);
-    this.status = (TextView)this.findViewById(R.id.status);
-    this.progress = (ProgressBar)this.findViewById(R.id.progress);
-    this.surfaceView = (SurfaceView)this.findViewById(R.id.surfaceView);
+    // Hide UI first
+    ActionBar actionBar = getSupportActionBar();
+    if (actionBar != null) {
+      actionBar.hide();
+    }
+    this.status = (TextView) this.findViewById(R.id.status);
+    this.progress = (ProgressBar) this.findViewById(R.id.progress);
+    this.surfaceView = (SurfaceView) this.findViewById(R.id.surfaceView);
     surfaceView.setZOrderOnTop(true); // to set the video background white
     SurfaceHolder surfaceHolder = surfaceView.getHolder();
     surfaceHolder.setFormat(PixelFormat.TRANSLUCENT);
+    presenter = new MainPresenter(this);
 
     ActivityCompat.requestPermissions(MainActivity.this,
-      new String[] {Manifest.permission.CAMERA},
-      REQUEST_CAMERA);
+    new String[]{Manifest.permission.CAMERA},
+    REQUEST_CAMERA);
   }
 
   @Override
   public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                      @NonNull int[] grantResults) {
+                                         @NonNull int[] grantResults) {
     if (requestCode == REQUEST_CAMERA) {
       // Received permission result for camera permission.
       Log.i(TAG, "Received response for Camera permission request.");
@@ -104,12 +123,38 @@ public class MainActivity extends AppCompatActivity {
   }
 
   @Override
+  public void onConfigurationChanged(Configuration newConfig) {
+  super.onConfigurationChanged(newConfig);
+    // Checks the orientation of the screen
+    if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+      hideSystemUI();
+      surfaceView.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(final View view) {
+          showSystemUI();
+          new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+              hideSystemUI();
+            }
+          }, 3000);
+        }
+      });
+    } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+      showSystemUI();
+    }
+  }
+
+  @Override
   protected void onPause() {
     super.onPause();
     // Stop pcast when we exit the app.
+    presenter.stopRendering();
     if (pcast != null) {
       pcast.stop();
       pcast.shutdown();
+      pcast = null;
+      steps = 0;
     }
   }
 
@@ -179,7 +224,6 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(Intent.ACTION_MAIN);
             intent.setClassName("com.android.settings", "com.android.settings.wifi.WifiSettings");
             startActivity(intent);
-
             dialogInterface.dismiss();
           }
         }
@@ -219,7 +263,6 @@ public class MainActivity extends AppCompatActivity {
   private void start(String authenticationToken) {
     this.pcast = AndroidPCastFactory.createPCastAdmin(this);
     this.pcast.initialize(new PCastInitializeOptions(false, true));
-
     this.pcast.start(authenticationToken,
       new PCast.AuthenticationCallback() {
         public void onEvent(PCast var1, RequestStatus status, String sessionId) {
@@ -238,10 +281,10 @@ public class MainActivity extends AppCompatActivity {
         }
       },
       new PCast.OfflineCallback() {
-          public void onEvent(PCast var1) {
-            Log.d(TAG, "offline");
-          }
+        public void onEvent(PCast var1) {
+          Log.d(TAG, "offline");
         }
+      }
     );
   }
 
@@ -302,7 +345,7 @@ public class MainActivity extends AppCompatActivity {
       public void onEvent(PCast p, RequestStatus status, MediaStream media) {
         if (status == RequestStatus.OK) {
           MainActivity.this.reportStatus("Subscribe", true);
-          MainActivity.this.viewStream(media.createRenderer());
+          presenter.startRendering(media.createRenderer());
         } else {
           MainActivity.this.reportStatus("Subscribe", false);
         }
@@ -311,12 +354,36 @@ public class MainActivity extends AppCompatActivity {
   }
 
   // 8. View stream.
-  private void viewStream(Renderer renderer) {
+  @Override
+  public void viewStream(Renderer renderer) {
     SurfaceHolder surface = surfaceView.getHolder();
     if (renderer.start(new AndroidVideoRenderSurface(surface)) != RendererStartStatus.OK) {
       this.reportStatus("View", false);
     } else {
       this.reportStatus("View", true);
     }
+  }
+
+  // This snippet hides the system bars.
+  private void hideSystemUI() {
+    getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+    WindowManager.LayoutParams.FLAG_FULLSCREEN);
+    decorView.setSystemUiVisibility(
+    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+            | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+            | View.SYSTEM_UI_FLAG_IMMERSIVE);
+  }
+
+  // This snippet shows the system bars. It does this by removing all the flags
+  // except for the ones that make the content appear under the system bars.
+  private void showSystemUI() {
+    getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+    decorView.setSystemUiVisibility(
+    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
   }
 }

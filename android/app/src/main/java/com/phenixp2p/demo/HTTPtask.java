@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.phenixp2p.demo;
 
 import android.os.AsyncTask;
@@ -30,11 +29,11 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
-final class HTTPtask extends AsyncTask<String, String, JSONObject> {
+public class HTTPtask extends AsyncTask<String, String, JSONObject> {
 
   final static String TAG = "HTTPtask";
 
-  interface Caller {
+  public interface Caller {
     void callback(JSONObject result);
   }
 
@@ -43,7 +42,7 @@ final class HTTPtask extends AsyncTask<String, String, JSONObject> {
   private final String path;
   private final JSONObject postJson;
 
-  HTTPtask(String path, JSONObject postJson, Caller caller) {
+  public HTTPtask(String path, JSONObject postJson, Caller caller) {
     this.caller = caller;
     this.path = path;
     this.postJson = postJson;

@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,8 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.phenixp2p.demo;
+package com.phenixp2p.demo.utils;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -22,23 +21,17 @@ import android.net.NetworkInfo;
 
 public class Utilities {
   public static boolean hasInternet(Context context) {
-    if (context == null) {
-      return false;
-    }
-    return isConnected(context);
+    return context != null && isConnected(context);
   }
 
   private static boolean isConnected(Context context) {
     if (context == null) {
       return false;
     }
-    ConnectivityManager connectivityManager = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+    ConnectivityManager connectivityManager = (ConnectivityManager)context.getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
     if (connectivityManager != null) {
       NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-      if (networkInfo == null) {
-        return false;
-      }
-      return (networkInfo != null) && (networkInfo.isConnectedOrConnecting());
+      return networkInfo != null && networkInfo.isConnectedOrConnecting();
     }
     return false;
   }
