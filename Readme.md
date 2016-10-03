@@ -4,9 +4,7 @@ This demo also has a node.js server that talks to the PCast&trade; server, as  [
 
 The demo apps use git-submodules and git-lfs to get large binary libraries out of other, private repos. So to get all the necessary code, you will need to perform the following steps:  
 1. install git-lfs. This needs to be done only once on your computer. Instructions are [here](https://git-lfs.github.com). For Mac, it's just "brew install git-lfs".  
-2. after you git-clone this repo, you will need to initialize git-submodules once, with two commands:  
-* git submodule init
-* git submodule update
+2. after you git-clone this repo, you will need to initialize git-submodule once. To initialize git-submodule, run the script `git-submodule-setup.sh`.
 
 Then you should have all files, both from this repo, as well as the large binaries from the private repos.
 
