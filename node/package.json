@@ -11,5 +11,9 @@
     "backoff": "^2.5.0",
     "log-timestamp": "^0.1.2"
   },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:PhenixP2P/PCastDemo.git"
+  },
   "license": "Apache-2.0"
 }

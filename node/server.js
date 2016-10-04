@@ -16,8 +16,9 @@
 
 var argv = require('minimist')(process.argv.slice(2));
 var appId = argv.a, secret = argv.s;
+
 if (appId === undefined || secret === undefined) {
-    console.log("usage: npm start -- -a=<appId> -s=<secret>");
+    console.log("usage: npm start -- -application-id=<your-application-id> -secret=<your-secret>");
     process.exit(1);
 }
 
