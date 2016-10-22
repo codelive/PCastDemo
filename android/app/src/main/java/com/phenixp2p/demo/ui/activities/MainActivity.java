@@ -23,7 +23,6 @@ import android.content.res.Configuration;
 import android.graphics.PixelFormat;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
@@ -35,6 +34,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.phenixp2p.demo.HTTPtask;
 import com.phenixp2p.demo.R;
@@ -56,6 +56,11 @@ import com.phenixp2p.pcast.android.AndroidVideoRenderSurface;
 
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import static com.phenixp2p.demo.utils.Utilities.hasInternet;
 
 public class MainActivity extends AppCompatActivity implements IMainView{
@@ -71,7 +76,6 @@ public class MainActivity extends AppCompatActivity implements IMainView{
   private TextView status;
   private SurfaceView surfaceView;
 
-  private static final int REQUEST_CAMERA = 0;
   private static final int NUM_STEPS = 8;
   private int steps = 0;
 
@@ -96,30 +100,91 @@ public class MainActivity extends AppCompatActivity implements IMainView{
     SurfaceHolder surfaceHolder = surfaceView.getHolder();
     surfaceHolder.setFormat(PixelFormat.TRANSLUCENT);
     presenter = new MainPresenter(this);
+    this.checkPermissions();
+  }
 
-    ActivityCompat.requestPermissions(MainActivity.this,
-    new String[]{Manifest.permission.CAMERA},
-    REQUEST_CAMERA);
+  final private int REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS = 124;
+
+  private void checkPermissions() {
+    List<String> permissionsNeeded = new ArrayList<String>();
+
+    final List<String> permissionsList = new ArrayList<String>();
+    if (!addPermission(permissionsList, Manifest.permission.CAMERA)) {
+      permissionsNeeded.add("access the camera");
+    }
+    if (!addPermission(permissionsList, Manifest.permission.RECORD_AUDIO)) {
+      permissionsNeeded.add("access the microphone");
+    }
+
+    if (permissionsList.size() > 0) {
+      if (permissionsNeeded.size() > 0) {
+        String message = "You need to grant access to " + permissionsNeeded.get(0);
+        for (int i = 1; i < permissionsNeeded.size(); i++)
+          message = message + ", " + permissionsNeeded.get(i);
+          showMessageOKCancel(message,
+            new DialogInterface.OnClickListener() {
+              @Override
+              public void onClick(DialogInterface dialog, int which) {
+                ActivityCompat.requestPermissions(MainActivity.this, permissionsList.toArray(new String[permissionsList.size()]), REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS);
+              }
+            }
+          );
+        return;
+      }
+
+      ActivityCompat.requestPermissions(MainActivity.this, permissionsList.toArray(new String[permissionsList.size()]),
+              REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS);
+      return;
+    }
+
+    this.commenceSession();
+  }
+
+  private void showMessageOKCancel(String message, DialogInterface.OnClickListener okListener) {
+    new AlertDialog.Builder(MainActivity.this)
+            .setMessage(message)
+            .setPositiveButton("OK", okListener)
+            .setNegativeButton("Cancel", null)
+            .create()
+            .show();
   }
 
   @Override
-  public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                         @NonNull int[] grantResults) {
-    if (requestCode == REQUEST_CAMERA) {
-      // Received permission result for camera permission.
-      Log.i(TAG, "Received response for Camera permission request.");
-
-      // Check if the only required permission has been granted.
-      if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-        // Camera permission has been granted, preview can be displayed.
-        if (sessionId == null) {
-          this.login();
+  public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    switch (requestCode) {
+      case REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS:
+      {
+        Map<String, Integer> permissionCodes = new HashMap<String, Integer>();
+        // Initial
+        permissionCodes.put(Manifest.permission.CAMERA, PackageManager.PERMISSION_DENIED);
+        permissionCodes.put(Manifest.permission.RECORD_AUDIO, PackageManager.PERMISSION_DENIED);
+        // Fill with results
+        for (int i = 0; i < permissions.length; i++)
+          permissionCodes.put(permissions[i], grantResults[i]);
+        // Check for ACCESS_FINE_LOCATION
+        if (permissionCodes.get(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+                && permissionCodes.get(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+          // All Permissions Granted
+          this.commenceSession();
         } else {
-          Log.d(TAG, "sessionId is not null");
+          // Permission Denied
+          Toast.makeText(MainActivity.this, "Some permissions were denied", Toast.LENGTH_SHORT).show();
         }
       }
+      break;
+      default:
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
-    Log.d(TAG, "a: onRequestPermissionsResult: ");
+  }
+
+  private boolean addPermission(List<String> permissionsList, String permission) {
+    if (ActivityCompat.checkSelfPermission(MainActivity.this, permission) != PackageManager.PERMISSION_GRANTED) {
+      permissionsList.add(permission);
+      // Check for Rationale Option
+      if (!ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, permission))
+        return false;
+    }
+    return true;
   }
 
   @Override
@@ -189,6 +254,13 @@ public class MainActivity extends AppCompatActivity implements IMainView{
         }
       }
     });
+  }
+
+  // 0. Commence sequence
+  private void commenceSession() {
+    if (this.sessionId == null) {
+      this.login();
+    }
   }
 
   // 1. REST API: authenticate with the app-maker's own server. The app talks to a Phenix demo server, but you could also use the node.js server provided in this repo.
@@ -292,7 +364,7 @@ public class MainActivity extends AppCompatActivity implements IMainView{
   private void getUserMedia() {
     UserMediaOptions gumOptions = new UserMediaOptions();
     gumOptions.getVideoOptions().setFacingMode(FacingMode.ENVIRONMENT);
-    gumOptions.getAudioOptions().setEnabled(false);
+    gumOptions.getAudioOptions().setEnabled(true);
 
     this.pcast.getUserMedia(gumOptions, new PCast.UserMediaCallback() {
       public void onEvent(PCast p, RequestStatus status, UserMediaStream media) {
