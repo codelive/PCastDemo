@@ -16,6 +16,8 @@
 
 import UIKit
 import SystemConfiguration
+import Fabric
+import Crashlytics
 
 var timestamp = Date()
 
@@ -33,22 +35,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   let reachability = Reachability()!
   var isAlertShowing = false
 
-  private func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
+  func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions:[UIApplicationLaunchOptionsKey : Any]?) -> Bool {
     // Override point for customization after application launch.
-    return true
-  }
 
-  func applicationDidFinishLaunching(_ application: UIApplication) {
+    Fabric.with([Crashlytics.self])
+
     if !reachability.isReachable {
-      notifyNetworkNotReachability()
+        notifyNetworkNotReachability()
     }
 
     NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.reachabilityChanged(note:)), name: ReachabilityChangedNotification,object: reachability)
     do {
-      try reachability.startNotifier()
+        try reachability.startNotifier()
     } catch {
-      print("could not start reachability notifier")
+        print("could not start reachability notifier")
     }
+    return true
   }
 
   func applicationDidEnterBackground(_ application: UIApplication) {
@@ -82,7 +84,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     // show the alert
     window?.rootViewController?.present(alert, animated: true, completion: nil)
-    isAlertShowing = true;
+    isAlertShowing = true
   }
 
   func reachabilityChanged(note: NSNotification) {

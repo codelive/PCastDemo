@@ -3,3 +3,5 @@
 /.idea
 *.iml
 local.properties
+libs
+jnilibs

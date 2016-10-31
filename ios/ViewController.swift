@@ -187,8 +187,8 @@ class ViewController:UIViewController {
       self.steps = self.steps + 1
 
       if self.progress.progress == 1.0 {
-        self.progress.isHidden = true;
-        self.status.isHidden = true;
+        self.progress.isHidden = true
+        self.status.isHidden = true
       }
     }
   }
