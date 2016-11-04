@@ -31,7 +31,7 @@ import java.nio.charset.StandardCharsets;
 
 public class HTTPtask extends AsyncTask<String, String, JSONObject> {
 
-  final static String TAG = "HTTPtask";
+  private static final String TAG = HTTPtask.class.getSimpleName();
 
   public interface Caller {
     void callback(JSONObject result);
@@ -39,22 +39,20 @@ public class HTTPtask extends AsyncTask<String, String, JSONObject> {
 
   private HttpURLConnection urlConnection;
   private final Caller caller;
-  private final String path;
   private final JSONObject postJson;
 
-  public HTTPtask(String path, JSONObject postJson, Caller caller) {
+  public HTTPtask(JSONObject postJson, Caller caller) {
     this.caller = caller;
-    this.path = path;
     this.postJson = postJson;
   }
 
   @Override
-  protected JSONObject doInBackground(String... args) {
+  protected JSONObject doInBackground(String... path) {
     StringBuilder result = new StringBuilder();
     JSONObject json = null;
 
     try {
-      URL url = new URL(this.path);
+      URL url = new URL(path[0]);
       urlConnection = (HttpURLConnection) url.openConnection();
       urlConnection.setRequestMethod("POST");
 
@@ -64,7 +62,7 @@ public class HTTPtask extends AsyncTask<String, String, JSONObject> {
       urlConnection.setRequestProperty("Content-Length", Integer.toString( postData.length));
       urlConnection.setUseCaches(false);
 
-      Log.d(TAG, this.path + " request");
+      Log.d(TAG, path[0] + " request");
 
       try (DataOutputStream outputStream = new DataOutputStream(urlConnection.getOutputStream())) {
         outputStream.write(postData);
@@ -83,7 +81,7 @@ public class HTTPtask extends AsyncTask<String, String, JSONObject> {
       urlConnection.disconnect();
     }
 
-    Log.d(TAG, this.path + " response");
+    Log.d(TAG, path[0] + " response");
 
     return json;
   }

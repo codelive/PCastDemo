@@ -17,6 +17,7 @@
 import UIKit
 import CoreMotion
 
+
 // todo:use promises, futures
 // todo:popup errors instead of print
 
@@ -24,8 +25,10 @@ class ViewController:UIViewController {
 
   // outlets and actions
   @IBOutlet weak var videoView:UIView!
+  @IBOutlet weak var startStreamView: UIView!
   @IBOutlet weak var progress:UIProgressView!
   @IBOutlet weak var status:UILabel!
+  @IBOutlet weak var birdLogo: UIImageView!
 
   enum Step: String {
     case Launch = "Screen launch"
@@ -45,7 +48,23 @@ class ViewController:UIViewController {
   var authSession:String?
   var phenixLayer: CALayer?
   let motionManager = CMMotionManager()
-
+  var pulseTimer = Timer()
+  var showSplashAnimation: Bool = true{
+    didSet {
+      if showSplashAnimation == true {
+        if self.pulseTimer.isValid {
+          self.pulseTimer.invalidate()
+        }
+        self.pulseTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(addPulse), userInfo: nil, repeats: true)
+        self.birdLogo.isHidden = false
+        self.startStreamView.isHidden = true
+      } else {
+        self.pulseTimer.invalidate()
+        self.birdLogo.isHidden = true
+        self.startStreamView.isHidden = false
+      }
+    }
+  }
   // for loopback, the same stream ID is used for both publish and subscribe. But the stream tokens must be different.
   var streamId:String?
 
@@ -56,6 +75,7 @@ class ViewController:UIViewController {
   override func viewDidLoad() {
     super.viewDidLoad()
     self.addObserve()
+    self.setupSubviews()
   }
 
   override func viewWillAppear(_ animated:Bool) {
@@ -74,11 +94,20 @@ class ViewController:UIViewController {
     NotificationCenter.default.addObserver(self, selector: #selector(ViewController.handleAppEnterForeground(notification:)), name: Notification.Name.UIApplicationWillEnterForeground, object: nil)
   }
 
+  func addPulse(){
+    let pulse = Pulsing(numberOfPulses: 1, radius: 200, position: self.birdLogo.center)
+    pulse.backgroundColor = UIColor.gray.cgColor
+    self.view.layer.insertSublayer(pulse, below: self.birdLogo.layer)
+  }
+
+  func setupSubviews() {
+    self.startStreamView.layer.cornerRadius = 5.0;
+    self.startStreamView.isHidden = true;
+  }
+
   func restartProgress() {
     self.videoView.isHidden = true
-    self.progress.isHidden = false
-    self.status.isHidden = false
-    self.status.text = ""
+    self.showSplashAnimation = true
     self.steps = 0
     self.progress.setProgress(0.0, animated:false)
     self.progress.setNeedsDisplay()
@@ -94,7 +123,7 @@ class ViewController:UIViewController {
             return
           }
         }
-      })
+        })
     } catch {
       self.reportStatus(step:.Login, success:false)
     }
@@ -151,8 +180,9 @@ class ViewController:UIViewController {
   func subscribing(success:Bool) {
     self.reportStatus(step:.Subscribe, success:success)
     if success {
-      if let subscribingStream = Phenix.shared.stream {
-        Phenix.shared.viewStream(stream:subscribingStream, renderReady:viewable, qualityChanged:rendering)
+      DispatchQueue.main.async {
+        self.showSplashAnimation = false
+        self.startStreamView.isHidden = false;
       }
     }
   }
@@ -162,7 +192,6 @@ class ViewController:UIViewController {
       if let videoSublayer = layer {
         self.phenixLayer?.removeFromSuperlayer()
         self.phenixLayer = layer
-        self.videoView.isHidden = false
         let f = self.videoView.frame
         videoSublayer.frame = CGRect(x:0,y:0, width:f.width, height:f.height)
         self.videoView.layer.addSublayer(videoSublayer)
@@ -217,4 +246,78 @@ class ViewController:UIViewController {
       self.phenixLayer?.frame.size = UIScreen.main.bounds.size
     })
   }
+
+  @IBAction func startStreamClicked(_ sender: AnyObject) {
+    self.startStreamView.isHidden = true
+    self.videoView.isHidden = false
+    if let subscribingStream = Phenix.shared.stream {
+      Phenix.shared.viewStream(stream:subscribingStream, renderReady:viewable, qualityChanged:rendering)
+    }
+  }
+}
+
+class Pulsing: CALayer {
+
+  var animationGroup = CAAnimationGroup()
+  var initialPulseScale:Float = 0
+  var nextPulseAfter:TimeInterval = 2.0
+  var animationDuration:TimeInterval = 2.5
+  var radius:CGFloat = 200
+  var numberOfPulses:Float = Float.infinity
+
+  override init(layer: Any) {
+    super.init(layer: layer)
+  }
+
+  required init?(coder aDecoder: NSCoder) {
+    super.init(coder: aDecoder)
+  }
+
+  init (numberOfPulses:Float = Float.infinity, radius:CGFloat, position:CGPoint) {
+    super.init()
+
+    self.backgroundColor = UIColor.black.cgColor
+    self.contentsScale = UIScreen.main.scale
+    self.opacity = 0
+    self.radius = radius
+    self.numberOfPulses = numberOfPulses
+    self.position = position
+    self.bounds = CGRect(x: 0, y: 0, width: radius * 2, height: radius * 2)
+    self.cornerRadius = radius
+
+    DispatchQueue.global(qos: DispatchQoS.QoSClass.default).async {
+      self.setupAnimationGroup()
+      DispatchQueue.main.async {
+        self.add(self.animationGroup, forKey: "pulse")
+      }
+    }
+  }
+
+  func createScaleAnimation () -> CABasicAnimation {
+    let scaleAnimation = CABasicAnimation(keyPath: "transform.scale.xy")
+    scaleAnimation.fromValue = NSNumber(value: initialPulseScale)
+    scaleAnimation.toValue = NSNumber(value: 1)
+    scaleAnimation.duration = animationDuration
+
+    return scaleAnimation
+  }
+
+  func createOpacityAnimation() -> CAKeyframeAnimation {
+    let opacityAnimation = CAKeyframeAnimation(keyPath: "opacity")
+    opacityAnimation.duration = animationDuration
+    opacityAnimation.values = [0.4, 0.8, 0]
+    opacityAnimation.keyTimes = [0, 0.2, 1]
+
+    return opacityAnimation
+  }
+
+  func setupAnimationGroup() {
+    self.animationGroup = CAAnimationGroup()
+    self.animationGroup.duration = animationDuration + nextPulseAfter
+    self.animationGroup.repeatCount = numberOfPulses
+    let defaultCurve = CAMediaTimingFunction(name: kCAMediaTimingFunctionDefault)
+    self.animationGroup.timingFunction = defaultCurve
+    self.animationGroup.animations = [createScaleAnimation(), createOpacityAnimation()]
+  }
+
 }

@@ -9,34 +9,43 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/surfaceView"/>
-
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_gravity="center"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp">
-        <ProgressBar
-            android:layout_gravity="center"
-            android:id="@+id/progress"
-            style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center">
+
+        <com.phenixp2p.demo.animation.PulsatorLayout
+            android:animateLayoutChanges="true"
+            android:id="@+id/pulsator"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:indeterminate="false"
-            android:max="100"
-            android:minWidth="200dp"
-            android:progress="1" />
-
-
-        <TextView
             android:layout_gravity="center"
-            android:id="@+id/status"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical|center_horizontal"
-            android:textSize="20sp"
-            android:textColor="@android:color/darker_gray"/>
-    </LinearLayout>
+            android:gravity="center"
+            app:pulse_color="@android:color/white"
+            app:pulse_count="2"
+            app:pulse_duration="2000"
+            app:pulse_interpolator="Decelerate"
+            app:pulse_repeat="0"
+            app:pulse_startFromScratch="false">
 
+            <ImageView
+                android:id="@+id/pulse"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_centerInParent="true"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_logo"/>
+        </com.phenixp2p.demo.animation.PulsatorLayout>
+        <Button
+            android:animateLayoutChanges="true"
+            android:visibility="gone"
+            android:layout_centerInParent="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/btnStart"
+            android:text="Let's stream!"
+            android:drawableLeft="@mipmap/ic_launcher"
+            tools:visibility="visible"
+            android:drawablePadding="4dp"/>
+    </RelativeLayout>
 </FrameLayout>

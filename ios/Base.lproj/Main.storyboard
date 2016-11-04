@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11201" systemVersion="15G1004" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11201" systemVersion="15G31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11161"/>
+        <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -10,7 +11,7 @@
         <!--View Controller-->
         <scene sceneID="tne-QT-ifu">
             <objects>
-                <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="Phenix_Demo" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="PCast_Demo" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="y3c-jy-aDJ"/>
                         <viewControllerLayoutGuide type="bottom" id="wfy-db-euE"/>
@@ -20,22 +21,73 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="7Ws-RZ-S93">
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <color key="backgroundColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
-                            <progressView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" progress="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="YPM-QQ-ubH"/>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Status" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="RMS-Ci-u0e">
+                            <progressView hidden="YES" opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" progress="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="YPM-QQ-ubH"/>
+                            <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Status" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="RMS-Ci-u0e">
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ic_logo" translatesAutoresizingMaskIntoConstraints="NO" id="vP1-qx-1OQ">
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="100" id="OYw-Ue-bRE"/>
+                                    <constraint firstAttribute="width" constant="100" id="fk8-vx-2SK"/>
+                                </constraints>
+                            </imageView>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="1rY-qH-ffZ" userLabel="Button View">
+                                <subviews>
+                                    <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ic_logo" translatesAutoresizingMaskIntoConstraints="NO" id="w6Z-E8-xqd" userLabel="Button Bird Logo">
+                                        <constraints>
+                                            <constraint firstAttribute="width" secondItem="w6Z-E8-xqd" secondAttribute="height" multiplier="1:1" id="gZ4-yv-xmI"/>
+                                        </constraints>
+                                    </imageView>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="8Ic-0z-LS7" userLabel="Button Title">
+                                        <fontDescription key="fontDescription" name="HelveticaNeue-Medium" family="Helvetica Neue" pointSize="18"/>
+                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="clip" translatesAutoresizingMaskIntoConstraints="NO" id="PZB-vD-jDc">
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                        <fontDescription key="fontDescription" name="Helvetica-Bold" family="Helvetica" pointSize="16"/>
+                                        <inset key="titleEdgeInsets" minX="45" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                        <state key="normal" title="Let's stream!">
+                                            <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="startStreamClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="OHd-7V-Jjz"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <color key="backgroundColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
+                                <constraints>
+                                    <constraint firstItem="PZB-vD-jDc" firstAttribute="top" secondItem="1rY-qH-ffZ" secondAttribute="top" id="0JH-LU-tSM"/>
+                                    <constraint firstAttribute="bottom" secondItem="PZB-vD-jDc" secondAttribute="bottom" id="8b5-cb-JRi"/>
+                                    <constraint firstAttribute="height" constant="40" id="LBC-XN-61b"/>
+                                    <constraint firstAttribute="trailing" secondItem="PZB-vD-jDc" secondAttribute="trailing" id="LfN-CM-Tcb"/>
+                                    <constraint firstItem="PZB-vD-jDc" firstAttribute="leading" secondItem="1rY-qH-ffZ" secondAttribute="leading" id="OQQ-Ft-qcG"/>
+                                    <constraint firstItem="w6Z-E8-xqd" firstAttribute="top" secondItem="1rY-qH-ffZ" secondAttribute="top" id="WOd-ny-4GJ"/>
+                                    <constraint firstAttribute="trailing" secondItem="8Ic-0z-LS7" secondAttribute="trailing" constant="5" id="g8e-AX-qxf"/>
+                                    <constraint firstAttribute="width" constant="150" id="jkl-TZ-l72"/>
+                                    <constraint firstAttribute="bottom" secondItem="8Ic-0z-LS7" secondAttribute="bottom" id="lrg-pb-goU"/>
+                                    <constraint firstItem="8Ic-0z-LS7" firstAttribute="leading" secondItem="w6Z-E8-xqd" secondAttribute="trailing" constant="5" id="mVp-aD-Y9i"/>
+                                    <constraint firstItem="8Ic-0z-LS7" firstAttribute="top" secondItem="1rY-qH-ffZ" secondAttribute="top" id="ogx-xg-zXN"/>
+                                    <constraint firstItem="w6Z-E8-xqd" firstAttribute="leading" secondItem="1rY-qH-ffZ" secondAttribute="leading" constant="5" id="w5D-2Q-9rA"/>
+                                    <constraint firstAttribute="bottom" secondItem="w6Z-E8-xqd" secondAttribute="bottom" id="xw4-ko-uFV"/>
+                                </constraints>
+                            </view>
                         </subviews>
-                        <color key="backgroundColor" red="0.90196079019999997" green="0.90196079019999997" blue="0.90196079019999997" alpha="1" colorSpace="calibratedRGB"/>
+                        <color key="backgroundColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
                         <rect key="contentStretch" x="0.0" y="0.0" width="0.5" height="0.5"/>
                         <constraints>
                             <constraint firstItem="YPM-QQ-ubH" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="0Mn-7s-D3a"/>
                             <constraint firstItem="7Ws-RZ-S93" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="2XI-uJ-MgZ"/>
+                            <constraint firstItem="1rY-qH-ffZ" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="3yD-Sy-gBv"/>
                             <constraint firstAttribute="trailing" secondItem="7Ws-RZ-S93" secondAttribute="trailing" id="4w2-gS-1ov"/>
+                            <constraint firstItem="vP1-qx-1OQ" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="6g7-E5-AEj"/>
+                            <constraint firstItem="vP1-qx-1OQ" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="85y-EU-078"/>
                             <constraint firstItem="RMS-Ci-u0e" firstAttribute="centerX" secondItem="7Ws-RZ-S93" secondAttribute="centerX" id="TVh-lz-bjr"/>
+                            <constraint firstItem="1rY-qH-ffZ" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="aeP-Jd-CY3"/>
                             <constraint firstItem="RMS-Ci-u0e" firstAttribute="top" secondItem="YPM-QQ-ubH" secondAttribute="bottom" constant="8" symbolic="YES" id="fd7-z1-x1H"/>
                             <constraint firstItem="7Ws-RZ-S93" firstAttribute="bottom" secondItem="wfy-db-euE" secondAttribute="top" id="g6G-MO-UXV"/>
                             <constraint firstItem="RMS-Ci-u0e" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" constant="-20" id="h3g-la-lLN"/>
@@ -45,7 +97,9 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="birdLogo" destination="vP1-qx-1OQ" id="lgm-2s-ZCw"/>
                         <outlet property="progress" destination="YPM-QQ-ubH" id="1zo-lp-OV3"/>
+                        <outlet property="startStreamView" destination="1rY-qH-ffZ" id="Qjn-ci-pPe"/>
                         <outlet property="status" destination="RMS-Ci-u0e" id="dIf-1W-qVG"/>
                         <outlet property="videoView" destination="7Ws-RZ-S93" id="Lo3-Gc-bEp"/>
                     </connections>
@@ -55,4 +109,7 @@
             <point key="canvasLocation" x="136.80000000000001" y="137.18140929535232"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="ic_logo" width="192" height="192"/>
+    </resources>
 </document>

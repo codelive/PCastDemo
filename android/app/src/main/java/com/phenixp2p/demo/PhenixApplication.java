@@ -23,14 +23,12 @@ import com.crashlytics.android.answers.Answers;
 
 import io.fabric.sdk.android.Fabric;
 
-
-public class PhenixApplication extends Application {
-  protected String userAgent;
+public class PhenixApplication extends Application{
 
   @Override
   public void onCreate() {
-	super.onCreate();
-	// Initialize crash analytics by Fabric
-	Fabric.with(this, new Crashlytics(), new Answers());
+    super.onCreate();
+    //init crash analytics by Fabric
+    Fabric.with(this, new Crashlytics(), new Answers());
   }
 }
