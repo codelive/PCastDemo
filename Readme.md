@@ -9,8 +9,9 @@ The demo apps use git-submodules and git-lfs to get large binary libraries out o
 Then you should have all files, both from this repo, as well as the large binaries from the private repos.
 
 To run the iOS app:  
-1. in the ios/ directory: open "Phenix Demo.xcodeproj" in Xcode8 (required for Swift3)  
-2. in Xcode8, run the app in a physical device, not the simulator.  
+1. One time only: Ensure Cocoapods is installed via gem: "sudo gem install cocoapods"  
+2. In the ios/ directory: run "pod install" and then open "PCastDemo.xcworkspace" in Xcode8  
+3. In Xcode8, run the app in a physical device, not the simulator.  
 
 To run the Android app:  
 1. In Android Studio, open the project in the android/ directory, and run the app in a physical device, not the emulator.  
@@ -19,5 +20,4 @@ If you want to run the node.js server (optional)
 1. install [node.js](https://nodejs.org)  
 2. in the node/ directory: npm install  
 3. to make the app use your node.js server, update the server address in the iOS or Android app code from "https://demo.phenixp2p.com/demoApp/" to your server address.  
-
 
