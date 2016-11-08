@@ -29,7 +29,7 @@ dependencies {
     compile('com.crashlytics.sdk.android:crashlytics:2.6.5@aar') {
         transitive = true;
     }
-    compile 'com.google.android.exoplayer:exoplayer:r2.0.2'
+    compile 'com.google.android.exoplayer:exoplayer:r1.5.10'
 }
 
 task copyToLib(type: Copy) {
