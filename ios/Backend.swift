@@ -51,6 +51,8 @@ class Backend {
 
   func streamToken(sessionId:String, originStreamId:String?, done:@escaping (String?)->()) throws {
     var params = ["sessionId":sessionId]
+    // Enable the following line to enable HLS/Dash live streaming instead of real-time
+    // params["capabilities[0]"] = "streaming"
     if let o = originStreamId {
       params["originStreamId"] = o
     }

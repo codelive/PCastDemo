@@ -54,6 +54,7 @@ import com.phenixp2p.pcast.UserMediaStream;
 import com.phenixp2p.pcast.android.AndroidPCastFactory;
 import com.phenixp2p.pcast.android.AndroidVideoRenderSurface;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -303,6 +304,8 @@ public class MainActivity extends AppCompatActivity implements IMainView{
     try {
       JSONObject params = new JSONObject();
       params.put("sessionId", sessionId);
+      // Uncomment "streaming" to enable HLS/Dash live streaming instead of real-time:
+      params.put("capabilities", new JSONArray(new String[]{/*"streaming"*/}));
       if (originStreamId != null) {
         params.put("originStreamId", originStreamId);
       }
