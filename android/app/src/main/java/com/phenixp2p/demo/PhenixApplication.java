@@ -1,11 +1,10 @@
-/**
- * Copyright 2016 PhenixP2P Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
+/*
+ * Copyright (c) 2016. PhenixP2P Inc. All Rights Reserved.
+ * Licensed under the Apache License, Version 2.0(the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,13 +21,28 @@ import com.crashlytics.android.Crashlytics;
 import com.crashlytics.android.answers.Answers;
 
 import io.fabric.sdk.android.Fabric;
+import rx.plugins.RxJavaErrorHandler;
+import rx.plugins.RxJavaPlugins;
 
-public class PhenixApplication extends Application{
+public class PhenixApplication extends Application {
+
+  private static Throwable onError = null;
+
+  public static Throwable getOnError() {
+    return onError;
+  }
 
   @Override
   public void onCreate() {
     super.onCreate();
-    //init crash analytics by Fabric
+    // Initialize crash analytics by Fabric
     Fabric.with(this, new Crashlytics(), new Answers());
+    // Register error handler on Rxjava
+    RxJavaPlugins.getInstance().registerErrorHandler(new RxJavaErrorHandler() {
+      @Override
+      public void handleError(Throwable e) {
+        onError = e;
+      }
+    });
   }
 }

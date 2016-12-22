@@ -32,7 +32,7 @@ class Rest {
   private var basePath: String
 
   typealias Completion = (_ success:Bool, _ result:AnyObject?) -> ()
-  typealias Params = Dictionary<String, String>
+  typealias Params = Dictionary<String, Any>
 
   init(basePath:String) {
     self.basePath = basePath
@@ -42,42 +42,49 @@ class Rest {
     guard let url = URL(string: self.basePath + path) else {
       throw Rest.RestError.InvalidUrlPath
     }
-    let request = NSMutableURLRequest(url: url)
-    if let params = params {
-      var paramString = ""
-      for (key, value) in params {
-        if let escapedKey = key.addingPercentEncoding(withAllowedCharacters: NSCharacterSet.urlQueryAllowed), let escapedValue = value.addingPercentEncoding(withAllowedCharacters:NSCharacterSet.urlQueryAllowed) {
-          paramString += "\(escapedKey)=\(escapedValue)&"
-        }
-      }
 
-      request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
-      request.httpBody = paramString.data(using: String.Encoding.utf8)
+    let request = NSMutableURLRequest(url: url)
+
+    if path == "streams" {
+      let jsonParams: [String: NSNumber] = ["length": NSNumber(value: 100)]
+      let jsonData = try JSONSerialization.data(withJSONObject: jsonParams, options: JSONSerialization.WritingOptions())
+      request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+      request.httpBody = jsonData
+    } else if path == "stream" {
+      if let paramsReq = params {
+        let jsonData = try JSONSerialization.data(withJSONObject: paramsReq, options: JSONSerialization.WritingOptions())
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = jsonData
+      }
+    } else {
+      if let paramsReq = params {
+        var paramString = ""
+        for (key, value) in paramsReq {
+          if let escapedKey = key.addingPercentEncoding(withAllowedCharacters: NSCharacterSet.urlQueryAllowed), let escapedValue = (value as AnyObject).addingPercentEncoding(withAllowedCharacters:NSCharacterSet.urlQueryAllowed) {
+            paramString += "\(escapedKey)=\(escapedValue)&"
+          }
+        }
+        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+        request.httpBody = paramString.data(using: String.Encoding.utf8)
+      }
     }
 
     return request
   }
 
   private static func dataTask(request: NSMutableURLRequest, method: String, completion: @escaping Completion) {
-
     request.httpMethod = method
     request.setValue("Keep-Alive", forHTTPHeaderField: "Connection")
-
     let session = URLSession(configuration: URLSessionConfiguration.default)
 
     DispatchQueue.global().async { // http request in background thread
-
       NSLog("%@", "\(request.url!) request: " + timeElapsed())
-
       session.dataTask(with: request as URLRequest) { (data, response, error) -> Void in
-
         if let data = data, let dataString = String(data: data, encoding: .utf8), let rt = (response as? HTTPURLResponse)?.allHeaderFields["X-Response-Time"] {
           NSLog("%@", "\(request.url!) response \(dataString) (x-response-time=\(rt): " + timeElapsed())
         }
-
         DispatchQueue.main.sync { // UX callback in main thread
           if let data = data {
-
             let json = try? JSONSerialization.jsonObject(with: data, options: [])
             if let response = response as? HTTPURLResponse , 200...299 ~= response.statusCode {
               completion(true, json as AnyObject?)

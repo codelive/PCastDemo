@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+  <RelativeLayout
+    android:id="@+id/viewLocal"
+    android:layout_width="100dp"
+    android:layout_height="180dp"
+    android:layout_alignParentBottom="true"
+    android:layout_alignParentEnd="true"
+    android:layout_marginBottom="10dp"
+    android:layout_marginEnd="10dp">
+
+    <SurfaceView
+      android:id="@+id/previewLocal"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"/>
+
+  </RelativeLayout>
+
+
+  <SurfaceView
+    android:id="@+id/surfaceView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"/>
+
+  <RelativeLayout
+    android:id="@+id/draggable_view"
+    android:layout_width="100dp"
+    android:layout_height="180dp"
+    android:layout_alignParentBottom="true"
+    android:layout_alignParentEnd="true"
+    android:layout_marginBottom="10dp"
+    android:layout_marginEnd="10dp">
+
+    <View
+      android:id="@+id/viewStop"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:background="@color/black"
+      android:visibility="gone"/>
+
+    <ToggleButton
+      android:id="@+id/togCamera"
+      android:layout_width="36dp"
+      android:layout_height="36dp"
+      android:layout_alignParentStart="true"
+      android:layout_alignParentTop="true"
+      android:layout_marginTop="4dp"
+      android:background="@null"
+      android:drawableStart="@drawable/ic_select_camera"
+      android:gravity="center"
+      android:textOff=""
+      android:textOn=""/>
+
+
+  </RelativeLayout>
+
+  <RelativeLayout
+    android:id="@+id/relativeLayout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_alignParentStart="true"
+    android:layout_alignParentTop="true"
+    android:background="@android:color/transparent"
+    android:minHeight="?attr/actionBarSize">
+
+    <android.support.v7.widget.Toolbar
+      android:id="@+id/toolbar"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_alignParentStart="true"
+      android:layout_alignParentTop="true"
+      android:background="@android:color/transparent"
+      android:minHeight="?attr/actionBarSize"
+      android:theme="?attr/actionBarTheme"/>
+
+    <RelativeLayout
+      android:id="@+id/back"
+      android:layout_width="36dp"
+      android:layout_height="36dp"
+      android:layout_centerVertical="true"
+      android:layout_marginStart="16dp"
+      android:alpha="51"
+      android:background="@drawable/circle_shape"
+      android:gravity="center">
+
+      <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_centerVertical="true"
+        app:srcCompat="@drawable/ic_arrow_back_white_24dp"/>
+    </RelativeLayout>
+
+  </RelativeLayout>
+
+
+  <ImageView
+    android:id="@+id/imvLoad"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_centerHorizontal="true"
+    android:layout_centerVertical="true"
+    app:srcCompat="@mipmap/ic_launcher"/>
+
+  <RelativeLayout
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_alignParentBottom="true"
+    android:layout_alignParentStart="true"
+    android:layout_centerVertical="true"
+    android:layout_marginBottom="10dp"
+    android:layout_marginStart="10dp"
+    android:alpha="51"
+    android:background="@drawable/shape"
+    android:gravity="center"
+    android:paddingLeft="25dp"
+    android:paddingRight="25dp">
+
+    <TextView
+      android:id="@+id/tvStreamId"
+      android:layout_width="wrap_content"
+      android:layout_height="48dp"
+      android:gravity="center"
+      android:textColor="@android:color/white"
+      tools:text="TextView"/>
+  </RelativeLayout>
+
+
+</RelativeLayout>

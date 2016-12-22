@@ -15,21 +15,27 @@
  */
 
 import Foundation
+import UIKit
+import Crashlytics
 
 class Phenix {
 
   static let shared = Phenix()
 
+  var publisher:PhenixPublisher?
   var pcast:PhenixPCast?
   var renderer:PhenixRenderer?
   var stream:PhenixMediaStream?
+  var userMediaStream:PhenixUserMediaStream?
   var streamId:String?
+  var authSession:String?
 
   typealias SuccessCallback = (Bool) -> ()
   typealias MediaReadyCallback = SuccessCallback
   typealias PublishStreamIDCallback = SuccessCallback
   typealias SubscribeCallback = SuccessCallback
   typealias AuthCallback = (String?) -> ()
+  typealias RenderStatusCallback = (String?) -> ()
   typealias RenderReadyCallback = (CALayer?) -> ()
   typealias QualityChangedCallback = ()->()
 
@@ -51,7 +57,7 @@ class Phenix {
   func getLocalUserMedia(mediaReady:@escaping MediaReadyCallback) {
     var gumOptions = PhenixUserMediaOptions()
     PhenixPCastFactory.initializeDefaultUserMediaOptions(&gumOptions)
-    gumOptions.video.facingMode = .environment
+    gumOptions.video.facingMode = .user
     self.pcast?.getUserMedia(&gumOptions, Phenix.pcastMediaCallback(mediaCallback:mediaReady))
   }
 
@@ -67,30 +73,61 @@ class Phenix {
     self.pcast?.subscribe(subscribeStreamToken, Phenix.pcastSubscribeCallback(subscribeCallback:subscribeCallback))
   }
 
-  func viewStream(stream:PhenixMediaStream, renderReady:@escaping RenderReadyCallback, qualityChanged:@escaping QualityChangedCallback) {
+  func viewStream(stream:PhenixMediaStream, renderReady:@escaping RenderReadyCallback, qualityChanged:@escaping QualityChangedCallback, renderStatus:@escaping RenderStatusCallback) {
     if let r = stream.createRenderer() {
       self.renderer = r
       r.setDataQualityChangedCallback(Phenix.pcastQualityChangedCallback(qualityChanged:qualityChanged))
       r.setRenderSurfaceReadyCallback(Phenix.pcastRenderReadyCallback(renderReadyCallback:renderReady))
       let status = r.start()
-      print("renderer start status = \(status)")
+      if status != .ok {
+        print("Renderer start status = \(status)")
+        let statusString = "\(status)"
+        renderStatus(statusString)
+      } else {
+        renderStatus(nil)
+      }
     }
   }
 
+  func stopPublish() {
+    self.publisher?.stop("ended")
+  }
+
+  func stopSubscribe() {
+    self.stream?.stop()
+  }
+
+  func stopRenderVideo() {
+    self.renderer?.stop()
+  }
+
   func stop() {
+    self.publisher?.stop("ended")
     self.renderer?.stop()
     self.stream?.stop()
     self.pcast?.stop()
   }
 
+  func shutdown() {
+    self.stop()
+    self.pcast?.shutdown()
+  }
+
   // callbacks
 
   static func pcastAuthCallback(authCallback:@escaping AuthCallback) -> ((_ pcast:PhenixPCast?, _ status:PhenixRequestStatus, _ sessionId:String?) -> ()) {
-    return { pcast, status, sessionId in authCallback(sessionId) }
+    return { pcast, status, sessionId in
+      if status == PhenixRequestStatus.ok {
+        authCallback(sessionId)
+      } else {
+        authCallback(nil)
+      }
+    }
   }
 
   static func pcastMediaCallback(mediaCallback:@escaping MediaReadyCallback) -> ((_ pcast:PhenixPCast?, _ status:PhenixRequestStatus, _ stream:PhenixUserMediaStream?) -> ()) {
     return { pcast, status, stream in
+      Phenix.shared.userMediaStream = stream
       Phenix.shared.stream = stream?.mediaStream
       mediaCallback(status == .ok)
     }
@@ -98,8 +135,13 @@ class Phenix {
 
   static func pcastPublishStreamIDCallback(publishStreamIDCallback:@escaping PublishStreamIDCallback) -> ((_ pcast:PhenixPCast?, _ status:PhenixRequestStatus, _ publisher:PhenixPublisher?) -> ()) {
     return { pcast, status, publisher in
-      Phenix.shared.streamId = publisher?.streamId
-      publishStreamIDCallback(publisher?.streamId != nil)
+      if status == PhenixRequestStatus.ok {
+        Phenix.shared.publisher = publisher
+        Phenix.shared.streamId = publisher?.streamId
+        publishStreamIDCallback(publisher?.streamId != nil)
+      } else {
+        publishStreamIDCallback(false)
+      }
     }
   }
 

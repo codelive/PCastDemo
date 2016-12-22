@@ -1,6 +1,5 @@
-/**
- * Copyright 2016 PhenixP2P Inc. All Rights Reserved.
- *
+/*
+ * Copyright (c) 2016. PhenixP2P Inc. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0(the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,92 +15,86 @@
 package com.phenixp2p.demo.ui.activities;
 
 import android.Manifest;
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
 import android.os.Bundle;
-import android.os.Handler;
+import android.os.PowerManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
-import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.Toast;
 
-import com.phenixp2p.demo.HTTPtask;
 import com.phenixp2p.demo.R;
+import com.phenixp2p.demo.RxBus;
 import com.phenixp2p.demo.animation.PulsatorLayout;
-import com.phenixp2p.demo.presenters.MainPresenter;
-import com.phenixp2p.demo.presenters.inter.IMainPresenter;
-import com.phenixp2p.demo.ui.view.IMainView;
+import com.phenixp2p.demo.api.response.Authentication;
+import com.phenixp2p.demo.events.Events;
+import com.phenixp2p.demo.presenters.MainActivityPresenter;
+import com.phenixp2p.demo.presenters.inter.IMainActivityPresenter;
+import com.phenixp2p.demo.ui.fragments.BaseFragment;
+import com.phenixp2p.demo.ui.fragments.MainFragment;
+import com.phenixp2p.demo.ui.fragments.ViewDetailStreamFragment;
+import com.phenixp2p.demo.ui.view.IMainActivityView;
+import com.phenixp2p.demo.utils.Utilities;
 import com.phenixp2p.pcast.FacingMode;
-import com.phenixp2p.pcast.MediaStream;
 import com.phenixp2p.pcast.PCast;
 import com.phenixp2p.pcast.PCastInitializeOptions;
 import com.phenixp2p.pcast.Publisher;
-import com.phenixp2p.pcast.Renderer;
 import com.phenixp2p.pcast.RequestStatus;
 import com.phenixp2p.pcast.UserMediaOptions;
 import com.phenixp2p.pcast.UserMediaStream;
 import com.phenixp2p.pcast.android.AndroidPCastFactory;
-import com.phenixp2p.pcast.android.AndroidVideoRenderSurface;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
+
+import static com.phenixp2p.demo.ui.fragments.MainFragment.MY_STREAM_ID;
+import static com.phenixp2p.demo.ui.fragments.MainFragment.SESSION_ID;
+import static com.phenixp2p.demo.ui.fragments.MainFragment.STREAM_TOKEN;
+import static com.phenixp2p.demo.ui.fragments.ViewDetailStreamFragment.STREAMING;
+import static com.phenixp2p.demo.utils.Utilities.handleException;
 import static com.phenixp2p.demo.utils.Utilities.hasInternet;
 
-public class MainActivity extends AppCompatActivity implements IMainView{
-
-  private final static String serverAddress = "https://demo.phenixp2p.com/demoApp/";
-  private final static String TAG = "PCast";
-  private final int REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS = 124;
-
+public class MainActivity extends BaseActivity implements IMainActivityView {
   private PCast pcast;
+  private UserMediaStream publishMedia;
+  private PowerManager.WakeLock mWakeLock;
   private String sessionId;
-  private UserMediaStream media;
   private String streamId;
-  private SurfaceView surfaceView;
-
-  private IMainPresenter presenter;
-  private View decorView;
-  private SurfaceHolder surfaceHolder;
   private PulsatorLayout mPulsator;
-  private Button btnStart;
-  private float tranY = -1;
-  private float y = -1;
+  private Publisher publisher;
+  private boolean isStarted = false;
+  private IMainActivityPresenter presenter;
+  private Bundle bundle;
+  private final int REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS = 124;
+  private final static String TAG = "PCast";
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    decorView = getWindow().getDecorView();
-    showSystemUI();
     setContentView(R.layout.activity_main);
     mPulsator = (PulsatorLayout) findViewById(R.id.pulsator);
-    btnStart = (Button) findViewById(R.id.btnStart);
-    this.surfaceView = (SurfaceView) this.findViewById(R.id.surfaceView);
-    surfaceHolder = surfaceView.getHolder();
-    presenter = new MainPresenter(this);
+    presenter = new MainActivityPresenter(this);
+    bundle = new Bundle();
+
     this.checkPermissions();
   }
 
-
   private void checkPermissions() {
-    List<String> permissionsNeeded = new ArrayList<String>();
-    final List<String> permissionsList = new ArrayList<String>();
+    List<String> permissionsNeeded = new ArrayList<>();
+    final List<String> permissionsList = new ArrayList<>();
     if (!addPermission(permissionsList, Manifest.permission.CAMERA)) {
       permissionsNeeded.add("access the camera");
     }
@@ -116,10 +109,10 @@ public class MainActivity extends AppCompatActivity implements IMainView{
           message = message + ", " + permissionsNeeded.get(i);
         }
         showMessageOKCancel(message, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-              ActivityCompat.requestPermissions(MainActivity.this, permissionsList.toArray(new String[permissionsList.size()]), REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS);
-            }
+          @Override
+          public void onClick(DialogInterface dialog, int which) {
+            ActivityCompat.requestPermissions(MainActivity.this, permissionsList.toArray(new String[permissionsList.size()]), REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS);
+          }
         });
         return;
       }
@@ -133,11 +126,12 @@ public class MainActivity extends AppCompatActivity implements IMainView{
 
   private void showMessageOKCancel(String message, DialogInterface.OnClickListener okListener) {
     new AlertDialog.Builder(MainActivity.this)
-        .setMessage(message)
-        .setPositiveButton("OK", okListener)
-        .setNegativeButton("Cancel", null)
-        .create()
-        .show();
+    .setMessage(message)
+    .setPositiveButton("OK", okListener)
+    .setNegativeButton("Cancel", null)
+    .setCancelable(false)
+    .create()
+    .show();
   }
 
   @Override
@@ -152,14 +146,14 @@ public class MainActivity extends AppCompatActivity implements IMainView{
         for (int i = 0; i < permissions.length; i++) {
           permissionCodes.put(permissions[i], grantResults[i]);
         }
-        // Check for ACCESS_FINE_LOCATION
+        // Check for CAMERA
         if (permissionCodes.get(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
-            && permissionCodes.get(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+        && permissionCodes.get(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
           // All Permissions Granted
           this.commenceSession();
         } else {
           // Permission Denied
-          Toast.makeText(MainActivity.this, "Some permissions were denied", Toast.LENGTH_SHORT).show();
+          Toast.makeText(MainActivity.this, getResources().getString(R.string.permissions_denied), Toast.LENGTH_SHORT).show();
         }
       }
       break;
@@ -180,70 +174,59 @@ public class MainActivity extends AppCompatActivity implements IMainView{
   }
 
   @Override
-  public void onConfigurationChanged(Configuration newConfig) {
-    super.onConfigurationChanged(newConfig);
-    // Checks the orientation of the screen
-    if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-      hideSystemUI();
-      surfaceView.setOnClickListener(new View.OnClickListener() {
-        @Override
-        public void onClick(final View view) {
-          showSystemUI();
-          new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-              hideSystemUI();
-            }
-          }, 3000);
-        }
-      });
-    } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
-      showSystemUI();
-    }
-  }
-
-  @Override
   protected void onPause() {
     super.onPause();
     // Stop pcast when we exit the app.
-    presenter.stopRendering();
-    mPulsator.animate().cancel();
-    btnStart.setVisibility(View.GONE);
+    if (publisher != null) {
+      MainActivity.this.publisher.stop("exit-app");
+      if (! MainActivity.this.publisher.isClosed()) {
+        try {
+          MainActivity.this.publisher.close();
+        } catch (IOException e) {
+          handleException(this, e);
+        }
+        MainActivity.this.publisher = null;
+      }
+
+    }
+    if (MainActivity.this.publishMedia != null) {
+      //not call close(), because when reopen will error
+      MainActivity.this.publishMedia = null;
+    }
+
     if (pcast != null) {
       pcast.stop();
       pcast.shutdown();
+      if (!pcast.isClosed()) {
+        try {
+          pcast.close();
+        } catch (IOException e) {
+          handleException(this, e);
+        }
+      }
       pcast = null;
+    }
+    if (presenter != null) {
+      presenter.onDestroy();
+    }
+    if (mWakeLock != null) {
+      this.mWakeLock.release();
     }
   }
 
   @Override
   protected void onResume() {
     super.onResume();
+    PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+    mWakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
+    mWakeLock.acquire();
     if (sessionId != null) {
-      mPulsator.setAlpha(1f);
-      mPulsator.setVisibility(View.VISIBLE);
-      if (tranY != -1) {
-        mPulsator.setTranslationY(tranY);
-        tranY = -1;
-      }
-
-      if (y != -1) {
-        mPulsator.setY(y);
-        y = -1;
-
-      }
+      presenter = new MainActivityPresenter(this);
       this.login();
     }
   }
 
-  @Override
-  public void onDestroy() {
-    super.onDestroy();
-    try {
-      surfaceView.getHolder().getSurface().release();
-    } catch (Throwable ignored) {}
-    surfaceView = null;
-  }
+
 
   // 0. Commence sequence
   private void commenceSession() {
@@ -254,85 +237,68 @@ public class MainActivity extends AppCompatActivity implements IMainView{
 
   // 1. REST API: authenticate with the app-maker's own server. The app talks to a Phenix demo server, but you could also use the node.js server provided in this repo.
   private void login() {
+    // Check the connection to the internet.
+    if (hasInternet(this)) {
+      presenter.login("demo-user", "demo-password");
+    } else {
+      new AlertDialog.Builder(this).setTitle("No internet")
+      .setMessage("Please connect to the internet")
+      .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialogInterface, int i) {
+          Intent intent = new Intent(Intent.ACTION_MAIN);
+          intent.setClassName("com.android.settings", "com.android.settings.wifi.WifiSettings");
+          startActivity(intent);
+          dialogInterface.dismiss();
+        }
+      }
+      ).show();
+    }
+  }
+
+  // Get authentication token when REST APIs
+  @Override
+  public void authenticationToken(Authentication authenticationToken) {
+    start(authenticationToken.getAuthenticationToken());
+  }
+
+  //error when login
+  @Override
+  public void onError(final String error) {
     runOnUiThread(new Runnable() {
       @Override
       public void run() {
-        mPulsator.start();
+        Toast.makeText(MainActivity.this, error, Toast.LENGTH_SHORT).show();
       }
     });
-    // Check the connection to the internet.
-    if (hasInternet(this)) {
-      try {
-        JSONObject params = new JSONObject();
-        params.put("name", "demo-user");
-        params.put("password", "demo-password");
-        new HTTPtask(params, new HTTPtask.Caller() {
-          public void callback(JSONObject result) {
-            try {
-              String authenticationToken = result.getString("authenticationToken");
-              MainActivity.this.start(authenticationToken);
-            } catch (Exception e) {
-              e.printStackTrace();
-            }
-          }
-        }).execute(serverAddress + "login");
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-    } else {
-      new AlertDialog.Builder(this).setTitle("No internet")
-              .setMessage("Please connect to the internet")
-              .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                  Intent intent = new Intent(Intent.ACTION_MAIN);
-                  intent.setClassName("com.android.settings", "com.android.settings.wifi.WifiSettings");
-                  startActivity(intent);
-                  dialogInterface.dismiss();
-                }
-              }).show();
-    }
+    login();
   }
 
-  private interface Streamer {
-    void hereIsYourStreamToken(String streamToken);
+  @Override
+  public void showProgress() {
+    if (mPulsator.getVisibility() == View.GONE) {
+      mPulsator.setVisibility(View.VISIBLE);
+    }
+    mPulsator.start();
   }
 
-  // Gets a stream token from the REST API.
-  // Called for both publish and subscribe.
-  private void stream(String sessionId, String originStreamId, final Streamer streamer) {
-    try {
-      JSONObject params = new JSONObject();
-      params.put("sessionId", sessionId);
-      // Uncomment "streaming" to enable HLS/Dash live streaming instead of real-time:
-      params.put("capabilities", new JSONArray(new String[]{/*"streaming"*/}));
-      if (originStreamId != null) {
-        params.put("originStreamId", originStreamId);
-      }
-      new HTTPtask(params, new HTTPtask.Caller() {
-        public void callback(JSONObject result) {
-          try {
-            String streamToken = result.getString("streamToken");
-            streamer.hereIsYourStreamToken(streamToken);
-          } catch (Exception e) {
-            e.printStackTrace();
-          }
-        }
-      }).execute(serverAddress + "stream");
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
+  @Override
+  public void hideProgress() {
+    goneAnimation();
   }
 
   // 2. PCast SDK API: start.
-  private void start(String authenticationToken) {
-    this.pcast = AndroidPCastFactory.createPCastAdmin(this);
-    this.pcast.initialize(new PCastInitializeOptions(false, true));
-    this.pcast.start(authenticationToken, new PCast.AuthenticationCallback() {
-      public void onEvent(PCast var1, RequestStatus status, String sessionId) {
+  private void start(final String authenticationToken) {
+    MainActivity.this.pcast = AndroidPCastFactory.createPCast(MainActivity.this);
+    MainActivity.this.pcast.initialize(new PCastInitializeOptions(false, true));
+
+    MainActivity.this.pcast.start(authenticationToken, new PCast.AuthenticationCallback() {
+      public void onEvent(PCast var1, RequestStatus status, final String sessionId) {
         if (status == RequestStatus.OK) {
           MainActivity.this.sessionId = sessionId;
-          MainActivity.this.getUserMedia();
+          getUserMedia();
+        } else {
+          onTryAfterError(getResources().getString(R.string.render_error, status.name()));
         }
       }
     },
@@ -348,95 +314,87 @@ public class MainActivity extends AppCompatActivity implements IMainView{
     });
   }
 
-  // 3. Get user media from SDK.
+  // 3. Get user publishMedia from SDK.
   private void getUserMedia() {
     UserMediaOptions gumOptions = new UserMediaOptions();
-    gumOptions.getVideoOptions().setFacingMode(FacingMode.ENVIRONMENT);
     gumOptions.getAudioOptions().setEnabled(true);
+    gumOptions.getVideoOptions().setFacingMode(FacingMode.USER);
 
-    this.pcast.getUserMedia(gumOptions, new PCast.UserMediaCallback() {
-      public void onEvent(PCast p, RequestStatus status, UserMediaStream media) {
-        MainActivity.this.media = media;
-        MainActivity.this.getPublishToken();
+    try {
+      if (pcast != null) {
+        MainActivity.this.pcast.getUserMedia(gumOptions, new PCast.UserMediaCallback() {
+          public void onEvent(PCast p, RequestStatus status, UserMediaStream media) {
+            if (status == RequestStatus.OK) {
+              if (media != null) {
+                MainActivity.this.publishMedia = media;
+                getPublishToken();
+              } else {
+                onTryAfterError(getResources().getString(R.string.media_null));
+              }
+            } else {
+              onTryAfterError(getResources().getString(R.string.render_error, status.name()));
+            }
+          }
+        });
+      }
+
+    } catch (Exception e) {
+      handleException(this, e);
+    }
+  }
+
+  private void onTryAfterError(final String title) {
+    runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+        Utilities.showDialog(title, "Please try again", new Utilities.ActionDialog() {
+          @Override
+          public Activity getActivity() {
+            return MainActivity.this;
+          }
+
+          @Override
+          public void buttonYes() {
+            login();
+          }
+        });
       }
     });
+
   }
 
   // 4. Get publish token from REST admin API.
   private void getPublishToken() {
-    this.stream(this.sessionId, null, new Streamer() {
+    presenter.createStreamToken(sessionId, null, STREAMING, new MainActivityPresenter.Streamer() {
+
+      @Override
       public void hereIsYourStreamToken(String streamToken) {
-        MainActivity.this.publishStream(streamToken);
+        publishStream(streamToken);
       }
     });
   }
 
-  // 5. Publish stream with SDK.
+  // 5. Publish streamToken with SDK.
   private void publishStream(String publishStreamToken) {
-    this.pcast.publish(publishStreamToken, this.media.getMediaStream(), new PCast.PublishCallback() {
-      public void onEvent(PCast p, RequestStatus status, Publisher publisher) {
+    MainActivity.this.pcast.publish(publishStreamToken, publishMedia.getMediaStream(), new PCast.PublishCallback() {
+      public void onEvent(PCast p, final RequestStatus status, Publisher publisher) {
         if (status == RequestStatus.OK) {
+          if (publisher.hasEnded() && !publisher.isClosed()) {
+            publisher.stop("close");
+            try {
+              publisher.close();
+            } catch (IOException e) {
+              handleException(MainActivity.this, e);
+            }
+          }
+          MainActivity.this.publisher = publisher;
           MainActivity.this.streamId = publisher.getStreamId();
-          MainActivity.this.getSubscribeToken();
-        }
-      }
-    });
-  }
-
-  // 6. Get stream token from REST admin API.
-  private void getSubscribeToken() {
-    this.stream(this.sessionId, this.streamId, new Streamer() {
-      public void hereIsYourStreamToken(final String streamToken) {
-        runOnUiThread(new Runnable() {
-          @Override
-          public void run() {
-            tranY = mPulsator.getTranslationY();
-            y = mPulsator.getY();
-            mPulsator.animate()
-                .translationY(mPulsator.getHeight())
-                .alpha(0.0f)
-                .setDuration(600)
-                .setListener(new AnimatorListenerAdapter() {
-                  @Override
-                  public void onAnimationEnd(Animator animation) {
-                    super.onAnimationEnd(animation);
-                    mPulsator.setVisibility(View.GONE);
-                  }
-                });
-
-            btnStart.animate()
-                .alpha(1f)
-                .setDuration(700)
-                .setListener(new AnimatorListenerAdapter() {
-                  @Override
-                  public void onAnimationEnd(Animator animation) {
-                    super.onAnimationEnd(animation);
-                    btnStart.setVisibility(View.VISIBLE);
-                  }
-                });
-          }
-        });
-        btnStart.setOnClickListener(new View.OnClickListener() {
-          @Override
-          public void onClick(View view) {
-            MainActivity.this.subscribeStream(streamToken);
-          }
-        });
-
-      }
-    });
-  }
-
-  // 7. Subscribe to stream with SDK.
-  private void subscribeStream(String subscribeStreamToken) {
-    this.pcast.subscribe(subscribeStreamToken, new PCast.SubscribeCallback() {
-      public void onEvent(PCast p, RequestStatus status, final MediaStream media) {
-        if (status == RequestStatus.OK) {
-          // Prepare the player with the streaming source.
+          getSubscribeToken();
+        } else {
           runOnUiThread(new Runnable() {
             @Override
             public void run() {
-              presenter.startRendering(media.createRenderer());
+              onTryAfterError(getResources().getString(R.string.render_error, status.name()));
             }
           });
         }
@@ -444,34 +402,119 @@ public class MainActivity extends AppCompatActivity implements IMainView{
     });
   }
 
-  // 8. View stream.
+  // 6. Get streamToken token from REST admin API.
+  private void getSubscribeToken() {
+    presenter.createStreamToken(sessionId, streamId, null, new MainActivityPresenter.Streamer() {
+      @Override
+      public void hereIsYourStreamToken(final String streamToken) {
+        if (!isStarted) {
+          isStarted = true;
+          bundle.putString(SESSION_ID, sessionId);
+          bundle.putString(STREAM_TOKEN, streamToken);
+          bundle.putString(MY_STREAM_ID, streamId);
+          BaseFragment.openFragment(MainActivity.this, getSupportFragmentManager(), MainFragment.class, BaseFragment.AnimStyle.FROM_RIGHT, bundle, R.id.content_content, null);
+        } else {
+          Fragment fragmentViewDetail = getSupportFragmentManager().findFragmentByTag(ViewDetailStreamFragment.class.getName());
+          if (fragmentViewDetail != null && fragmentViewDetail.isVisible()) {
+            ((ViewDetailStreamFragment) fragmentViewDetail).callReload(sessionId, streamId);
+          }
+          Fragment fragmentMain = getSupportFragmentManager().findFragmentByTag(MainFragment.class.getName());
+          if (fragmentMain != null && fragmentMain.isVisible()) {
+            ((MainFragment) fragmentMain).callReload(sessionId, MainActivity.this.streamId);
+
+          } else {
+            if (fragmentMain != null) {
+              ((MainFragment) fragmentMain).updateNewInfo(sessionId, MainActivity.this.streamId);
+            }
+
+          }
+        }
+      }
+    });
+  }
+
+  //Subscribe events
   @Override
-  public void viewStream(Renderer renderer) {
-    btnStart.setVisibility(View.GONE);
-    renderer.start(new AndroidVideoRenderSurface(surfaceHolder));
+  protected Subscription subscribeEvents() {
+    autoUnsubBus();
+    return RxBus.getInstance().toObservable()
+    .observeOn(AndroidSchedulers.mainThread())
+    .doOnNext(new Action1<Object>() {
+      @Override
+      public void call(Object eventObject) {
+        if (eventObject instanceof Events.ChangeCamera) {
+          if (((Events.ChangeCamera) eventObject).isChange) {
+            UserMediaOptions gumOptions = new UserMediaOptions();
+            gumOptions.getVideoOptions().setFacingMode(FacingMode.USER);
+            gumOptions.getAudioOptions().setEnabled(true);
+            if (MainActivity.this.publishMedia != null) {
+              MainActivity.this.publishMedia.applyOptions(gumOptions);
+            }
+            RxBus.getInstance().post(new Events.GetFacingMode(gumOptions.getVideoOptions().getFacingMode()));
+          } else {
+            UserMediaOptions gumOptions = new UserMediaOptions();
+            gumOptions.getVideoOptions().setFacingMode(FacingMode.ENVIRONMENT);
+            gumOptions.getAudioOptions().setEnabled(true);
+            if (MainActivity.this.publishMedia != null) {
+              MainActivity.this.publishMedia.applyOptions(gumOptions);
+            }
+            RxBus.getInstance().post(new Events.GetFacingMode(gumOptions.getVideoOptions().getFacingMode()));
+          }
+        }
+        // stop streamToken with click preview
+        if (eventObject instanceof Events.OnStopStream) {
+          Fragment fragmentMain = getSupportFragmentManager().findFragmentByTag(MainFragment.class.getName());
+          if (fragmentMain != null && fragmentMain.isVisible()) {
+            ((MainFragment) fragmentMain).onStopPreview();
+          }
+          if (MainActivity.this.publishMedia != null && ! MainActivity.this.publishMedia.isClosed()) {
+            try {
+              MainActivity.this.publishMedia.close();
+            } catch (IOException e) {
+              handleException(MainActivity.this, e);
+            }
+            MainActivity.this.publishMedia = null;
+          }
+
+          if (MainActivity.this.publisher != null) {
+            MainActivity.this.publisher.stop("ended");
+            if (! MainActivity.this.publisher.isClosed()) {
+              try {
+                MainActivity.this.publisher.close();
+              } catch (IOException e) {
+                handleException(MainActivity.this, e);
+              }
+            }
+            MainActivity.this.publisher = null;
+          }
+          presenter.onDestroy();
+        }
+        //restart streamToken with click preview is stop
+        if (eventObject instanceof Events.OnRestartStream) {
+          showProgress();
+          getUserMedia();
+        }
+      }
+    }).subscribe(RxBus.defaultSubscriber());
   }
 
-  // This snippet hides the system bars.
-  private void hideSystemUI() {
-    getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-            WindowManager.LayoutParams.FLAG_FULLSCREEN);
-    decorView.setSystemUiVisibility(
-        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
-        | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-        | View.SYSTEM_UI_FLAG_IMMERSIVE);
+  private void goneAnimation() {
+    runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+        // animation view not support close
+        mPulsator.stop();
+        mPulsator.clearAnimation();
+        mPulsator.setVisibility(View.GONE);
+      }
+    });
   }
 
-  // This snippet shows the system bars. It does this by removing all the flags
-  // except for the ones that make the content appear under the system bars.
-  private void showSystemUI() {
-    getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-    decorView.setSystemUiVisibility(
-        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-        | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+  public PCast getPCast() {
+    return pcast;
+  }
+
+  public UserMediaStream getPublishMedia() {
+    return publishMedia;
   }
 }

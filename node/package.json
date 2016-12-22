@@ -7,9 +7,10 @@
     "express": "^4.14.0",
     "request": "^2.74.0",
     "body-parser": "^1.15.2",
-    "minimist": "^1.2.0",
+    "yargs": "^6.4.0",
     "backoff": "^2.5.0",
-    "log-timestamp": "^0.1.2"
+    "log-timestamp": "^0.1.2",
+    "public-ip": "^2.0.1"
   },
   "repository": {
     "type": "git",

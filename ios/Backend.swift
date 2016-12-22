@@ -25,22 +25,18 @@ let findTheServerAt = TheServerIs.RemoteHost
 
 class Backend {
   // todo: add socket for notifications
-
   static let shared = Backend()
-
   var rest = Rest(basePath: findTheServerAt.rawValue)
-
+  var authToken: String?
   private enum Path: String {
     case Login = "login"
     case Stream = "stream"
+    case Streams = "streams"
   }
 
-  var authToken: String?
-
   func login(name:String, password:String, done:@escaping (Bool)->()) throws {
-
     try self.rest.request(method:.POST, path: Path.Login.rawValue, params:["name":name, "password":password], completion: { _, result in
-      if let dict = result as? Rest.Params, let token = dict["authenticationToken"] {
+      if let dict = result as? Rest.Params, let token = dict["authenticationToken"] as? String{
         self.authToken = token
         done(true)
       } else {
@@ -49,19 +45,38 @@ class Backend {
     })
   }
 
-  func streamToken(sessionId:String, originStreamId:String?, done:@escaping (String?)->()) throws {
-    var params = ["sessionId":sessionId]
-    // Enable the following line to enable HLS/Dash live streaming instead of real-time
-    // params["capabilities[0]"] = "streaming"
+  func createStreamToken(sessionId:String, originStreamId:String?, capabilities:String?, done:@escaping (String?)->()) throws {
+    var params = [String: Any]()
+    params["sessionId"] = sessionId
     if let o = originStreamId {
       params["originStreamId"] = o
     }
+    if let c = capabilities {
+      let cap = [c]
+      params["capabilities"] = cap
+    }
     try self.rest.request(method:.POST, path: Path.Stream.rawValue, params:params, completion: { _, result in
-      if let dict = result as? Rest.Params, let token = dict["streamToken"] {
+      if let dict = result as? Rest.Params, let token = dict["streamToken"] as? String{
         done(token)
       } else {
         done(nil)
       }
+    })
+  }
+
+  func listStreams(done:@escaping (Array<String>)->()) throws {
+    try self.rest.request(method:.PUT, path: Path.Streams.rawValue, params:nil, completion: { _, result in
+      var streamsResult = Array<String>()
+      if let dict = result as? Rest.Params{
+        if let streamIdArray = dict["streams"] as? NSArray {
+          for streamIdDict in streamIdArray{
+            if let dict = streamIdDict as? Rest.Params, let streamId = dict["streamId"] as? String{
+              streamsResult.append(streamId)
+            }
+          }
+        }
+      }
+      done(streamsResult)
     })
   }
 }

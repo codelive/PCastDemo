@@ -14,27 +14,31 @@
  * limitations under the License.
  */
 
-var argv = require('minimist')(process.argv.slice(2));
-var appId = argv.a, secret = argv.s;
+const listenPort = 8081
 
-if (appId === undefined || secret === undefined) {
-    console.log("usage: npm start -- -application-id=<your-application-id> -secret=<your-secret>");
-    process.exit(1);
-}
+var argv = require('yargs')
+    .usage('Usage: npm start -- --application-id=<your-application-id> --secret=<your-secret>')
+    .demand(['application-id', 'secret'])
+    .argv;
+
+var appId = argv.applicationId, secret = argv.secret;
+console.log('You entered: application-id=' + appId + ' ,secret=' + secret);
 
 var request = require('request');
 var express = require('express');
 var bodyParser = require('body-parser');
 var backoff = require('backoff');
+var publicIp = require('public-ip');
 require('log-timestamp');
 
 var app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-var validCredentials = {'demo-user':'demo-password'};
+var adminURI = 'http://pcast.phenixp2p.com/pcast/';
+var validCredentials = {'demo-user': 'demo-password'};
 
-// to test from the command line: curl --data "name=demo-username&password=demo-password" 127.0.0.1:3000/login
+// to test from the command line: curl --data "name=demo-username&password=demo-password" 127.0.0.1:8081/login
 app.post('/login', function (req, res) {
     console.log('POST login');
     var name = req.body.name;
@@ -63,16 +67,14 @@ function requestWithBackoff(requester, req, res) {
 }
 
 function adminAuth(req, res) {
-    request.post(
-        'https://pcast.phenixp2p.com/pcast/auth',
-        {
-            form: {
-                applicationId: appId,
-                'secret': secret
-            }
-        },
-        makeHandler(res)
-    );
+    request({
+        url: adminURI + 'auth',
+        method: 'POST',
+        json: {
+            'applicationId': appId,
+            'secret': secret
+        }
+    }, makeHandler(res));
 }
 
 function makeHandler(res) {
@@ -100,21 +102,66 @@ app.post('/stream', function (req, res) {
 });
 
 function adminStream(req, res) {
-    request.post(
-        'https://pcast.phenixp2p.com/pcast/stream',
-        {
-            form: {
-                applicationId: appId,
-                'secret':secret,
-                sessionId: req.body.sessionId,
-                originStreamId: req.body.originStreamId,
-                capabilities:req.body.capabilities
-            }
+    request({
+        url: adminURI + 'stream',
+        method: 'POST',
+        json: {
+            'applicationId': appId,
+            'secret': secret,
+            'sessionId': req.body.sessionId,
+            'originStreamId': req.body.originStreamId,
+            'capabilities': req.body.capabilities
         },
-        makeHandler(res)
-    );
+    }, makeHandler(res));
 }
 
-app.listen(3000, function () {
-    console.log('Example app listening on port 3000!');
+app.get('/streams', function (req, res) {
+    res.send(JSON.stringify(Array.from(activeStreams)));
 });
+
+function listenForStreams(port) {
+    publicIp.v4().then(ip => {
+        console.log('My public IP is ' + ip +':'+ port);
+        request({
+            url: adminURI + 'app/callback',
+            method: 'PUT',
+            json: {
+                'applicationId': appId,
+                'secret': secret,
+                'callback': {'host': ip, 'port': port, 'path': '/notification'}
+            }
+        }, function (err, response, body) {
+            if (err) {
+               return console.error('Setup notification failed:', err);
+            } else if (response.statusCode != 200) {
+                return console.error('Setup notification failed:', response.statusCode, body);
+            } else {
+                console.log('Setup notification succeeded, server responded with:', body);
+            }
+        });
+    });
+}
+
+var activeStreams = new Set();
+app.post('/notification', function(req, res) {
+    console.log('POST notification ' + req.body.entity +','+ req.body.what +','+ req.body.data.streamId);
+    if (req.body.entity === 'stream') {
+        var streamId = req.body.data.streamId;
+        if (req.body.what === 'started') {
+            activeStreams.add(streamId);
+        } else if (req.body.what === 'ended') {
+            activeStreams.delete(streamId);
+        }
+        console.log('active streams (' + activeStreams.size +'): '+ JSON.stringify(Array.from(activeStreams)))
+    }
+    res.sendStatus(200);
+});
+
+function listenForClients(port) {
+    app.listen(port, function () {
+       console.log('Listening for clients on port ' + port);
+    });
+}
+
+listenForStreams(listenPort);
+listenForClients(listenPort);
