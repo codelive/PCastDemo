@@ -18,17 +18,19 @@ import Foundation
 import UIKit
 import Crashlytics
 
-class Phenix {
+final class Phenix {
 
   static let shared = Phenix()
 
   var publisher:PhenixPublisher?
   var pcast:PhenixPCast?
   var renderer:PhenixRenderer?
-  var stream:PhenixMediaStream?
+  var subscribeStream:PhenixMediaStream?
   var userMediaStream:PhenixUserMediaStream?
   var streamId:String?
   var authSession:String?
+  var addressServer:String?
+  var addressPCast = ""
 
   typealias SuccessCallback = (Bool) -> ()
   typealias MediaReadyCallback = SuccessCallback
@@ -40,6 +42,7 @@ class Phenix {
   typealias QualityChangedCallback = ()->()
 
   init() {
+     self.addressServer = "https://demo.phenixp2p.com/demoApp/"
     if let p = PhenixPCastFactory.createPCast() {
       self.pcast = p
       p.initialize()
@@ -54,11 +57,17 @@ class Phenix {
               offlineCallback)
   }
 
-  func getLocalUserMedia(mediaReady:@escaping MediaReadyCallback) {
-    var gumOptions = PhenixUserMediaOptions()
-    PhenixPCastFactory.initializeDefaultUserMediaOptions(&gumOptions)
-    gumOptions.video.facingMode = .user
-    self.pcast?.getUserMedia(&gumOptions, Phenix.pcastMediaCallback(mediaCallback:mediaReady))
+  func getLocalUserMedia(mediaOption: PublishOption, mediaReady:@escaping MediaReadyCallback) {
+    let gumOptions = PhenixUserMediaOptions()
+    switch mediaOption {
+    case .audioOnly: gumOptions.video.enabled = false
+    case .videoOnly: gumOptions.audio.enabled = false
+    case .all: break
+    case .shareScreen: break
+    }
+    gumOptions.video.facingMode = .environment
+    gumOptions.video.flashMode = .automatic
+    self.pcast?.getUserMedia(gumOptions, Phenix.pcastMediaCallback(mediaCallback:mediaReady))
   }
 
   // Publishes the stream, and gets the streamID
@@ -94,7 +103,7 @@ class Phenix {
   }
 
   func stopSubscribe() {
-    self.stream?.stop()
+    self.subscribeStream?.stop()
   }
 
   func stopRenderVideo() {
@@ -104,7 +113,7 @@ class Phenix {
   func stop() {
     self.publisher?.stop("ended")
     self.renderer?.stop()
-    self.stream?.stop()
+    self.subscribeStream?.stop()
     self.pcast?.stop()
   }
 
@@ -128,7 +137,6 @@ class Phenix {
   static func pcastMediaCallback(mediaCallback:@escaping MediaReadyCallback) -> ((_ pcast:PhenixPCast?, _ status:PhenixRequestStatus, _ stream:PhenixUserMediaStream?) -> ()) {
     return { pcast, status, stream in
       Phenix.shared.userMediaStream = stream
-      Phenix.shared.stream = stream?.mediaStream
       mediaCallback(status == .ok)
     }
   }
@@ -139,6 +147,13 @@ class Phenix {
         Phenix.shared.publisher = publisher
         Phenix.shared.streamId = publisher?.streamId
         publishStreamIDCallback(publisher?.streamId != nil)
+        Phenix.shared.publisher?.setPublisherEndedCallback({ (publisher, endedReason, endedReasonDescription) in
+          var reasonDescription = "none"
+          if let reason = endedReasonDescription {
+            reasonDescription = reason
+          }
+          print("Publish stream ended with reason " + reasonDescription)
+        })
       } else {
         publishStreamIDCallback(false)
       }
@@ -148,7 +163,7 @@ class Phenix {
   static func pcastSubscribeCallback(subscribeCallback:@escaping SubscribeCallback) -> ((_ pcast:PhenixPCast?, _ status:PhenixRequestStatus, _ stream:PhenixMediaStream?) -> ()) {
     return { pcast, status, stream in
       if status == PhenixRequestStatus.ok {
-        Phenix.shared.stream = stream
+        Phenix.shared.subscribeStream = stream
         subscribeCallback(true)
       } else {
         subscribeCallback(false)

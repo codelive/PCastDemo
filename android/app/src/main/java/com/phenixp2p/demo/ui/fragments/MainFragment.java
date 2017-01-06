@@ -15,6 +15,7 @@
 
 package com.phenixp2p.demo.ui.fragments;
 
+import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -23,9 +24,11 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -33,20 +36,31 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import com.crashlytics.android.Crashlytics;
 import com.phenixp2p.demo.BuildConfig;
+import com.phenixp2p.demo.CaptureHelper;
+import com.phenixp2p.demo.Constants;
+import com.phenixp2p.demo.PhenixApplication;
 import com.phenixp2p.demo.R;
 import com.phenixp2p.demo.RxBus;
 import com.phenixp2p.demo.events.Events;
-import com.phenixp2p.demo.model.StreamList;
+import com.phenixp2p.demo.model.ListStreamResponse;
 import com.phenixp2p.demo.presenters.MainPresenter;
 import com.phenixp2p.demo.presenters.inter.IMainPresenter;
+import com.phenixp2p.demo.ui.ArcImage;
+import com.phenixp2p.demo.ui.QualityStatusView;
+import com.phenixp2p.demo.ui.activities.MainActivity;
 import com.phenixp2p.demo.ui.adapter.StreamIdAdapter;
 import com.phenixp2p.demo.ui.view.IMainView;
+import com.phenixp2p.demo.utils.TokenUtils;
+import com.phenixp2p.pcast.DataQualityReason;
+import com.phenixp2p.pcast.DataQualityStatus;
 import com.phenixp2p.pcast.FacingMode;
 import com.phenixp2p.pcast.Renderer;
 import com.phenixp2p.pcast.RendererStartStatus;
@@ -58,48 +72,68 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import io.fabric.sdk.android.Fabric;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 
-import static com.phenixp2p.demo.ui.fragments.ViewDetailStreamFragment.STREAM_ID;
-import static com.phenixp2p.demo.utils.Utilities.animateView;
+import static com.phenixp2p.demo.Constants.ANIMATION_DURATION;
+import static com.phenixp2p.demo.Constants.ANIMATOR_VALUE_RANGE;
+import static com.phenixp2p.demo.Constants.ENDPOINT;
+import static com.phenixp2p.demo.Constants.RENDER_DELAY;
+import static com.phenixp2p.demo.Constants.SESSION_ID;
+import static com.phenixp2p.demo.Constants.STREAM_ID;
+import static com.phenixp2p.demo.Constants.VISIBILITY_DELAY;
+import static com.phenixp2p.demo.utils.LayoutUtils.animateView;
+import static com.phenixp2p.demo.utils.LayoutUtils.dpToPx;
 import static com.phenixp2p.demo.utils.Utilities.handleException;
-import static com.phenixp2p.demo.utils.Utilities.setPreviewDimensions;
+import static com.phenixp2p.demo.utils.LayoutUtils.setLayout;
+import static com.phenixp2p.demo.utils.LayoutUtils.setLayoutTablet;
+import static com.phenixp2p.demo.utils.LayoutUtils.setPreviewDimensions;
+import static com.phenixp2p.demo.utils.LayoutUtils.setPreviewDimensionsTablet;
+import static com.phenixp2p.pcast.DataQualityReason.NETWORK_LIMITED;
+import static com.phenixp2p.pcast.DataQualityReason.NONE;
+import static com.phenixp2p.pcast.DataQualityReason.UPLOAD_LIMITED;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class MainFragment extends BaseFragment implements View.OnClickListener, IMainView, StreamIdAdapter.OnItemClickListener, CompoundButton.OnCheckedChangeListener, SwipeRefreshLayout.OnRefreshListener {
+public final class MainFragment extends BaseFragment implements View.OnClickListener,
+  IMainView, StreamIdAdapter.OnItemClickListener, CompoundButton.OnCheckedChangeListener,
+  SwipeRefreshLayout.OnRefreshListener, ValueAnimator.AnimatorUpdateListener {
 
-  public static final String STREAM_TOKEN = "stream_token";
-  public static final String SESSION_ID = "session_id";
-  public static final String MY_STREAM_ID = "my_stream_id";
-  public static final String MY_ID = "My_ID";
-  public static final String IS_CHANGE_CAMEARA = "IS_CHANGE_CAMEARA";
+  private static final String TAG = MainFragment.class.getSimpleName();
   private SurfaceView surfaceView;
   private View viewDelay;
   private RecyclerView recyclerView;
-  private ImageView buttonPlayToggle, record;
-  private RelativeLayout viewVideo;
+  private ImageView buttonStop, buttonAudio, buttonVideo, buttonShareScreen, imageAudio, imageVideo;
+  private ViewGroup viewList, viewAnimation, buttonVideoAudio;
+  private CardView viewVideo;
   private ToggleButton viewFull;
-  private StreamIdAdapter mAdapter;
-  private List<StreamList.Stream> streamIDList = new ArrayList<>();
+  private StreamIdAdapter adapter;
+  private List<String> streamIDList = new ArrayList<>();
   private IMainPresenter presenter;
-  private Renderer mRenderPreView;
+  private Renderer renderPreView;
   private SurfaceHolder surfaceHolder;
-  private ToggleButton togCamera;
+  private ToggleButton toggleCamera;
   private SwipeRefreshLayout refreshLayout;
-  private TextView tvNull;
+  private ArcImage arcImage;
+  private ValueAnimator animator;
+  private TextView tvVersion;
+  private QualityStatusView qualityPublisher;
 
-  private String mSessionId;
-  private String myStreamId;
-  private boolean first = false;
+  private String currentSessionId;
+  private String currentStreamId;
+  private boolean first = true;
   private boolean isThisPhone = true;
   private boolean isCameraFront = false;
   private boolean isCheckResume = false;
   private boolean isFullScreen = false;
-
+  private boolean isStopPreview = false;
+  private boolean isAudio = false;
+  private boolean isShare = false;
+  private boolean isLandscape = false;
+  private Handler handler;
 
   @Override
   public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -110,10 +144,10 @@ public class MainFragment extends BaseFragment implements View.OnClickListener, 
   private void onStarts() {
     Bundle bundle = getArguments();
     if (bundle != null) {
-      mSessionId = bundle.getString(SESSION_ID);
-      myStreamId = bundle.getString(MY_STREAM_ID);
+      this.currentSessionId = bundle.getString(SESSION_ID);
+      this.currentStreamId = bundle.getString(STREAM_ID);
     }
-    presenter = new MainPresenter(this);
+    this.presenter = new MainPresenter(this);
   }
 
   @Override
@@ -123,367 +157,672 @@ public class MainFragment extends BaseFragment implements View.OnClickListener, 
 
   @Override
   protected void bindEventHandlers(View view) {
-    surfaceView = (SurfaceView) view.findViewById(R.id.surfaceView);
-    recyclerView = (RecyclerView) view.findViewById(R.id.recry);
-    buttonPlayToggle = (ImageView) view.findViewById(R.id.play);
-    record = (ImageView) view.findViewById(R.id.record);
-    viewDelay = view.findViewById(R.id.view_delay);
-    viewFull = (ToggleButton) view.findViewById(R.id.imvFull);
-    togCamera = (ToggleButton) view.findViewById(R.id.togCamera_);
-    viewVideo = (RelativeLayout) view.findViewById(R.id.draggable_view);
-    TextView tvVersion = (TextView) view.findViewById(R.id.tvVersion);
-    tvNull = (TextView) view.findViewById(R.id.tvNull);
-    refreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipRefresh);
-    refreshLayout.setOnRefreshListener(this);
-    viewFull.setOnCheckedChangeListener(this);
-    togCamera.setOnClickListener(this);
-    buttonPlayToggle.setOnClickListener(this);
-    record.setOnClickListener(this);
-    mAdapter = new StreamIdAdapter(this);
-    RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity().getApplicationContext());
-    recyclerView.setLayoutManager(mLayoutManager);
-    recyclerView.setItemAnimator(new DefaultItemAnimator());
-    surfaceHolder = surfaceView.getHolder();
-
-    if (isCheckResume) {
-      if (buttonPlayToggle.getVisibility() == View.GONE) {
-        buttonPlayToggle.setVisibility(View.VISIBLE);
-      }
-    }
+    this.surfaceView = (SurfaceView) view.findViewById(R.id.surfaceView);
+    this.recyclerView = (RecyclerView) view.findViewById(R.id.recry);
+    this.buttonVideoAudio = (LinearLayout) view.findViewById(R.id.play);
+    this.buttonStop = (ImageView) view.findViewById(R.id.record);
+    this.buttonAudio = (ImageView) view.findViewById(R.id.audio);
+    this.buttonVideo = (ImageView) view.findViewById(R.id.video);
+    this.buttonShareScreen = (ImageView) view.findViewById(R.id.share);
+    this.imageAudio = (ImageView) view.findViewById(R.id.imageAudio);
+    this.imageVideo = (ImageView) view.findViewById(R.id.imageVideo);
+    this.viewDelay = view.findViewById(R.id.viewDelay);
+    this.viewFull = (ToggleButton) view.findViewById(R.id.imageFull);
+    this.toggleCamera = (ToggleButton) view.findViewById(R.id.toggleCamera);
+    this.viewVideo = (CardView) view.findViewById(R.id.draggableView);
+    this.tvVersion = (TextView) view.findViewById(R.id.tvVersion);
+    this.refreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipRefresh);
+    this.viewList = (RelativeLayout) view.findViewById(R.id.viewList);
+    this.arcImage = (ArcImage) view.findViewById(R.id.arcImage);
+    this.viewAnimation = (RelativeLayout) view.findViewById(R.id.view);
+    this.qualityPublisher = (QualityStatusView) view.findViewById(R.id.qualityPublisher);
+    this.animator = ValueAnimator.ofInt(0, ANIMATOR_VALUE_RANGE);
+    this.animator.setDuration(ANIMATION_DURATION);
+    this.animator.setRepeatCount(ValueAnimator.INFINITE);
+    this.animator.addUpdateListener(this);
+    this.animator.start();
+    this.refreshLayout.setOnRefreshListener(this);
+    this.viewFull.setOnCheckedChangeListener(this);
+    this.toggleCamera.setOnClickListener(this);
+    this.buttonVideoAudio.setOnClickListener(this);
+    this.buttonStop.setOnClickListener(this);
+    this.buttonShareScreen.setOnClickListener(this);
+    this.buttonVideo.setOnClickListener(this);
+    this.buttonAudio.setOnClickListener(this);
+    this.adapter = new StreamIdAdapter(this);
+    RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity().getApplicationContext());
+    this.recyclerView.setLayoutManager(layoutManager);
+    this.recyclerView.setItemAnimator(new DefaultItemAnimator());
+    this.surfaceHolder = this.surfaceView.getHolder();
     String version = BuildConfig.VERSION_NAME.concat(" (" + String.valueOf(BuildConfig.VERSION_CODE) + ")");
-    tvVersion.setText(getResources().getString(R.string.version, version));
-    animateView(record);
-    new Handler().postDelayed(new Runnable() {
+    this.tvVersion.setText(getResources().getString(R.string.version, version));
+    animateView(this.buttonStop);
+    this.handler = new Handler();
+    this.handler.postDelayed(new Runnable() {
       @Override
       public void run() {
-        presenter.startRendering();
+        MainFragment.this.presenter.startRendering();
       }
-    }, 500);
+    }, RENDER_DELAY);
+    if (getMainActivity().getDataQualityReason() != null && getMainActivity().getDataQualityReason() != null) {
+      setViewQuality(getMainActivity().getDataQualityStatus(), getMainActivity().getDataQualityReason());
+    }
   }
 
   @Override
-  protected void reloadWhenOpened() {
+  protected void reloadWhenOpened() {}
 
-  }
-
-  public void callReload(String sessionId, String myStreamId) {
-    if (first) {
-      surfaceHolder = surfaceView.getHolder();
-      viewDelay.setVisibility(View.GONE);
-      recyclerView.setVisibility(View.VISIBLE);
-      presenter.startRendering();
-      mSessionId = sessionId;
-      this.myStreamId = myStreamId;
-      isThisPhone = true;
+  public void callReload(String currentSessionId, String currentStreamId) {
+    this.first = false;
+    this.isStopPreview = false;
+    if (this.surfaceHolder == null) {
+      this.surfaceHolder = this.surfaceView.getHolder();
     }
+    this.viewDelay.setVisibility(View.GONE);
+    this.currentSessionId = currentSessionId;
+    this.currentStreamId = currentStreamId;
+    this.presenter.startRendering();
+    this.isThisPhone = true;
   }
 
-  private void onFullScreen() {
+  private synchronized void onFullScreen() {
+    this.arcImage.setVisibility(View.GONE);
     getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
       WindowManager.LayoutParams.FLAG_FULLSCREEN);
     RelativeLayout.LayoutParams rel_view = new RelativeLayout.LayoutParams(
       ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-    viewVideo.setLayoutParams(rel_view);
+    this.viewVideo.setLayoutParams(rel_view);
+    this.viewVideo.setContentPadding(0, 0, 0, 0);
+    this.viewVideo.setRadius(0);
   }
-
-  public void updateNewInfo(String sectionId, String streamId) {
-    mSessionId = sectionId;
-    myStreamId = streamId;
-  }
-
 
   @Override
   public void onPause() {
-    streamIDList.clear();
-    surfaceHolder = null;
-    first = true;
-    viewDelay.setVisibility(View.VISIBLE);
-    record.setVisibility(View.GONE);
-    buttonPlayToggle.setVisibility(View.GONE);
-    isCameraFront = false;
-    if (! isFullScreen) {
-      if (viewFull.isChecked()) {
-        viewFull.setChecked(false);
+    onStopRender();
+    final boolean dontShare = !((PhenixApplication) getActivity().getApplicationContext()).isShare();
+    if (this.animator != null && dontShare) {
+      this.animator.pause();
+    }
+    if (!this.isFullScreen) {
+      if (this.viewFull.isChecked()) {
+        this.viewFull.setChecked(false);
       }
     }
 
-    if (mRenderPreView != null) {
-      mRenderPreView.stop();
-      if (! mRenderPreView.isClosed()) {
-        try {
-          mRenderPreView.close();
-          mRenderPreView = null;
-        } catch (IOException e) {
-          handleException(getActivity(), e);
-        }
+    if (dontShare) {
+      this.streamIDList.clear();
+      this.surfaceHolder = null;
+      this.viewDelay.setVisibility(View.VISIBLE);
+      this.buttonStop.setVisibility(View.GONE);
+      this.buttonVideoAudio.setVisibility(View.GONE);
+      this.isCameraFront = false;
+      this.arcImage.setVisibility(View.GONE);
+      if (this.recyclerView != null) {
+        this.recyclerView.setVisibility(View.GONE);
+        this.streamIDList.clear();
+        this.viewVideo.setVisibility(View.GONE);
+        this.viewFull.setVisibility(View.GONE);
+        this.tvVersion.setVisibility(View.GONE);
       }
-
+    } else {
+      this.handler = null;
+    }
+    first = true;
+    if (this.arcImage != null) {
+      this.arcImage.clearAnimation();
+      this.arcImage.setAnimation(null);
+      this.arcImage.destroyDrawingCache();
     }
     super.onPause();
   }
 
   @Override
   public void onResume() {
-    if (getActivity() != null && isAdded() && isVisible())
-      getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-    if (! isFullScreen) {
-      setPreviewDimensions(getActivity(), viewVideo);
-    }else {
+    Activity activity = getActivity();
+    final PhenixApplication appContext = (PhenixApplication) activity.getApplicationContext();
+    if (activity != null && isAdded() && isVisible())
+      activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+    if (!this.isFullScreen) {
+      onChangeLayout();
+    } else {
       onFullScreen();
     }
-    mAdapter.notifyDataSetChanged();
-    togCamera.setVisibility(View.GONE);
-    if (record.getVisibility() == View.VISIBLE) {
-      buttonPlayToggle.setVisibility(View.GONE);
+    this.adapter.notifyDataSetChanged();
+    this.toggleCamera.setVisibility(View.GONE);
+    if (this.buttonStop.getVisibility() == View.VISIBLE) {
+      this.buttonVideoAudio.setVisibility(View.GONE);
     }
 
-    if (togCamera.isChecked())
-      togCamera.setChecked(false);
-    togCamera.setCompoundDrawablesWithIntrinsicBounds(ContextCompat.getDrawable(getActivity(), R.drawable.ic_camera_front_white_24dp), null, null, null);
-    if (recyclerView.getVisibility() == View.GONE) {
-      recyclerView.setVisibility(View.VISIBLE);
+    if (this.toggleCamera.isChecked())
+      this.toggleCamera.setChecked(true);
+    this.toggleCamera.setCompoundDrawablesWithIntrinsicBounds(ContextCompat.getDrawable(activity, R.drawable.ic_camera_rear), null, null, null);
+
+    if (this.isStopPreview) {
+      this.recyclerView.setVisibility(View.GONE);
+      this.buttonStop.setVisibility(View.GONE);
+      this.viewDelay.setVisibility(View.VISIBLE);
+      this.buttonShareScreen.setVisibility(View.VISIBLE);
+      this.buttonVideoAudio.setVisibility(View.VISIBLE);
+      this.buttonVideo.setVisibility(View.VISIBLE);
+      this.buttonAudio.setVisibility(View.VISIBLE);
+      this.viewFull.setVisibility(View.GONE);
+      this.animator.pause();
+      this.qualityPublisher.setVisibility(View.GONE);
+    } else {
+      if (appContext.isStopPublish()) {
+        this.qualityPublisher.setVisibility(View.GONE);
+        this.isThisPhone = false;
+        this.buttonStop.setVisibility(View.GONE);
+        this.viewDelay.setVisibility(View.VISIBLE);
+        this.buttonShareScreen.setVisibility(View.VISIBLE);
+        this.buttonVideoAudio.setVisibility(View.VISIBLE);
+        this.buttonVideo.setVisibility(View.VISIBLE);
+        this.buttonAudio.setVisibility(View.VISIBLE);
+        this.viewFull.setVisibility(View.GONE);
+        animator.pause();
+      } else {
+        if (this.isShare) {
+          if (handler == null) {
+            this.handler = new Handler();
+            this.handler.postDelayed(new Runnable() {
+              @Override
+              public void run() {
+                MainFragment.this.presenter.startRendering();
+              }
+            }, RENDER_DELAY);
+          }
+        }
+        this.qualityPublisher.setVisibility(View.VISIBLE);
+        this.isThisPhone = true;
+        this.buttonStop.setVisibility(View.VISIBLE);
+        this.buttonShareScreen.setVisibility(View.GONE);
+        this.buttonVideoAudio.setVisibility(View.GONE);
+        this.buttonVideo.setVisibility(View.GONE);
+        this.buttonAudio.setVisibility(View.GONE);
+        this.viewDelay.setVisibility(View.GONE);
+        this.animator.start();
+      }
+    }
+    if (appContext.isStopPublish()
+      && appContext.isLandscape()) {
+      setLayout(activity,
+              true,
+              this.buttonAudio,
+              this.buttonVideo,
+              this.buttonVideoAudio,
+              this.buttonShareScreen,
+              this.imageAudio,
+              this.imageVideo);
     }
     super.onResume();
   }
 
   @Override
   public void onDestroyView() {
-    if (getActivity() != null)
-      getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-    presenter.onDestroy();
-    try {
-      surfaceView.getHolder().getSurface().release();
-    } catch (Throwable ignored) {
+    if (this.handler != null) {
+      this.handler = null;
     }
-    surfaceView = null;
+    Activity activity = getActivity();
+    if (activity != null)
+      activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    this.presenter.onDestroy();
+    try {
+      this.surfaceView.getHolder().getSurface().release();
+    } catch (Exception e) {
+      if (Fabric.isInitialized()) {
+        Crashlytics.log(Log.ERROR, TAG, e.getMessage());
+      }
+    }
+    this.surfaceView = null;
     super.onDestroyView();
   }
 
   // preview local user media
   @Override
   public void previewLocalUserMedia() {
-    if (surfaceView != null && getMainActivity().getPublishMedia() != null && surfaceHolder != null) {
-      mRenderPreView = getMainActivity().getPublishMedia().getMediaStream().createRenderer();
-      if (mRenderPreView.start(new AndroidVideoRenderSurface(surfaceHolder)) == RendererStartStatus.OK) {
-        record.setVisibility(View.VISIBLE);
-        togCamera.setVisibility(View.VISIBLE);
-        if (! record.isEnabled()) {
-          record.setEnabled(true);
-        }
+    if (this.surfaceView != null && getMainActivity().getPublishMedia() != null && this.surfaceHolder != null) {
+      this.recyclerView.setVisibility(View.VISIBLE);
+      if (!this.isStopPreview) {
+        if (!this.isAudio) {
+          this.renderPreView = getMainActivity().getPublishMedia().getMediaStream().createRenderer();
+          if (this.renderPreView.start(new AndroidVideoRenderSurface(this.surfaceHolder)) == RendererStartStatus.OK) {
+            if (viewVideo.getVisibility() == View.GONE && viewFull.getVisibility() == View.GONE && tvVersion.getVisibility() == View.GONE) {
+              this.viewVideo.setVisibility(View.VISIBLE);
+              this.viewFull.setVisibility(View.VISIBLE);
+              this.tvVersion.setVisibility(View.VISIBLE);
+            }
 
+            if (this.isStopPreview) {
+              this.buttonStop.setVisibility(View.GONE);
+              this.viewDelay.setVisibility(View.VISIBLE);
+              this.toggleCamera.setVisibility(View.GONE);
+            } else {
+              this.buttonVideo.setVisibility(View.GONE);
+              this.buttonAudio.setVisibility(View.GONE);
+              this.buttonShareScreen.setVisibility(View.GONE);
+              this.buttonStop.setVisibility(View.VISIBLE);
+              this.viewDelay.setVisibility(View.GONE);
+              this.buttonVideoAudio.setVisibility(View.GONE);
+              this.animator.start();
+              if (((PhenixApplication) getActivity().getApplicationContext()).isShare()) {
+                this.toggleCamera.setVisibility(View.GONE);
+              } else {
+                this.toggleCamera.setVisibility(View.VISIBLE);
+              }
+            }
+            this.arcImage.setVisibility(View.VISIBLE);
+            if (!isCheckResume) {
+              this.buttonVideoAudio.setVisibility(View.GONE);
+            }
+
+            if (!this.buttonStop.isEnabled()) {
+              this.buttonStop.setEnabled(true);
+            }
+          }
+        } else {
+          this.buttonStop.setVisibility(View.VISIBLE);
+          this.viewDelay.setVisibility(View.VISIBLE);
+          this.handler = new Handler();
+          this.handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+              MainFragment.this.toggleCamera.setVisibility(View.GONE);
+            }
+          }, VISIBILITY_DELAY);
+          this.viewFull.setVisibility(View.GONE);
+        }
       }
     }
-    presenter.listStreams(100);
+    if (this.first) {
+      this.presenter.listStreams(ENDPOINT);
+    }
   }
 
   @Override
-  public void getListStreams(StreamList streamlist) {
-    if (streamlist.getStreams().size() > 0) {
-      StreamList.Stream stream = new StreamList.Stream();
-      stream.setStreamId(myStreamId);
-      boolean isContain = streamlist.getStreams().contains(stream);
+  public void getListStreams(List<String> streamlist) {
+    if (streamlist.size() > 0) {
+      ListStreamResponse.Stream stream = new ListStreamResponse.Stream();
+      stream.setStreamId(this.currentStreamId);
+      boolean isContain = streamlist.contains(stream.getStreamId());
       if (isContain) {
-        streamlist.getStreams().remove(stream);
+        streamlist.remove(stream.getStreamId());
       }
-      if (streamlist.getStreams().size() > 1) {
-        Collections.sort(streamlist.getStreams(), new Comparator<StreamList.Stream>() {
+
+      if (streamlist.size() > 1) {
+        Collections.sort(streamlist, new Comparator<String>() {
           @Override
-          public int compare(StreamList.Stream stream, StreamList.Stream t1) {
-            return stream.getStreamId().compareTo(t1.getStreamId());
+          public int compare(String stream, String t1) {
+            return stream.compareTo(t1);
           }
         });
       }
-      if (isContain) {
-        streamlist.getStreams().add(0, stream);
-      }
-      if (streamIDList.size() == 0) {
-        streamIDList = streamlist.getStreams();
 
+      if (isContain) {
+        streamlist.add(0, stream.getStreamId());
+      }
+
+      if (this.streamIDList.size() == 0) {
+        this.streamIDList = streamlist;
       } else {
-        assert streamIDList != null;
-        streamIDList.clear();
-        streamIDList = streamlist.getStreams();
+        this.streamIDList.clear();
+        this.streamIDList = streamlist;
       }
-      if (streamIDList.size() == 0) {
-        tvNull.setVisibility(View.VISIBLE);
-        recyclerView.setVisibility(View.GONE);
-      } else {
-        tvNull.setVisibility(View.GONE);
-        recyclerView.setVisibility(View.VISIBLE);
+
+      if (this.adapter != null) {
+        this.recyclerView.setAdapter(adapter);
+        this.adapter.notifyDataSetChanged();
+        this.refreshLayout.setRefreshing(false);
       }
-      if (mAdapter != null) {
-        recyclerView.setAdapter(mAdapter);
-        mAdapter.notifyDataSetChanged();
-        refreshLayout.setRefreshing(false);
-      }
+    } else {
+      this.streamIDList.clear();
+      this.adapter.notifyDataSetChanged();
+      this.refreshLayout.setRefreshing(false);
     }
   }
 
   @Override
-  public void onError(String error) {
-    Activity activity = getActivity();
+  public void onError(final String error) {
+    final Activity activity = getActivity();
     if (activity != null && isVisible() && isAdded()) {
-      Toast.makeText(activity, "Error: " + error, Toast.LENGTH_SHORT).show();
+      activity.runOnUiThread(new Runnable() {
+        @Override
+        public void run() {
+          Toast.makeText(activity, "Error: " + error, Toast.LENGTH_SHORT).show();
+        }
+      });
     }
+  }
+
+  private void toastPublishStopFail(Activity activity) {
+    String message = activity.getString(R.string.publishStopFail);
+    Toast.makeText(activity, message, Toast.LENGTH_SHORT).show();
   }
 
   //event click stop or restart review
   @Override
-  public void onClick(View view) {
+  public synchronized void onClick(View view) {
+    Activity activity = getActivity();
     switch (view.getId()) {
       case R.id.play:
-        isCheckResume = false;
-        RxBus.getInstance().post(new Events.HideMyStreamId(false));
-        RxBus.getInstance().post(new Events.OnRestartStream());
+        if (((MainActivity) activity).isStopPublish()) {
+          this.isAudio = false;
+          this.buttonAudio.setVisibility(View.GONE);
+          this.buttonVideo.setVisibility(View.GONE);
+          this.buttonShareScreen.setVisibility(View.GONE);
+          onResumePublish();
+          RxBus.getInstance().post(new Events.OnRestartStream());
+        } else {
+          toastPublishStopFail(activity);
+        }
         break;
       case R.id.record:
-        isCheckResume = true;
-        togCamera.clearAnimation();
-        togCamera.setVisibility(View.GONE);
-        RxBus.getInstance().post(new Events.HideMyStreamId(true));
         RxBus.getInstance().post(new Events.OnStopStream());
+        ((PhenixApplication) activity.getApplicationContext()).setStopPublish(true);
+        this.animator.pause();
+        this.qualityPublisher.setVisibility(View.GONE);
+        onStopRender();
+        onChangeLayout();
+        if (this.viewFull.isChecked())
+          this.viewFull.setChecked(false);
+        this.buttonVideoAudio.setVisibility(View.VISIBLE);
+        this.buttonStop.setVisibility(View.GONE);
+        this.viewDelay.setVisibility(View.VISIBLE);
+        this.isStopPreview = true;
+        this.viewFull.setVisibility(View.GONE);
+        this.isShare = false;
+        this.isCheckResume = true;
+        this.toggleCamera.clearAnimation();
+        this.toggleCamera.setVisibility(View.GONE);
+        if (this.streamIDList.size() >= 1) {
+          this.isThisPhone = false;
+          this.streamIDList.remove(0);
+          if (this.streamIDList.size() == 0) {
+            this.adapter.notifyItemChanged(0);
+          } else {
+            this.adapter.notifyDataSetChanged();
+          }
+        } else {
+          this.streamIDList.clear();
+          this.adapter.notifyDataSetChanged();
+        }
+        this.buttonAudio.setVisibility(View.VISIBLE);
+        this.buttonVideo.setVisibility(View.VISIBLE);
+        this.buttonShareScreen.setVisibility(View.VISIBLE);
         break;
-      case R.id.togCamera_:
+      case R.id.toggleCamera:
         ToggleButton toggleButton = (ToggleButton) view;
         if (toggleButton.isChecked()) {
-          isCameraFront = true;
-          RxBus.getInstance().post(new Events.ChangeCamera(false));
-        } else {
-          isCameraFront = false;
+          this.isCameraFront = true;
           RxBus.getInstance().post(new Events.ChangeCamera(true));
+        } else {
+          this.isCameraFront = false;
+          RxBus.getInstance().post(new Events.ChangeCamera(false));
+        }
+        break;
+      case R.id.audio:
+        if (((MainActivity) activity).isStopPublish()) {
+          this.isAudio = true;
+          ((MainActivity) activity).onlyVideoOrAudio(false);
+          onResumePublish();
+          this.toggleCamera.setVisibility(View.VISIBLE);
+        } else {
+          toastPublishStopFail(activity);
+        }
+        break;
+      case R.id.video:
+        if (((MainActivity) activity).isStopPublish()) {
+          this.isAudio = false;
+          ((MainActivity) activity).onlyVideoOrAudio(true);
+          onResumePublish();
+        } else {
+          toastPublishStopFail(activity);
+        }
+        break;
+      case R.id.share:
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+          if (((MainActivity) activity).isStopPublish()) {
+            TokenUtils.saveSessionIdIntoLocal(activity, this.currentSessionId);
+            TokenUtils.saveStreamIdIntoLocal(activity, this.currentStreamId);
+            this.isAudio = false;
+            this.isShare = true;
+            onResumePublish();
+            ((MainActivity) activity).onStartShareScreen();
+            CaptureHelper.fireScreenCaptureIntent(activity);
+          } else {
+            toastPublishStopFail(activity);
+          }
+        } else {
+          Toast.makeText(activity, "This app requires Android 5.0 or later", Toast.LENGTH_SHORT).show();
         }
         break;
     }
+  }
+
+  private void onResumePublish() {
+    this.qualityPublisher.setVisibility(View.VISIBLE);
+    ((PhenixApplication) getActivity().getApplicationContext()).setStopPublish(false);
+    this.animator.start();
+    this.isCheckResume = false;
+    this.isThisPhone = true;
+    this.isStopPreview = false;
+    this.viewFull.setVisibility(View.VISIBLE);
+    this.buttonStop.setVisibility(View.VISIBLE);
+    this.buttonVideoAudio.setVisibility(View.GONE);
+    this.buttonAudio.setVisibility(View.GONE);
+    this.buttonVideo.setVisibility(View.GONE);
+    this.buttonShareScreen.setVisibility(View.GONE);
   }
 
   //select streamToken id
   @Override
   public void onItemClick(View itemView, int position) {
-    String streamIdByList = streamIDList.get(position).getStreamId();
+    String streamIdByList = this.streamIDList.get(position);
     Bundle bundle = new Bundle();
-    bundle.putString(SESSION_ID, mSessionId);
-    bundle.putString(STREAM_ID, streamIdByList);
-    bundle.putBoolean(IS_CHANGE_CAMEARA, isCameraFront);
-    if (position == 0) {
-      if (! myStreamId.equals(streamIdByList)) {
-        bundle.putBoolean(MY_ID, false);
-      } else {
-        bundle.putBoolean(MY_ID, true);
-      }
-    } else {
-      bundle.putBoolean(MY_ID, false);
-    }
-    openFragment(getActivity(), getFragmentManager(), ViewDetailStreamFragment.class, AnimStyle.FROM_RIGHT, bundle, R.id.content_content, "MainFragment");
+    bundle.putString(SESSION_ID, this.currentSessionId);
+    bundle.putString(Constants.STREAM_ID_FROM_LIST, streamIdByList);
+    bundle.putBoolean(Constants.IS_CAMERA_FRONT, this.isCameraFront);
+    bundle.putBoolean(Constants.IS_PUBLISH_STOPPED, this.isStopPreview);
+    bundle.putBoolean(Constants.IS_LANDSCAPE, this.isLandscape);
+    bundle.putBoolean(Constants.IS_AUDIO, this.isAudio);
+    openFragment(getActivity(), getFragmentManager(), ViewDetailStreamFragment.class, null, bundle, R.id.content, "MainFragment");
   }
 
   @Override
-  public List<StreamList.Stream> getListStreams() {
-    return streamIDList;
+  public List<String> getListStreams() {
+    return this.streamIDList;
   }
 
   @Override
   public boolean isThisPhone() {
-    return isThisPhone;
+    return this.isThisPhone;
   }
 
   //event click full view and change camera
   @Override
   public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
     switch (compoundButton.getId()) {
-      case R.id.imvFull:
+      case R.id.imageFull:
         if (isChecked) {
-          isFullScreen = true;
+          this.isFullScreen = true;
           onFullScreen();
+          this.viewVideo.setPadding(0, 0, 0, 0);
         } else {
           getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-          setPreviewDimensions(getActivity(), viewVideo);
-          isFullScreen = false;
+          this.arcImage.setVisibility(View.VISIBLE);
+          onChangeLayout();
+          this.isFullScreen = false;
+          this.viewVideo.setPadding(20, 20, 20, 50);
         }
         break;
-
     }
   }
 
+  private void setLayoutItems(boolean isLandscape) {
 
-  //event bus with Rx Java
-  @Override
-  protected Subscription subscribeEvents() {
-    autoUnsubBus();
-    return RxBus.getInstance().toObservable()
-      .observeOn(AndroidSchedulers.mainThread())
-      .doOnNext(new Action1<Object>() {
-        @Override
-        public void call(Object eventObject) {
-          //remove stream id at stop preview local user media
-          if (eventObject instanceof Events.HideMyStreamId) {
-            if (((Events.HideMyStreamId) eventObject).isHide) {
-              if (streamIDList.size() >= 1) {
-                isThisPhone = false;
-                streamIDList.remove(0);
-                if (streamIDList.size() == 0) {
-                  mAdapter.notifyItemChanged(0);
-                } else {
-                  mAdapter.notifyDataSetChanged();
-                }
-              }
-            } else if (! ((Events.HideMyStreamId) eventObject).isHide) {
-              isThisPhone = true;
-            }
-
-          }
-
-          if (eventObject instanceof Events.OnRestartStream) {
-            buttonPlayToggle.setVisibility(View.GONE);
-            record.setEnabled(false);
-            viewDelay.setVisibility(View.GONE);
-          }
-          if (eventObject instanceof Events.GetFacingMode) {
-            if (((Events.GetFacingMode) eventObject).facingMode == FacingMode.ENVIRONMENT) {
-              togCamera.setCompoundDrawablesWithIntrinsicBounds(ContextCompat.getDrawable(getActivity(), R.drawable.ic_camera_rear_white_24dp), null, null, null);
-            } else {
-              togCamera.setCompoundDrawablesWithIntrinsicBounds(ContextCompat.getDrawable(getActivity(), R.drawable.ic_camera_front_white_24dp), null, null, null);
-            }
-          }
-        }
-      }).subscribe(RxBus.defaultSubscriber());
   }
 
   //Called by the system when the activity changes orientation
   @Override
   public void onConfigurationChanged(Configuration newConfig) {
+    Activity activity = getActivity();
     super.onConfigurationChanged(newConfig);
+    boolean tabletSize = getResources().getBoolean(R.bool.isTablet);
+    this.arcImage.getLayoutParams().width = getResources().getDimensionPixelSize(R.dimen.with_parabol);
     // Checks the orientation of the screen
     if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-      setPreviewDimensions(getActivity(), viewVideo);
+      setLayout(activity,
+              true,
+              this.buttonAudio,
+              this.buttonVideo,
+              this.buttonVideoAudio,
+              this.buttonShareScreen,
+              this.imageAudio,
+              this.imageVideo);
+      isLandscape = true;
+      if (tabletSize) {
+        if (this.isFullScreen) {
+          onFullScreen();
+        } else {
+          setLayoutTablet(this.viewList, true);
+          setPreviewDimensionsTablet(activity, this.viewVideo);
+        }
+      } else {
+        if (this.isFullScreen) {
+          onFullScreen();
+        } else {
+          setPreviewDimensions(activity, this.viewVideo);
+        }
+      }
+      viewAnimation.setPadding(dpToPx(activity, 4), dpToPx(activity, 0), dpToPx(activity, 4), dpToPx(activity, 4));
     } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
-      setPreviewDimensions(getActivity(), viewVideo);
+      setLayout(activity,
+              false,
+              this.buttonAudio,
+              this.buttonVideo,
+              this.buttonVideoAudio,
+              this.buttonShareScreen,
+              this.imageAudio,
+              this.imageVideo);
+      isLandscape = false;
+      if (tabletSize) {
+        if (this.isFullScreen) {
+          onFullScreen();
+        } else {
+          setLayoutTablet(this.viewList, true);
+          setPreviewDimensionsTablet(activity, this.viewVideo);
+        }
+      } else {
+        if (this.isFullScreen) {
+          onFullScreen();
+        } else {
+          setPreviewDimensions(activity, this.viewVideo);
+        }
+      }
+      viewAnimation.setPadding(dpToPx(activity, 4), dpToPx(activity, 4), dpToPx(activity, 4), dpToPx(activity, 4));
     }
   }
 
   @Override
   public void onRefresh() {
-    presenter.listStreams(100);
+    this.presenter.listStreams(ENDPOINT);
   }
 
-  public void onStopPreview() {
-    setPreviewDimensions(getActivity(), viewVideo);
-    if (viewFull.isChecked())
-      viewFull.setChecked(false);
-    buttonPlayToggle.setVisibility(View.VISIBLE);
-    record.setVisibility(View.GONE);
-    surfaceHolder = null;
-    viewDelay.setVisibility(View.VISIBLE);
-    first = true;
-    if (mRenderPreView != null) {
-      mRenderPreView.stop();
-      if (! mRenderPreView.isClosed()) {
+  private void onChangeLayout() {
+    Activity activity = getActivity();
+    this.viewVideo.setContentPadding(dpToPx(activity, 2), dpToPx(activity, 2), dpToPx(activity, 2), dpToPx(activity, 2));
+    this.viewVideo.setRadius(dpToPx(activity, 6));
+    boolean tabletSize = getResources().getBoolean(R.bool.isTablet);
+    if (tabletSize) {
+      setPreviewDimensionsTablet(activity, this.viewVideo);
+    } else {
+      setPreviewDimensions(activity, this.viewVideo);
+    }
+  }
+
+  @Override
+  public void onAnimationUpdate(ValueAnimator valueAnimator) {
+    arcImage.setProcess((Integer) valueAnimator.getAnimatedValue());
+  }
+
+  public void onStopRender() {
+    if (this.renderPreView != null) {
+      if (!this.renderPreView.isClosed()) {
+        this.renderPreView.stop();
         try {
-          mRenderPreView.close();
+          this.renderPreView.close();
+          this.renderPreView = null;
         } catch (IOException e) {
           handleException(getActivity(), e);
         }
       }
-      mRenderPreView = null;
+    }
+    if (this.surfaceHolder != null && !this.isShare) {
+      this.surfaceHolder = null;
+    }
+  }
+
+  @Override
+  protected Subscription subscribeEvents() {
+    return RxBus.getInstance().toObservable()
+      .observeOn(AndroidSchedulers.mainThread())
+      .doOnNext(new Action1<Object>() {
+        @Override
+        public void call(Object objectEvent) {
+          if (objectEvent instanceof Events.OnRestartStream) {
+            MainFragment.this.buttonVideoAudio.setVisibility(View.GONE);
+            MainFragment.this.buttonStop.setEnabled(false);
+          }
+
+          if (objectEvent instanceof Events.OnStateDataQuality) {
+            setViewQuality(((Events.OnStateDataQuality) objectEvent).dataQualityStatus,
+              ((Events.OnStateDataQuality) objectEvent).dataQualityReason);
+          }
+        }
+      }).subscribe(RxBus.defaultSubscriber());
+  }
+
+  public void onChangeIconCamera(FacingMode facingMode) {
+    Activity activity = getActivity();
+    if (facingMode == FacingMode.ENVIRONMENT) {
+      this.toggleCamera.setCompoundDrawablesWithIntrinsicBounds(ContextCompat.getDrawable(activity,
+              R.drawable.ic_camera_rear),
+              null, null, null);
+    } else {
+      this.toggleCamera.setCompoundDrawablesWithIntrinsicBounds(ContextCompat.getDrawable(activity,
+              R.drawable.ic_camera_front),
+              null, null, null);
+    }
+  }
+
+  //set view data quality publish and subscribe
+  private void setViewQuality(final DataQualityStatus dataQualityStatus, final DataQualityReason dataQualityReason) {
+    final Activity activity = getActivity();
+    if (activity != null && isAdded()) {
+      //view data quaity publish
+      switch (dataQualityStatus) {
+        case NO_DATA:
+          if (dataQualityReason == NONE || dataQualityReason == UPLOAD_LIMITED) {
+            this.qualityPublisher.setStatusShow(0);
+          }
+          break;
+        case ALL:
+          if (dataQualityReason == NONE) {
+            this.qualityPublisher.setStatusShow(4);
+          } else if (dataQualityReason == UPLOAD_LIMITED) {
+            this.qualityPublisher.setStatusShow(2);
+          } else if (dataQualityReason == NETWORK_LIMITED) {
+            this.qualityPublisher.setStatusShow(3);
+          }
+          break;
+        case AUDIO_ONLY:
+          if (dataQualityReason == NONE) {
+            this.qualityPublisher.setStatusShow(4);
+          } else if (dataQualityReason == UPLOAD_LIMITED || dataQualityReason == NETWORK_LIMITED) {
+            this.qualityPublisher.setStatusShow(1);
+          }
+          break;
+      }
     }
   }
 }

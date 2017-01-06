@@ -18,9 +18,9 @@ package com.phenixp2p.demo.presenters.inter;
 import com.phenixp2p.demo.presenters.MainActivityPresenter;
 
 public interface IMainActivityPresenter {
-  void login(String user, String password);
+  void login(String user, String password, String endpoint);
 
-  void createStreamToken(String sessionId, String originStreamId, String capability, MainActivityPresenter.Streamer streamer);
+  void createStreamToken(String sessionId, String originStreamId, String endpoint, String[] capabilities, MainActivityPresenter.Streamer streamer);
 
   void onDestroy();
 }

@@ -15,98 +15,101 @@
 
 package com.phenixp2p.demo.presenters;
 
-import android.util.Log;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.phenixp2p.demo.PhenixApplication;
-import com.phenixp2p.demo.api.ApiFactory;
-import com.phenixp2p.demo.model.StreamList;
+import com.phenixp2p.demo.AsyncService;
+import com.phenixp2p.demo.HttpTask;
+import com.phenixp2p.demo.model.ListStreamRequest;
+import com.phenixp2p.demo.model.ListStreamResponse;
 import com.phenixp2p.demo.presenters.inter.IMainPresenter;
 import com.phenixp2p.demo.ui.view.IMainView;
 
-import org.json.JSONObject;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
-import java.util.concurrent.TimeUnit;
+import static com.phenixp2p.demo.Constants.STREAM_LIST_DELAY;
+import static com.phenixp2p.demo.Constants.STREAM_LIST_LENGTH;
+import static com.phenixp2p.demo.HttpTask.Method.PUT;
 
-import rx.Observable;
-import rx.Subscriber;
-import rx.Subscription;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Func1;
-import rx.plugins.RxJavaPlugins;
-import rx.schedulers.Schedulers;
-
-public class MainPresenter implements IMainPresenter {
-  private static final String TAG = MainPresenter.class.getSimpleName();
+public final class MainPresenter implements IMainPresenter {
   private IMainView view;
-  private Subscription mSubscription;
+  private Timer timer;
 
   public MainPresenter(IMainView view) {
     this.view = view;
   }
 
   @Override
-  public void startRendering() {
-    view.previewLocalUserMedia();
+  public synchronized void startRendering() {
+    this.view.previewLocalUserMedia();
   }
 
   /**
    * List available streams on server
-   *
-   * @param length
    */
   @Override
-  public void listStreams(final int length) {
-    try {
-      JSONObject params = new JSONObject();
-      params.put("length", length);
-      mSubscription = ApiFactory.getApiService().listStreams(new Gson().fromJson(params.toString(), JsonElement.class))
-        .subscribeOn(Schedulers.io())
-        .unsubscribeOn(Schedulers.io())
-        .observeOn(AndroidSchedulers.mainThread())
-        .repeatWhen(new Func1<Observable<? extends Void>, Observable<?>>() {
-          @Override
-          public Observable<?> call(Observable<? extends Void> observable) {
-            return observable.delay(5, TimeUnit.SECONDS);
-          }
-        })
-        .retry()
-        .subscribe(new Subscriber<StreamList>() {
-          @Override
-          public void onCompleted() {
-          }
-
-          @Override
-          public void onError(Throwable e) {
-            try {
-              RxJavaPlugins.getInstance().getErrorHandler().handleError(e);
-            } catch (Exception pluginException) {
-              pluginException.printStackTrace();
-              view.onError(e.getMessage());
-              Log.d(TAG, "onError:  " + e.getMessage());
-            }
-          }
-
-          @Override
-          public void onNext(StreamList streamID) {
-            view.getListStreams(streamID);
-          }
-        });
-
-      if (PhenixApplication.getOnError() != null && ! PhenixApplication.getOnError().getMessage().equals("HTTP 410 ")) {
-        view.onError(PhenixApplication.getOnError().getMessage());
-      }
-    } catch (Exception e) {
-      view.onError(e.getMessage());
-      e.printStackTrace();
+  public synchronized void listStreams(final String endpoint) {
+    final ListStreamRequest params = new ListStreamRequest();
+    params.setLength(STREAM_LIST_LENGTH);
+    List<String> options = new ArrayList<>();
+    Collections.addAll(options, "global");
+    params.setOptions(options);
+    onRequest(params, endpoint);
+    if (this.timer == null) {
+      this.timer = new Timer();
+      this.timer.schedule(new TimerTask() {
+        @Override
+        public void run() {
+          onRequest(params, endpoint);
+        }
+      }, STREAM_LIST_DELAY, STREAM_LIST_DELAY);
     }
+  }
+
+  /**
+   * Request API list streams
+   * ENDPOINT : https://demo.phenixp2p.com/demoApp/streams
+   * REQUEST METHOD: PUT
+   * @param params length
+   */
+  private synchronized <T>void onRequest(T params, final String endpoint) {
+    HttpTask.Callback<ListStreamResponse> callback = new HttpTask.Callback<ListStreamResponse>() {
+      @Override
+      public void onResponse(ListStreamResponse result) {
+        if (result != null) {
+          List<ListStreamResponse.Stream> streamId = result.getStreams();
+          if (streamId != null) {
+            List<String> list = new ArrayList<>();
+            for (int i = 0; i < streamId.size(); i++) {
+              list.add(streamId.get(i).getStreamId());
+            }
+            view.getListStreams(list);
+          }
+        } else {
+          onDestroy();
+          listStreams(endpoint);
+        }
+      }
+
+      @Override
+      public void onError(Exception e) {
+        if (MainPresenter.this.view != null) {
+          MainPresenter.this.view.onError(e.getMessage());
+        }
+      }
+    };
+    HttpTask<T, ListStreamResponse> task = new HttpTask<>(callback, endpoint.concat("streams"), PUT, params, ListStreamResponse.class);
+    task.execute(AsyncService.getInstance().getExecutorService());
   }
 
   @Override
   public void onDestroy() {
-    if (mSubscription != null) {
-      mSubscription.unsubscribe();
+    if (timer != null) {
+      timer.cancel();
+      timer.purge();
+      timer = null;
     }
+    AsyncService.getInstance().cancelAll();
   }
 }

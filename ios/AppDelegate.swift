@@ -16,8 +16,9 @@
 
 import UIKit
 import SystemConfiguration
-import Fabric
+import ReachabilitySwift
 import Crashlytics
+import Fabric
 
 var timestamp = Date()
 
@@ -29,26 +30,23 @@ func timeElapsed() -> String {
 }
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate {
+final class AppDelegate: UIResponder, UIApplicationDelegate {
 
   var window: UIWindow?
   let reachability = Reachability()!
   var isAlertShowing = false
 
   func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions:[UIApplicationLaunchOptionsKey : Any]?) -> Bool {
-    // Override point for customization after application launch.
-
     Fabric.with([Crashlytics.self])
-
     if !reachability.isReachable {
         notifyNetworkNotReachability()
     }
 
-    NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.reachabilityChanged(note:)), name: ReachabilityChangedNotification,object: reachability)
+    NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.reachabilityChanged), name: ReachabilityChangedNotification,object: reachability)
     do {
-        try reachability.startNotifier()
-    } catch {
-        print("could not start reachability notifier")
+      try reachability.startNotifier()
+    } catch{
+      print("could not start reachability notifier")
     }
     return true
   }

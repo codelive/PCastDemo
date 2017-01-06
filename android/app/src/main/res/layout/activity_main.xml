@@ -1,15 +1,24 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:app="http://schemas.android.com/apk/res-auto"
-                android:id="@+id/container"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
+<RelativeLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:id="@+id/container"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent">
 
   <FrameLayout
-    android:id="@+id/content_content"
+    android:id="@+id/content"
     android:layout_width="match_parent"
     android:layout_height="match_parent"/>
 
-  <com.phenixp2p.demo.animation.PulsatorLayout
+  <ProgressBar
+    android:id="@+id/prog"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_centerInParent="true"
+    android:visibility="gone"/>
+
+
+  <pl.bclogic.pulsator4droid.library.PulsatorLayout
     android:id="@+id/pulsator"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
@@ -29,5 +38,5 @@
       android:layout_centerInParent="true"
       android:layout_gravity="center"
       android:src="@drawable/ic_logo"/>
-  </com.phenixp2p.demo.animation.PulsatorLayout>
+  </pl.bclogic.pulsator4droid.library.PulsatorLayout>
 </RelativeLayout>

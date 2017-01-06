@@ -15,10 +15,8 @@
 
 package com.phenixp2p.demo.ui.view;
 
-import com.phenixp2p.demo.api.response.Authentication;
-
 public interface IMainActivityView {
-  void authenticationToken(Authentication authenticationToken);
+  void authenticationToken(String authenticationToken);
 
   void onError(String error);
 

@@ -15,28 +15,41 @@
  */
 
 import UIKit
-import CoreMotion
+import Crashlytics
 
 // todo:use promises, futures
 // todo:popup errors instead of print
 
-class ViewController:UIViewController, UITableViewDataSource, UITableViewDelegate {
+enum PublishingOption {
+  case audio        // Audio only
+  case video        // Video only
+  case all          // Audio & Video
+  case share        // Screen Share
+}
+
+final class ViewController : UIViewController, UITableViewDataSource, UITableViewDelegate, UIPopoverPresentationControllerDelegate {
 
   // outlets and actions
   @IBOutlet weak var selectStreamHomeView:UIView!
   @IBOutlet weak var previewVideoView:UIView!
   @IBOutlet weak var previewVideoViewSmall:UIView!
+  @IBOutlet weak var publishingOptionView:UIView!
   @IBOutlet weak var progress:UIProgressView!
   @IBOutlet weak var status:UILabel!
   @IBOutlet weak var versionNumber: UILabel!
-  @IBOutlet weak var currentStreamId:UILabel!
   @IBOutlet weak var birdLogo: UIImageView!
-  @IBOutlet weak var switchCamera: UIImageView!
   @IBOutlet weak var idTableView: UITableView!
   @IBOutlet weak var changePreviewSize: UIButton!
   @IBOutlet weak var changePublishState: UIButton!
-  @IBOutlet var publishButtonSpaceToBottom: NSLayoutConstraint!
-  @IBOutlet var changeCameraButtonTrailing: NSLayoutConstraint!
+  @IBOutlet weak var buttonSwitch: UIButton!
+  @IBOutlet weak var optionStack: UIStackView!
+  @IBOutlet weak var publishStatusStack: UIStackView!
+  @IBOutlet weak var optionStackHeightConstraint: NSLayoutConstraint!
+  @IBOutlet weak var switchButtonToBottomParent: NSLayoutConstraint!
+  @IBOutlet weak var stopPublishTrailingToParent: NSLayoutConstraint!
+  @IBOutlet weak var previewProporsionalToParentHeight: NSLayoutConstraint!
+  @IBOutlet weak var previewProporsionalToParentWidth: NSLayoutConstraint!
+  @IBOutlet weak var animationView: UIView!
 
   enum Step: String {
     case Launch = "Screen launch"
@@ -59,11 +72,22 @@ class ViewController:UIViewController, UITableViewDataSource, UITableViewDelegat
   var updateStreamListTimer = Timer()
   var streamIdList = Array<String?>()
   var previewRecognizer:UIGestureRecognizer?
-  var isUsingFrontCamera = true
-  var isPublishing = false
+  var isUsingFrontCamera = false
   var indicator = UIActivityIndicatorView(activityIndicatorStyle:.whiteLarge)
-  var pRenderer = Phenix.shared.userMediaStream?.mediaStream.createRenderer()
+  var renderer = Phenix.shared.userMediaStream?.mediaStream.createRenderer()
   var isFullScreen : Bool = false
+  var isPublishing: Bool = true {
+    didSet {
+      DispatchQueue.main.async {
+        self.buttonSwitch.isHidden = !self.isPublishing
+        self.publishStatusStack.isHidden = !self.isPublishing
+        self.changePreviewSize.isHidden = !self.isPublishing
+        self.changePublishState.isHidden = !self.isPublishing
+        self.publishingOptionView.isHidden = self.isPublishing
+        self.animationView.isHidden = !self.isPublishing
+      }
+    }
+  }
   var showSplashAnimation: Bool = true {
     didSet {
       if showSplashAnimation == true {
@@ -83,7 +107,7 @@ class ViewController:UIViewController, UITableViewDataSource, UITableViewDelegat
   var isViewProgressing: Bool = false {
     didSet {
       if isViewProgressing == true {
-        DispatchQueue.main.async  {
+        DispatchQueue.main.async {
           self.indicator.startAnimating()
           self.view.isUserInteractionEnabled = false
         }
@@ -101,6 +125,8 @@ class ViewController:UIViewController, UITableViewDataSource, UITableViewDelegat
 
   deinit {
     NotificationCenter.default.removeObserver(self)
+    self.updateStreamListTimer.invalidate()
+    self.pulseTimer.invalidate()
   }
 
   override func viewDidLoad() {
@@ -118,24 +144,46 @@ class ViewController:UIViewController, UITableViewDataSource, UITableViewDelegat
 
   override func viewWillAppear(_ animated:Bool) {
     super.viewWillAppear(animated)
+    if let publishingStreamId = Phenix.shared.streamId {
+      self.streamIdThisPhone = publishingStreamId
+      self.idTableView.reloadData()
+    }
   }
 
   override func viewDidAppear(_ animated:Bool) {
+    self.drawParabola()
     if self.isPublishing {
       self.renderPreview()
     }
     self.updateStreamListRequest()
     self.updateStreamListTimer = Timer.scheduledTimer(timeInterval: 5.0, target: self, selector: #selector(updateStreamListRequest), userInfo: nil, repeats: true)
+    self.enterFullScreen(isFullScreen: self.isFullScreen)
+  }
+
+  override func viewWillDisappear(_ animated: Bool) {
+    super.viewWillDisappear(animated)
+    self.phenixLayer = nil
+    self.previewVideoView.layer.sublayers?.forEach { $0.removeFromSuperlayer() }
+    self.updateStreamListTimer.invalidate()
   }
 
   override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
     super.viewWillTransition(to: size, with: coordinator)
     coordinator.animate(alongsideTransition: nil, completion: {
       _ in
+      self.drawParabola()
+      if UIDevice.current.orientation.isLandscape {
+        self.optionStack.axis = .horizontal
+        self.optionStackHeightConstraint = self.optionStackHeightConstraint.setMultiplier(multiplier: 0.5)
+      } else {
+        self.optionStack.axis = .vertical
+        self.optionStackHeightConstraint = self.optionStackHeightConstraint.setMultiplier(multiplier: 0.66)
+      }
       self.indicator.frame = CGRect(x: 0, y: 0, width: 50, height: 50)
       self.indicator.center = self.view.center
       self.view.addSubview(self.indicator)
       self.enterFullScreen(isFullScreen: self.isFullScreen)
+      self.idTableView.reloadData()
     })
   }
 
@@ -145,16 +193,18 @@ class ViewController:UIViewController, UITableViewDataSource, UITableViewDelegat
     NotificationCenter.default.addObserver(self, selector: #selector(ViewController.handleAppEnterForeground(notification:)), name: Notification.Name.UIApplicationWillEnterForeground, object: nil)
   }
 
-  func addPulse(){
+  func addPulse() {
     let pulse = Pulsing(numberOfPulses: 1, radius: 200, position: self.birdLogo.center)
     pulse.backgroundColor = UIColor.gray.cgColor
     self.view.layer.insertSublayer(pulse, below: self.birdLogo.layer)
   }
 
   func updateStreamListRequest() {
+    self.animateParabola(duration: 4.8)
     do {
       try Backend.shared.listStreams(done:updateStreamList)
     } catch {
+      print("Could not get streams list \(error)")
     }
   }
 
@@ -164,26 +214,22 @@ class ViewController:UIViewController, UITableViewDataSource, UITableViewDelegat
       var i = 0;
       // swap self-Id to first index
       for streamIdFullString in self.streamIdList {
-        if streamIdFullString == self.streamIdThisPhone {
+        if streamIdFullString != nil, streamIdFullString == self.streamIdThisPhone {
           let element = self.streamIdList.remove(at: i)
           self.streamIdList.insert(element, at: 0)
         }
         i += 1
       }
     }
+
     DispatchQueue.main.async {
-      self.idTableView.reloadData()
+      UIView.transition(with: self.idTableView, duration: 0.2, options: .transitionCrossDissolve, animations: { () -> Void in
+          self.idTableView.reloadData()
+      }, completion: nil);
     }
   }
 
   func setupSubviews() {
-    DispatchQueue.main.async {
-      let f = self.previewVideoViewSmall.frame
-      self.publishButtonSpaceToBottom.constant = f.size.height - 20
-      self.changeCameraButtonTrailing.constant = f.size.width - 20
-      self.selectStreamHomeView.layoutIfNeeded()
-    }
-
     var versionString = ""
 
     if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
@@ -198,11 +244,15 @@ class ViewController:UIViewController, UITableViewDataSource, UITableViewDelegat
     self.indicator.frame = CGRect(x: 0, y: 0, width: 50, height: 50)
     self.indicator.center = self.view.center
     self.view.addSubview(self.indicator)
-    self.previewVideoView.layer.borderWidth = 1.0
+    self.previewVideoView.layer.borderWidth = 2.0
     self.previewVideoView.layer.cornerRadius = 5.0
     self.previewVideoView.layer.masksToBounds = true
     self.previewVideoView.layer.borderColor = UIColor.gray.cgColor
     self.selectStreamHomeView.isHidden = true
+  }
+
+  func adaptivePresentationStyle(for controller: UIPresentationController) -> UIModalPresentationStyle {
+    return UIModalPresentationStyle.none
   }
 
   func restartProgress() {
@@ -234,29 +284,20 @@ class ViewController:UIViewController, UITableViewDataSource, UITableViewDelegat
     self.reportStatus(step:.Auth, success:sessionId != nil)
     if let authSession = sessionId {
       Phenix.shared.authSession = authSession
-      Phenix.shared.getLocalUserMedia(mediaReady:mediaReady)
+      Phenix.shared.getLocalUserMedia(mediaOption: .all, mediaReady:mediaReady)
     }
   }
 
   func mediaReady(success:Bool) {
     self.reportStatus(step:.Media, success:success)
     if success {
-      self.pRenderer = Phenix.shared.userMediaStream?.mediaStream.createRenderer()
-        if let auSession = Phenix.shared.authSession {
-          do {
-            try Backend.shared.createStreamToken(sessionId:auSession, originStreamId:nil, capabilities:"streaming", done:publishTokenCallback)
-          } catch {
-            self.reportStatus(step:.PublishToken, success:false)
-          }
-        } else {
-          // Fail to get Authorization Token, re-login to get the token
-          self.login(name:"demo-user", password:"demo-password")
-        }
+      self.renderer = Phenix.shared.userMediaStream?.mediaStream.createRenderer()
+      self.startPublishing()
     }
   }
 
   func publishTokenCallback(publishToken:String?) {
-    if let token = publishToken, let stream = Phenix.shared.stream {
+    if let token = publishToken, let stream = Phenix.shared.userMediaStream?.mediaStream {
       Phenix.shared.getPublishStreamID(publishStreamToken:token, stream:stream, publishStreamIDCallback:publishStreamIDCallback)
     } else {
       self.reportStatus(step:.PublishToken, success:false)
@@ -273,27 +314,10 @@ class ViewController:UIViewController, UITableViewDataSource, UITableViewDelegat
       self.isViewProgressing = false
       self.renderPreview()
       DispatchQueue.main.async {
-        self.changePublishState.setBackgroundImage(UIImage(named: "ic-record"), for: UIControlState.normal)
         self.showSplashAnimation = false
         self.idTableView.reloadData()
       }
     }
-  }
-
-  func recordButtonAnimation() -> CAAnimationGroup {
-    let pulse1 = CASpringAnimation(keyPath: "transform.scale")
-    pulse1.duration = 0.6
-    pulse1.fromValue = 1.0
-    pulse1.toValue = 1.12
-    pulse1.autoreverses = true
-    pulse1.repeatCount = 1
-    pulse1.initialVelocity = 0.5
-    pulse1.damping = 0.8
-    let animationGroup = CAAnimationGroup()
-    animationGroup.duration = 0.6
-    animationGroup.repeatCount = Float.infinity
-    animationGroup.animations = [pulse1]
-    return animationGroup
   }
 
   func reportStatus(step:Step, success:Bool) {
@@ -306,9 +330,15 @@ class ViewController:UIViewController, UITableViewDataSource, UITableViewDelegat
   }
 
   func startPublishing() {
-    if Phenix.shared.authSession != nil {
-      Phenix.shared.getLocalUserMedia(mediaReady:mediaReady)
+    if let auSession = Phenix.shared.authSession {
+      do {
+        let arrCap = ["streaming", "archive"]
+        try Backend.shared.createStreamToken(sessionId:auSession, originStreamId:nil, capabilities:arrCap, done:publishTokenCallback)
+      } catch {
+        self.reportStatus(step:.PublishToken, success:false)
+      }
     } else {
+      // No Authorization Token, re-login to get the token
       self.login(name:"demo-user", password:"demo-password")
     }
   }
@@ -320,17 +350,14 @@ class ViewController:UIViewController, UITableViewDataSource, UITableViewDelegat
   }
 
   func handleAppEnterBackground(notification: Notification) {
+    self.renderer?.stop()
     Phenix.shared.authSession = nil
     Phenix.shared.stop()
   }
 
   func handleAppEnterForeground(notification: Notification) {
-    // after background->foreground, camera environment will change to default (.user) automatically
-    self.isUsingFrontCamera = true
-
     // Post notification to StreamingVC
-    NotificationCenter.default.post(name: Notification.Name("NotificationBackToHome"), object: nil)
-
+    NotificationCenter.default.post(name: Notification.Name(PhenixName.BackToHomeNotification), object: nil)
     self.restartProgress()
     self.startPublishing()
   }
@@ -347,96 +374,161 @@ class ViewController:UIViewController, UITableViewDataSource, UITableViewDelegat
   func enterFullScreen(isFullScreen : Bool) {
     self.previewVideoView.layer.sublayers?.forEach { $0.removeFromSuperlayer() }
     var f = CGRect()
-
     if isFullScreen {
+      self.previewProporsionalToParentWidth = self.previewProporsionalToParentWidth.setMultiplier(multiplier: 1.0)
+      self.previewProporsionalToParentHeight = self.previewProporsionalToParentHeight.setMultiplier(multiplier: 1.0)
       f = self.selectStreamHomeView.bounds
-      self.changePreviewSize.setImage(UIImage(named: "ic-full-screen-exit"), for: UIControlState.normal)
+      self.changePreviewSize.setBackgroundImage(UIImage(named: "icon-full-screen-exit"), for: .normal)
       DispatchQueue.main.async {
-        self.publishButtonSpaceToBottom.constant = f.size.height - 80
-        self.changeCameraButtonTrailing.constant = f.size.width - 30
-        self.selectStreamHomeView.layoutIfNeeded()
-        self.previewVideoView.frame = f
         self.previewVideoView.layer.borderWidth = 0
         self.previewVideoView.layer.cornerRadius = 0
       }
+      self.switchButtonToBottomParent.constant = f.size.height - 102
+      self.stopPublishTrailingToParent.constant = f.size.width - 27
     } else {
       f = self.previewVideoViewSmall.frame
-      self.changePreviewSize.setImage(UIImage(named: "ic-full-screen-enter"), for: UIControlState.normal)
+      self.changePreviewSize.setBackgroundImage(UIImage(named: "icon-full-screen-enter"), for: .normal)
       DispatchQueue.main.async {
         UIView.animate(withDuration: 0.3, animations: {
-          self.publishButtonSpaceToBottom.constant = f.size.height - 20
-          self.changeCameraButtonTrailing.constant = f.size.width - 20
-          self.selectStreamHomeView.layoutIfNeeded()
-          self.previewVideoView.frame = f
-          self.previewVideoView.layer.borderWidth = 1.0
+          self.previewProporsionalToParentWidth = self.previewProporsionalToParentWidth.setMultiplier(multiplier: 0.25)
+          self.previewProporsionalToParentHeight = self.previewProporsionalToParentHeight.setMultiplier(multiplier: 0.25)
+          self.previewVideoView.layer.borderWidth = 2.0
           self.previewVideoView.layer.cornerRadius = 5.0
-          self.previewVideoView.layer.borderColor = UIColor.gray.cgColor
+          self.previewVideoView.layer.borderColor = PhenixColor.Gray.cgColor
         })
       }
+      self.switchButtonToBottomParent.constant = f.size.height - 27
+      self.stopPublishTrailingToParent.constant = f.size.width - 25
     }
-
-    self.previewVideoView.layer.masksToBounds = true
-    if let layer = self.phenixLayer {
-      if isFullScreen {
-        layer.frame = self.selectStreamHomeView.bounds
-      } else {
-        layer.frame = self.previewVideoViewSmall.bounds
+    DispatchQueue.main.async {
+      if let layer = self.phenixLayer {
+        if isFullScreen {
+          layer.frame = self.selectStreamHomeView.bounds
+        } else {
+          layer.frame = self.previewVideoViewSmall.bounds
+        }
+        self.previewVideoView.layer.addSublayer(layer)
       }
-      self.previewVideoView.layer.addSublayer(layer)
+      self.previewVideoView.layer.masksToBounds = true
+      self.view.updateConstraintsIfNeeded()
+      self.view.layoutIfNeeded()
     }
   }
 
   func renderPreview() {
-    self.pRenderer?.stop()
+    self.renderer?.stop()
+    self.previewVideoView.layer.sublayers?.forEach { $0.removeFromSuperlayer() }
+    self.renderer = Phenix.shared.userMediaStream?.mediaStream.createRenderer()
     if self.isPublishing {
-      self.publishingAnimation = self.recordButtonAnimation()
-      self.pRenderer?.setRenderSurfaceReadyCallback({ (renderer, layer) in
+      self.publishingAnimation = Utilities.publishButtonAnimation()
+      DispatchQueue.main.async {
+        self.changePublishState.layer.add(self.publishingAnimation, forKey: "pulse")
+      }
+      self.renderer?.setRenderSurfaceReadyCallback({ (renderer, layer) in
         if let previewLayer = layer {
           self.phenixLayer = previewLayer
           let f = self.previewVideoView.frame
           previewLayer.frame = CGRect(x:0,y:0, width:f.width, height:f.height)
           DispatchQueue.main.async {
-            self.switchCamera.image = UIImage(named: "ic_camera_front")
             self.previewVideoView.layer.addSublayer(previewLayer)
-            self.changePublishState.layer.add(self.publishingAnimation, forKey: "pulse")
+            let bgImage = self.isUsingFrontCamera ? #imageLiteral(resourceName: "icon-camera-front") : #imageLiteral(resourceName: "icon-camera-rear")
+            self.buttonSwitch.setBackgroundImage(bgImage, for: .normal)
           }
         }
       })
 
-      let status = self.pRenderer?.start()
+      // Listen to and display Viewer stream quality
+      self.renderer?.setDataQualityChangedCallback({ (renderer, qualityStatus, qualityReason) in
+        var barTye = StatusBarType.max
+        if qualityStatus == .noData || !self.isPublishing {
+          barTye = .none
+        } else if qualityStatus == .all  {
+          switch qualityReason {
+          case .none:
+            barTye = .max
+          case .publisherLimited, .uploadLimited:
+            barTye = .third
+          case .networkLimited, .downloadLimited:
+            barTye = .half
+          }
+        } else {
+          barTye = .min
+        }
+        DispatchQueue.main.async {
+          self.updateSatusBar(barTye: barTye)
+        }
+      })
 
+      let status = self.renderer?.start()
+      if status == nil {
+        return
+      }
       if status == .ok {
-        print("Renderer start status = \(status)")
+        print("Renderer start status .ok")
+      } else if status == .conflict {
+        // Conflict due to previous renderer is available, no need to start a new one.
+        print("Renderer start status .conflict")
       } else {
         let statusString = ("\(status)")
         let alert = UIAlertController(title: "Renderer failed", message:statusString, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default) {
           _ in
-          self.pRenderer?.stop()
         })
-        self.present(alert, animated: true){
-        }
-      }
-
-      if self.pRenderer?.isAudioMuted == true {
-        self.pRenderer?.unmuteAudio()
+        self.present(alert, animated: true)
       }
     }
   }
 
-  // MARK: IBAction
-  @IBAction func switchCamera(_ sender: AnyObject) {
-    var gumOptions = PhenixUserMediaOptions()
-    if self.isUsingFrontCamera {
-      self.switchCamera.image = UIImage(named: "ic_camera_rear")
-      gumOptions.video.facingMode = .environment
-      self.isUsingFrontCamera = false
-    } else {
-      self.switchCamera.image = UIImage(named: "ic_camera_front")
-      gumOptions.video.facingMode = .user
-      self.isUsingFrontCamera = true
+  func updateSatusBar(barTye: StatusBarType) {
+    var barColor = UIColor.clear
+    switch barTye {
+    case .min: barColor = PhenixColor.Red
+    case .half: barColor = PhenixColor.Orange
+    case .third, .max: barColor = PhenixColor.Blue
+    case .none: barColor = .clear
     }
-    Phenix.shared.userMediaStream?.apply(&gumOptions)
+
+    let currentMaxBarTag = 2210 + barTye.rawValue
+    for barNumber in 1...4 {
+      // Set the bars visible and colors by tag
+      // 2211..2214: Publish image bars
+      let imageBarTag = 2210 + barNumber
+      if let imageBar = self.view.viewWithTag(imageBarTag) as? UIImageView {
+        if imageBarTag <= currentMaxBarTag {
+          imageBar.backgroundColor = barColor
+        } else {
+          imageBar.backgroundColor = .clear
+        }
+      }
+    }
+  }
+
+  func updateCameraSetting(isFront: Bool) {
+    let gumOptions = PhenixUserMediaOptions()
+    let bgImage = isFront ? #imageLiteral(resourceName: "icon-camera-front") : #imageLiteral(resourceName: "icon-camera-rear")
+    self.buttonSwitch.setBackgroundImage(bgImage, for: .normal)
+    gumOptions.video.facingMode = isFront ? .user : .environment
+    Phenix.shared.userMediaStream?.apply(gumOptions)
+  }
+
+  // MARK: IBAction
+  @IBAction func startPublishingTouched(_ sender: AnyObject) {
+    self.isViewProgressing = true
+    if self.isPublishing {
+      self.isViewProgressing = false
+      return
+    }
+    switch sender.tag {
+    case 1001: Phenix.shared.getLocalUserMedia(mediaOption: .audioOnly, mediaReady: mediaReady)
+    case 1002: Phenix.shared.getLocalUserMedia(mediaOption: .videoOnly, mediaReady: mediaReady)
+    case 1003: Phenix.shared.getLocalUserMedia(mediaOption: .all, mediaReady: mediaReady)
+    default: break
+    }
+  }
+
+  @IBAction func switchCamera(_ sender: AnyObject) {
+    self.isUsingFrontCamera = !self.isUsingFrontCamera
+    self.updateCameraSetting(isFront: self.isUsingFrontCamera)
   }
 
   @IBAction func changePreviewSizeClicked(_ sender: AnyObject) {
@@ -448,17 +540,20 @@ class ViewController:UIViewController, UITableViewDataSource, UITableViewDelegat
     if self.isPublishing {
       self.isPublishing = false
       self.isFullScreen = false
+      self.renderer?.stop()
       self.phenixLayer = nil
-      Phenix.shared.userMediaStream = nil
       Phenix.shared.stopPublish()
       Phenix.shared.stopRenderVideo()
-      self.changePublishState.setBackgroundImage(UIImage(named: "ic-play"), for: UIControlState.normal)
       self.enterFullScreen(isFullScreen: self.isFullScreen)
       self.changePublishState.layer.removeAllAnimations()
       self.previewVideoView.layer.sublayers?.forEach { $0.removeFromSuperlayer() }
-    } else {
-      self.isViewProgressing = true
-      self.startPublishing()
+
+      // Remove own device's ID immediately to advoid clicking on while publishing stopped
+      if let idThisPhone = self.streamIdThisPhone, self.streamIdList.count > 0 ,idThisPhone == self.streamIdList[0] {
+        self.streamIdList.remove(at: 0)
+        self.streamIdThisPhone = nil
+        self.idTableView.reloadData()
+      }
     }
   }
 
@@ -483,16 +578,17 @@ class ViewController:UIViewController, UITableViewDataSource, UITableViewDelegat
       }
     }
     cell.backgroundColor = UIColor.clear
-    let gradient = CAGradientLayer()
-    let startColor = UIColor(red: 202/255, green: 42/255, blue: 116/255, alpha: 1.0).cgColor
-    let endColor = UIColor(red: 137/255, green: 43/255, blue: 96/255, alpha: 1.0).cgColor
+
+    let gradientFrame = CGRect(x: 0.0, y: 0.0, width: tableView.layer.frame.width, height: cell.contentView.bounds.size.height)
+    let gradientColors = [PhenixColor.GradientStart.cgColor, PhenixColor.GradientEnd.cgColor]
+    let gradient = Utilities.createGradientLayer(frame: gradientFrame, colors: gradientColors)
     gradient.startPoint = CGPoint(x:0, y:0)
     gradient.endPoint = CGPoint(x:1.0, y:0)
-    gradient.frame = CGRect(x: 0.0, y: 0.0, width: tableView.bounds.width, height: cell.contentView.bounds.size.height)
-    gradient.colors = [startColor, endColor]
+    gradient.zPosition = -1
+
     cell.idGradientView.layer.cornerRadius = 5.0
     cell.idGradientView.layer.masksToBounds = true
-    cell.idGradientView.layer.insertSublayer(gradient, at: 0)
+    cell.idGradientView.layer.addSublayer(gradient)
 
     return cell
   }
@@ -501,17 +597,49 @@ class ViewController:UIViewController, UITableViewDataSource, UITableViewDelegat
   func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
     if let streamIdFullString = self.streamIdList[indexPath.row] {
       self.selectedStreamId = streamIdFullString
-      self.performSegue(withIdentifier: "StreamSegue", sender: nil)
+      self.performSegue(withIdentifier: PhenixSegue.StreamSegue, sender: nil)
     }
   }
 
   // MARK: Segue
   override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-    if segue.identifier == "StreamSegue" {
+    if segue.identifier == PhenixSegue.StreamSegue {
       let streamingVC = (segue.destination as! StreamingVC)
       streamingVC.streamId = self.selectedStreamId
+      streamingVC.isPublishing = self.isPublishing
       streamingVC.isUsingFrontCamera = self.isUsingFrontCamera
     }
+  }
+
+  // MARK: Parabola animating
+  var paraLayer: CAShapeLayer!
+  func drawParabola() {
+    self.animationView.layer.sublayers?.forEach { $0.removeFromSuperlayer() }
+    let publishPath = Utilities.parabolaPath(pathType: .publish, viewToDraw: self.animationView, flatness: 0.1)
+    paraLayer = CAShapeLayer()
+    paraLayer.path = publishPath.cgPath
+    paraLayer.fillColor = UIColor.clear.cgColor
+    paraLayer.strokeColor = PhenixColor.Gray.cgColor
+    paraLayer.lineWidth = 5.0
+    paraLayer.strokeEnd = 0.0
+    DispatchQueue.main.async {
+      self.animationView.layer.addSublayer(self.paraLayer)
+    }
+  }
+
+  func animateParabola(duration: TimeInterval) {
+    // Animating the strokeEnd property of the circleLayer
+    let animation = CABasicAnimation(keyPath: "strokeEnd")
+    animation.duration = duration
+
+    // Animate from 0 (no shape) to 1 (full shape)
+    animation.fromValue = 0
+    animation.toValue = 1
+    animation.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionLinear)
+    paraLayer.strokeEnd = 1.0
+
+    // Commit animation
+    paraLayer.add(animation, forKey: "animateParabola")
   }
 }
 

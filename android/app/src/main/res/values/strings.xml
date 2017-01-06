@@ -1,17 +1,27 @@
 <resources>
-
   <string name="action_settings">Settings</string>
-  <string name="let_stream">Let\'s stream!</string>
   <string name="permissions_denied">Some permissions were denied</string>
   <string name="action_filter_stream">Select stream</string>
   <string name="mode_real_time">Real-time</string>
   <string name="mode_live">Live</string>
   <string name="mode_broadcast">Broadcast</string>
-  <string name="stop_video_pub">The video publisher stopped.</string>
+  <string name="stop_pub">The publisher stopped.</string>
   <string name="this_phone">%1$s (this device)</string>
   <string name="version">v %1$s</string>
   <string name="render_error">Error: %1$s</string>
   <string name="media_null">Could not get user media</string>
   <string name="please_try">Please try again</string>
   <string name="list_null">List streams return null</string>
+  <string name="quality_pubs">Data quality status for publishing:</string>
+  <string name="quality_views">Data quality status for viewing:</string>
+  <string name="none">None</string>
+  <string name="upload_limit">Upload limited</string>
+  <string name="download_limit">Download limited</string>
+  <string name="pub_limit">Publisher limited</string>
+  <string name="network_limit">Network limited</string>
+  <string name="notification_share_title">Share screen</string>
+  <string name="notification_share_subtitle">Touch the to open home</string>
+  <string name="server_address">Server address:</string>
+  <string name="pcast_address">PCast address:</string>
+  <string name="publishStopFail">Publishing failed to stop</string>
 </resources>

@@ -22,11 +22,10 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.phenixp2p.demo.R;
-import com.phenixp2p.demo.model.StreamList;
 
 import java.util.List;
 
-public class StreamIdAdapter extends RecyclerView.Adapter<StreamIdAdapter.StreamViewHolder> {
+public final class StreamIdAdapter extends RecyclerView.Adapter<StreamIdAdapter.StreamViewHolder> {
   private OnItemClickListener listener;
 
   public StreamIdAdapter(OnItemClickListener clickListener) {
@@ -36,17 +35,16 @@ public class StreamIdAdapter extends RecyclerView.Adapter<StreamIdAdapter.Stream
   @Override
   public StreamViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
     View itemView = LayoutInflater.from(parent.getContext())
-    .inflate(R.layout.item_stream_id, parent, false);
+      .inflate(R.layout.item_stream_id, parent, false);
     return new StreamViewHolder(itemView);
   }
 
   @Override
   public void onBindViewHolder(final StreamViewHolder holder, final int position) {
-    if (listener.getListStreams().size() >= 1) {
-      StreamList.Stream streamID = listener.getListStreams().get(position);
-      String streamId = streamID.getStreamId();
+    if (this.listener.getListStreams().size() >= 1) {
+      String streamId = this.listener.getListStreams().get(position);
       String newStreamId = streamId.substring(0, streamId.indexOf("#") + 1).concat("...").concat(streamId.substring(streamId.length() - 4, streamId.length()));
-      if (position == 0 && listener.isThisPhone()) {
+      if (position == 0 && this.listener.isThisPhone()) {
         holder.title.setText(holder.title.getContext().getResources().getString(R.string.this_phone, newStreamId));
       } else {
         holder.title.setText(newStreamId);
@@ -56,27 +54,27 @@ public class StreamIdAdapter extends RecyclerView.Adapter<StreamIdAdapter.Stream
 
   @Override
   public int getItemCount() {
-    return listener.getListStreams().size();
+    return this.listener.getListStreams().size();
   }
 
   public interface OnItemClickListener {
     void onItemClick(View itemView, int position);
 
-    List<StreamList.Stream> getListStreams();
+    List<String> getListStreams();
 
     boolean isThisPhone();
   }
 
-  public class StreamViewHolder extends RecyclerView.ViewHolder {
+  class StreamViewHolder extends RecyclerView.ViewHolder {
     public TextView title;
 
-    public StreamViewHolder(View view) {
+    StreamViewHolder(View view) {
       super(view);
-      title = (TextView) view.findViewById(R.id.tvId);
+      title = (TextView) view.findViewById(R.id.textViewId);
       view.setOnClickListener(new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-          listener.onItemClick(itemView, getLayoutPosition());
+          StreamIdAdapter.this.listener.onItemClick(itemView, getLayoutPosition());
         }
       });
     }

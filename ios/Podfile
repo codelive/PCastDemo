@@ -8,5 +8,6 @@ target 'PCast Demo' do
   # Pods for PCast Demo
   pod 'Fabric'
   pod 'Crashlytics'
+  pod 'ReachabilitySwift', '~> 3'
 
 end

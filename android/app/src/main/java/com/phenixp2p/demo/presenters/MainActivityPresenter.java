@@ -12,132 +12,101 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.phenixp2p.demo.presenters;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.phenixp2p.demo.api.ApiFactory;
-import com.phenixp2p.demo.api.response.Authentication;
-import com.phenixp2p.demo.api.response.StreamToken;
+import com.phenixp2p.demo.AsyncService;
+import com.phenixp2p.demo.HttpTask;
+import com.phenixp2p.demo.model.AuthenticationRequest;
+import com.phenixp2p.demo.model.AuthenticationResponse;
+import com.phenixp2p.demo.model.StreamTokenRequest;
+import com.phenixp2p.demo.model.StreamTokenResponse;
 import com.phenixp2p.demo.presenters.inter.IMainActivityPresenter;
 import com.phenixp2p.demo.ui.view.IDetailStreamView;
 import com.phenixp2p.demo.ui.view.IMainActivityView;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
-import rx.Subscriber;
-import rx.Subscription;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
-import rx.subscriptions.CompositeSubscription;
+import static com.phenixp2p.demo.HttpTask.Method.POST;
 
-public class MainActivityPresenter implements IMainActivityPresenter {
+public final class MainActivityPresenter implements IMainActivityPresenter {
   private IMainActivityView view;
   private IDetailStreamView streamView;
-  private CompositeSubscription mCompositeSubscription;
 
   public MainActivityPresenter(IMainActivityView view) {
     this.view = view;
-    mCompositeSubscription = new CompositeSubscription();
   }
 
   public MainActivityPresenter(IDetailStreamView streamView) {
     this.streamView = streamView;
-    mCompositeSubscription = new CompositeSubscription();
-  }
-
-  /**
-   * REST API: authenticate with the app-maker's own server.
-   * The app talks to a Phenix demo server, but you could also use the node.js server provided in this repo.
-   *
-   * @param user
-   * @param password
-   */
-  @Override
-  public void login(String user, String password) {
-    view.showProgress();
-    Subscription subscription = ApiFactory.getApiService().login(user, password)
-      .subscribeOn(Schedulers.io())
-      .unsubscribeOn(Schedulers.io())
-      .observeOn(AndroidSchedulers.mainThread())
-      .subscribe(new Subscriber<Authentication>() {
-        @Override
-        public void onCompleted() {
-        }
-
-        @Override
-        public void onError(Throwable e) {
-          view.onError(e.getMessage());
-        }
-
-        @Override
-        public void onNext(Authentication authentication) {
-          view.authenticationToken(authentication);
-        }
-      });
-    mCompositeSubscription.add(subscription);
   }
 
   @Override
-  public void createStreamToken(String sessionId, final String originStreamId, String capability, final Streamer streamer) {
-    try {
-      JSONObject params = new JSONObject();
-      params.put("sessionId", sessionId);
-      if (originStreamId != null) {
-        params.put("originStreamId", originStreamId);
+  public void login(String user, String password, String endpoint) {
+    this.view.showProgress();
+    AuthenticationRequest request = new AuthenticationRequest();
+    request.setName(user);
+    request.setPassword(password);
+    HttpTask.Callback<AuthenticationResponse> callback = new HttpTask.Callback<AuthenticationResponse>() {
+      @Override
+      public void onResponse(AuthenticationResponse result) {
+        if (result != null) {
+          MainActivityPresenter.this.view.authenticationToken(result.getAuthenticationToken());
+        }
       }
-      if (capability != null) {
-        params.put("capabilities", new JSONArray(new String[]{capability}));
-      }
 
-      Subscription subscription = ApiFactory.getApiService().stream(new Gson().fromJson(params.toString(), JsonElement.class))
-        .subscribeOn(Schedulers.io())
-        .unsubscribeOn(Schedulers.io())
-        .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(new Subscriber<StreamToken>() {
-          @Override
-          public void onCompleted() {
-          }
-
-          @Override
-          public void onError(Throwable e) {
-            if (view != null) {
-              view.onError(e.getMessage());
-            }
-
-            if (streamView != null) {
-              streamView.onError(e.getMessage());
-            }
-          }
-
-          @Override
-          public void onNext(StreamToken streamToken) {
-            streamer.hereIsYourStreamToken(streamToken.getStreamToken());
-            if (originStreamId != null && view != null) {
-              view.hideProgress();
-            }
-          }
-        });
-      mCompositeSubscription.add(subscription);
-
-    } catch (Exception e) {
-      view.onError(e.getMessage());
-      if (view != null) {
+      @Override
+      public void onError(Exception e) {
         view.onError(e.getMessage());
       }
-
-      if (streamView != null) {
-        streamView.onError(e.getMessage());
-      }
-    }
+    };
+    HttpTask<AuthenticationRequest, AuthenticationResponse> task = new HttpTask<>(callback, endpoint + "login", POST, request, AuthenticationResponse.class);
+    task.execute(AsyncService.getInstance().getExecutorService());
   }
 
   @Override
-  public void onDestroy() {
-    if (mCompositeSubscription != null)
-      mCompositeSubscription.clear();
+  public void createStreamToken(String sessionId, final String originStreamId, String endpoint, String[] capabilities, final Streamer streamer) {
+    StreamTokenRequest request = new StreamTokenRequest();
+    request.setSessionId(sessionId);
+    if (originStreamId != null) {
+      request.setOriginStreamId(originStreamId);
+    }
+
+    if (capabilities != null) {
+      List<String> listCapabilities = new ArrayList<>();
+      Collections.addAll(listCapabilities, capabilities);
+      request.setCapabilities(listCapabilities);
+    }
+    HttpTask.Callback<StreamTokenResponse> callback = new HttpTask.Callback<StreamTokenResponse>() {
+      @Override
+      public void onResponse(StreamTokenResponse result) {
+        if (result != null) {
+          streamer.hereIsYourStreamToken(result.getStreamToken());
+          if (originStreamId != null && MainActivityPresenter.this.view != null) {
+            MainActivityPresenter.this.view.hideProgress();
+          }
+        } else {
+          if (MainActivityPresenter.this.streamView != null) {
+            MainActivityPresenter.this.streamView.onNullStreamToken();
+          }
+
+          if (MainActivityPresenter.this.view != null) {
+            MainActivityPresenter.this.view.hideProgress();
+          }
+        }
+      }
+
+      @Override
+      public void onError(Exception e) {}
+    };
+    HttpTask<StreamTokenRequest, StreamTokenResponse> task = new HttpTask<>(callback, endpoint.concat("stream"), POST, request, StreamTokenResponse.class);
+    task.execute(AsyncService.getInstance().getExecutorService());
   }
+
+  @Override
+  public void onDestroy() {}
 
   public interface Streamer {
     void hereIsYourStreamToken(String streamToken);

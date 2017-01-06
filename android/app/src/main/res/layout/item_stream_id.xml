@@ -12,9 +12,9 @@
   card_view:cardElevation="4dp">
 
   <TextView
-    android:id="@+id/tvId"
+    android:id="@+id/textViewId"
     android:layout_width="match_parent"
-    android:layout_height="48dp"
+    android:layout_height="40dp"
     android:gravity="center"
     android:textColor="@android:color/white"
     android:textSize="18sp"

@@ -1,19 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <declare-styleable name="Pulse">
-    <attr name="pulse_count" format="integer"/>
-    <attr name="pulse_duration" format="integer"/>
-    <attr name="pulse_color" format="color"/>
-    <attr name="pulse_repeat" format="integer"/>
-    <attr name="pulse_maxScale" format="float"/>
-    <attr name="pulse_startFromScratch" format="boolean"/>
-    <attr name="pulse_interpolator" format="enum">
-      <enum name="Linear" value="0"/>
-      <enum name="Accelerate" value="1"/>
-      <enum name="Decelerate" value="2"/>
-      <enum name="AccelerateDecelerate" value="3"/>
-    </attr>
+  <declare-styleable name="ArcImage">
+    <attr name="padding" format="dimension" />
+    <attr name="color_seek" format="color" />
+    <attr name="color_shadow" format="color" />
+    <attr name="width_seek" format="dimension" />
+    <attr name="width_shadow" format="dimension" />
+    <attr name="process" format="integer" />
+    <attr name="icon_seek" format="reference" />
+    <attr name="icon_start" format="reference" />
+    <attr name="icon_end" format="reference" />
+    <attr name="size_icon" format="dimension" />
+    <attr name="margin_bottomarc" format="dimension" />
+    <attr name="start_angle" format="integer" />
+    <attr name="angle" format="integer" />
+    <attr name="icon_top" format="reference" />
+    <attr name="type_draw_nomal" format="boolean"/>
   </declare-styleable>
 
-
+  <declare-styleable name="QualityStatusView">
+    <attr name="first_color" format="color" />
+    <attr name="second_color" format="color" />
+    <attr name="third_color" format="color" />
+    <attr name="fourth_color" format="color"/>
+    <attr name="first_process" format="integer" />
+    <attr name="second_process" format="integer" />
+    <attr name="third_process" format="integer" />
+    <attr name="fourth_process" format="integer"/>
+    <attr name="padding_column" format="dimension" />
+    <attr name="status_show" format="enum">
+      <enum name="one" value="0"/>
+      <enum name="two" value="1"/>
+      <enum name="three" value="2"/>
+      <enum name="four" value="3"/>
+    </attr>
+  </declare-styleable>
 </resources>

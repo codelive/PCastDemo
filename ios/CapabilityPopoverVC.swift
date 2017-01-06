@@ -17,63 +17,63 @@
 import Foundation
 import UIKit
 
-protocol CapabilityDelegate {
-  func selectCapability(selection : Int)
+enum CapabilitySelection: Int {
+    case RealTime = 1
+    case Broadcast = 2
+    case Live = 3
 }
 
-class CapabilityPopoverVC : UIViewController {
+protocol CapabilityDelegate {
+  func selectCapability(selection: CapabilitySelection)
+}
 
+final class CapabilityPopoverVC : UIViewController {
   @IBOutlet weak var capabilityView: UIView!
-  @IBOutlet weak var imgRealtimeSelected: UIImageView!
-  @IBOutlet weak var imgBroadcastSelected: UIImageView!
-  @IBOutlet weak var imgLiveSelected: UIImageView!
-  let image3 = UIImage(named: "selection-circle")
-  var currentCapability = 1
+  @IBOutlet weak var imageRealtimeSelected: UIImageView!
+  @IBOutlet weak var imageBroadcastSelected: UIImageView!
+  @IBOutlet weak var imageLiveSelected: UIImageView!
+  let selectionCircle = UIImage(named: "selection-circle")
+  var currentCapability = CapabilitySelection.RealTime
   var capabilityDelegate : CapabilityDelegate?
-
-  override func viewDidLoad() {
-    super.viewDidLoad()
-  }
 
   override func viewDidAppear(_ animated: Bool) {
     super.viewWillAppear(animated)
     self.setImageForCurrentCapability(currentCapability: currentCapability)
   }
 
-  func setImageForCurrentCapability(currentCapability : Int) {
-    self.imgRealtimeSelected.image = nil
-    self.imgBroadcastSelected.image = nil
-    self.imgLiveSelected.image = nil
+  func setImageForCurrentCapability(currentCapability: CapabilitySelection) {
+    self.imageRealtimeSelected.image = nil
+    self.imageBroadcastSelected.image = nil
+    self.imageLiveSelected.image = nil
 
     switch currentCapability {
-    case 1: self.imgRealtimeSelected.image = image3
-    case 2: self.imgBroadcastSelected.image = image3
-    case 3: self.imgLiveSelected.image = image3
-    default: break
+    case .RealTime: self.imageRealtimeSelected.image = selectionCircle
+    case .Broadcast: self.imageBroadcastSelected.image = selectionCircle
+    case .Live: self.imageLiveSelected.image = selectionCircle
     }
   }
 
   @IBAction func realtimeClicked(_ sender: Any) {
     if let del = capabilityDelegate {
-      del.selectCapability(selection: 1)
+      del.selectCapability(selection: .RealTime)
     }
     dismiss(animated: true, completion: nil)
-    self.setImageForCurrentCapability(currentCapability:1)
+    self.setImageForCurrentCapability(currentCapability:.RealTime)
   }
 
   @IBAction func broadcastClicked(_ sender: Any) {
     if let del = capabilityDelegate {
-      del.selectCapability(selection: 2)
+      del.selectCapability(selection: .Broadcast)
     }
     dismiss(animated: true, completion: nil)
-    self.setImageForCurrentCapability(currentCapability:2)
+    self.setImageForCurrentCapability(currentCapability:.Broadcast)
   }
 
   @IBAction func liveClicked(_ sender: Any) {
     if let del = capabilityDelegate {
-      del.selectCapability(selection: 3)
+      del.selectCapability(selection: .Live)
     }
     dismiss(animated: true, completion: nil)
-    self.setImageForCurrentCapability(currentCapability:3)
+    self.setImageForCurrentCapability(currentCapability:.Live)
   }
 }

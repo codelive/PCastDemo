@@ -15,17 +15,11 @@
 
 package com.phenixp2p.demo.events;
 
+import com.phenixp2p.pcast.DataQualityReason;
+import com.phenixp2p.pcast.DataQualityStatus;
 import com.phenixp2p.pcast.FacingMode;
 
-public class Events {
-  public static class HideMyStreamId {
-    public final boolean isHide;
-
-    public HideMyStreamId(boolean isHide) {
-      this.isHide = isHide;
-    }
-  }
-
+public final class Events {
   public static class ChangeCamera {
     public final boolean isChange;
 
@@ -49,6 +43,26 @@ public class Events {
 
     public GetFacingMode(FacingMode facingMode) {
       this.facingMode = facingMode;
+    }
+  }
+
+  public static class OnStateDataQuality {
+    public final DataQualityStatus dataQualityStatus;
+    public final DataQualityReason dataQualityReason;
+    public final boolean isStateRender;
+
+    public OnStateDataQuality(boolean isStateRender, DataQualityStatus dataQualityStatus, DataQualityReason dataQualityReason) {
+      this.isStateRender = isStateRender;
+      this.dataQualityStatus = dataQualityStatus;
+      this.dataQualityReason = dataQualityReason;
+    }
+  }
+
+  public static class OnShareScreen {
+    public final boolean isStart;
+
+    public OnShareScreen(boolean isStart) {
+      this.isStart = isStart;
     }
   }
 }

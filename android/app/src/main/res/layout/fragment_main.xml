@@ -1,116 +1,232 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:app="http://schemas.android.com/apk/res-auto"
-                xmlns:tools="http://schemas.android.com/tools"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
+<RelativeLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent">
 
-  <android.support.v4.widget.SwipeRefreshLayout
-    android:id="@+id/swipRefresh"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:layout_above="@+id/draggable_view"
-    android:layout_marginBottom="16dp"
+  <RelativeLayout
+    android:id="@+id/viewList"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_above="@+id/draggableView"
+    android:layout_marginBottom="25dp"
     android:layout_marginTop="24dp">
 
-    <android.support.v7.widget.RecyclerView
-      android:id="@+id/recry"
+    <android.support.v4.widget.SwipeRefreshLayout
+      android:id="@+id/swipRefresh"
       android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      android:gravity="center"/>
+      android:layout_height="match_parent">
 
-    <TextView
-      android:id="@+id/tvNull"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:gravity="center"
-      android:text="@string/list_null"/>
+      <android.support.v7.widget.RecyclerView
+        android:id="@+id/recry"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"/>
 
-  </android.support.v4.widget.SwipeRefreshLayout>
+      <TextView
+        android:id="@+id/textViewNull"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="@string/list_null"/>
+
+    </android.support.v4.widget.SwipeRefreshLayout>
+  </RelativeLayout>
 
 
   <RelativeLayout
-    android:id="@+id/draggable_view"
+    android:id="@+id/view"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_alignParentBottom="true"
+    android:layout_alignTop="@+id/draggableView"
+    android:layout_marginBottom="8dp"
+    android:layout_marginLeft="@dimen/margin_left"
+    android:layout_toLeftOf="@+id/draggableView"
+    android:gravity="center_horizontal">
+
+    <com.phenixp2p.demo.ui.ArcImage
+      android:id="@+id/arcImage"
+      android:layout_width="@dimen/with_parabol"
+      android:layout_height="wrap_content"
+      android:layout_above="@+id/tvVersion"
+      android:layout_centerHorizontal="true"
+      android:layout_marginBottom="8dp"
+      app:angle="65"
+      app:color_seek="#585858"
+      app:color_shadow="#858484"
+      app:padding="20dp"
+      app:process="100"
+      app:size_icon="36dp"
+      app:start_angle="22"/>
+
+    <TextView
+      android:id="@+id/tvVersion"
+      android:layout_width="wrap_content"
+      android:layout_height="24dp"
+      android:layout_alignParentBottom="true"
+      android:layout_centerHorizontal="true"
+      android:layout_marginEnd="35dp"
+      android:gravity="center"
+      android:textColor="@color/blue"
+      tools:text="Versions"/>
+
+  </RelativeLayout>
+
+  <android.support.v7.widget.CardView
+    android:id="@+id/draggableView"
     android:layout_width="100dp"
     android:layout_height="180dp"
     android:layout_alignParentBottom="true"
     android:layout_alignParentEnd="true"
     android:layout_marginBottom="10dp"
-    android:layout_marginEnd="10dp"
-    android:clickable="false"
-    android:focusable="false">
+    android:layout_marginEnd="8dp"
+    app:cardBackgroundColor="@color/window"
+    app:cardCornerRadius="6dp"
+    app:contentPadding="2dp">
 
-    <SurfaceView
-      android:id="@+id/surfaceView"
-      android:layout_width="match_parent"
-      android:layout_height="match_parent"/>
-
-
-    <View
-      android:id="@+id/view_delay"
+    <RelativeLayout
       android:layout_width="match_parent"
       android:layout_height="match_parent"
-      android:background="@android:color/black"
-      android:visibility="gone"/>
+      android:clickable="false"
+      android:focusable="false">
+
+      <com.phenixp2p.demo.ui.RoundedRectSurfaceView
+        android:id="@+id/surfaceView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
 
 
-    <ImageView
-      android:id="@+id/record"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_alignParentEnd="true"
-      android:layout_alignParentTop="true"
-      android:layout_marginRight="2dp"
-      android:layout_marginTop="2dp"
-      android:visibility="gone"
-      app:srcCompat="@drawable/ic_fiber_manual_record_24dp"
-      tools:visibility="visible"/>
+      <View
+        android:id="@+id/viewDelay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/black"
+        android:visibility="gone"/>
 
-    <android.support.v7.widget.AppCompatImageView
-      android:id="@+id/play"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_alignParentEnd="true"
-      android:layout_alignParentTop="true"
-      android:layout_marginRight="2dp"
-      android:layout_marginTop="2dp"
-      android:visibility="gone"
-      app:srcCompat="@drawable/ic_play_arrow_black_24dp"
-      tools:visibility="visible"/>
 
-    <ToggleButton
-      android:id="@+id/imvFull"
-      android:layout_width="36dp"
-      android:layout_height="36dp"
-      android:layout_alignParentBottom="true"
-      android:layout_alignParentEnd="true"
-      android:background="@null"
-      android:drawableStart="@drawable/ic_full_view"
-      android:gravity="center"
-      android:textOff=""
-      android:textOn=""/>
+      <android.support.v7.widget.AppCompatImageView
+        android:id="@+id/record"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="2dp"
+        android:layout_marginTop="2dp"
+        android:padding="4dp"
+        android:visibility="gone"
+        app:srcCompat="@drawable/ic_fiber_manual_record_24dp"
+        tools:visibility="visible"/>
 
-    <ToggleButton
-      android:id="@+id/togCamera_"
-      android:layout_width="36dp"
-      android:layout_height="36dp"
-      android:layout_alignParentStart="true"
-      android:layout_alignParentTop="true"
-      android:layout_marginTop="4dp"
-      android:background="@null"
-      android:drawableStart="@drawable/ic_select_camera"
-      android:gravity="center"
-      android:textOff=""
-      android:textOn=""/>
-  </RelativeLayout>
+      <ToggleButton
+        android:id="@+id/imageFull"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:background="@null"
+        android:drawableStart="@drawable/ic_full_view"
+        android:gravity="center"
+        android:textOff=""
+        android:textOn=""/>
 
-  <TextView
-    android:id="@+id/tvVersion"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_alignParentBottom="true"
-    android:layout_alignParentStart="true"
-    android:layout_marginBottom="10dp"
-    android:layout_marginStart="10dp"
-    android:textColor="@color/blue"
-    tools:text="Versions"/>
+      <ToggleButton
+        android:id="@+id/toggleCamera"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="4dp"
+        android:background="@null"
+        android:drawableStart="@drawable/ic_select_camera"
+        android:gravity="center"
+        android:textOff=""
+        android:textOn=""/>
+
+      <com.phenixp2p.demo.ui.QualityStatusView
+        android:id="@+id/qualityPublisher"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="2.5dp"
+        android:layout_marginLeft="4dp"
+        app:padding_column="2.5dp"
+        app:status_show="one"/>
+
+      <RelativeLayout
+        android:id="@+id/viewAc"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/record"
+        android:layout_centerInParent="true"
+        android:gravity="center">
+
+        <android.support.v7.widget.AppCompatImageView
+          android:id="@+id/audio"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_centerHorizontal="true"
+          android:layout_marginBottom="8dp"
+          android:visibility="gone"
+          app:srcCompat="@drawable/ic_audio"
+          tools:visibility="visible"/>
+
+        <android.support.v7.widget.AppCompatImageView
+          android:id="@+id/video"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_below="@+id/audio"
+          android:layout_centerHorizontal="true"
+          android:layout_marginBottom="8dp"
+          android:visibility="gone"
+          app:srcCompat="@drawable/ic_video"
+          tools:visibility="visible"/>
+
+        <LinearLayout
+          android:id="@+id/play"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_below="@+id/video"
+          android:layout_centerHorizontal="true"
+          android:layout_marginBottom="8dp"
+          android:gravity="center"
+          android:orientation="horizontal"
+          android:visibility="gone"
+          tools:visibility="visible">
+
+          <android.support.v7.widget.AppCompatImageView
+            android:id="@+id/imageAudio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/ic_audio"/>
+
+          <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="-5.5dp"
+            android:layout_marginRight="-4dp"
+            android:text="+"
+            android:textColor="#B91B64"/>
+
+          <android.support.v7.widget.AppCompatImageView
+            android:id="@+id/imageVideo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/ic_video"/>
+        </LinearLayout>
+
+        <android.support.v7.widget.AppCompatImageView
+          android:id="@+id/share"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_below="@+id/play"
+          android:layout_centerHorizontal="true"
+          android:visibility="gone"
+          app:srcCompat="@drawable/ic_share_src"
+          tools:visibility="visible"/>
+      </RelativeLayout>
+    </RelativeLayout>
+  </android.support.v7.widget.CardView>
+
 </RelativeLayout>

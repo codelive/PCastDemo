@@ -16,33 +16,74 @@
 package com.phenixp2p.demo;
 
 import android.app.Application;
+import android.media.projection.MediaProjectionManager;
 
 import com.crashlytics.android.Crashlytics;
 import com.crashlytics.android.answers.Answers;
+import com.phenixp2p.pcast.PCast;
 
 import io.fabric.sdk.android.Fabric;
-import rx.plugins.RxJavaErrorHandler;
-import rx.plugins.RxJavaPlugins;
 
-public class PhenixApplication extends Application {
-
-  private static Throwable onError = null;
-
-  public static Throwable getOnError() {
-    return onError;
-  }
+public final class PhenixApplication extends Application {
+  private MediaProjectionManager projectionManager = null;
+  private boolean isStopPublish = false;
+  private boolean isLandscape;
+  private boolean isShare;
+  private boolean isBackground;
+  private PCast pCast;
 
   @Override
   public void onCreate() {
     super.onCreate();
     // Initialize crash analytics by Fabric
     Fabric.with(this, new Crashlytics(), new Answers());
-    // Register error handler on Rxjava
-    RxJavaPlugins.getInstance().registerErrorHandler(new RxJavaErrorHandler() {
-      @Override
-      public void handleError(Throwable e) {
-        onError = e;
-      }
-    });
+  }
+
+  public MediaProjectionManager getProjectionManager() {
+    return this.projectionManager;
+  }
+
+  public void setProjectionManager(MediaProjectionManager projectionManager) {
+    this.projectionManager = projectionManager;
+  }
+
+  public boolean isStopPublish() {
+    return this.isStopPublish;
+  }
+
+  public void setStopPublish(boolean stopPublish) {
+    this.isStopPublish = stopPublish;
+  }
+
+  public boolean isLandscape() {
+    return this.isLandscape;
+  }
+
+  public void setLandscape(boolean isLandscape) {
+    this.isLandscape = isLandscape;
+  }
+
+  public boolean isShare() {
+    return this.isShare;
+  }
+
+  public void setShare(boolean share) {
+    this.isShare = share;
+  }
+
+  public PCast getpCast() {
+    return this.pCast;
+  }
+
+  public void setpCast(PCast pCast) {
+    this.pCast = pCast;
+  }
+
+  public boolean isBackground() {
+    return this.isBackground;
+  }
+
+  public void setBackground(boolean background) {
+    this.isBackground = background;
   }
 }

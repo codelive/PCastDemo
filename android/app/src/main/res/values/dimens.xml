@@ -11,4 +11,9 @@
   <dimen name="menu_item_size">48dp</dimen>
   <dimen name="menu_item_ripple_size">48dp</dimen>
   <dimen name="corner_radius_video">16dp</dimen>
+  <dimen name="size_default_icon">36dp</dimen>
+
+  <bool name="isTablet">false</bool>
+  <dimen name="with_parabol">120dp</dimen>
+  <dimen name="margin_left">10dp</dimen>
 </resources>

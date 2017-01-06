@@ -16,17 +16,10 @@
 
 import Foundation
 
-enum TheServerIs: String {
-  case LocalHost = "http://localhost:3000/"
-  case RemoteHost =  "https://demo.phenixp2p.com/demoApp/"
-}
-
-let findTheServerAt = TheServerIs.RemoteHost
-
-class Backend {
+final class Backend {
   // todo: add socket for notifications
   static let shared = Backend()
-  var rest = Rest(basePath: findTheServerAt.rawValue)
+  var rest = Rest()
   var authToken: String?
   private enum Path: String {
     case Login = "login"
@@ -45,15 +38,14 @@ class Backend {
     })
   }
 
-  func createStreamToken(sessionId:String, originStreamId:String?, capabilities:String?, done:@escaping (String?)->()) throws {
+  func createStreamToken(sessionId:String, originStreamId:String?, capabilities:[String]?, done:@escaping (String?)->()) throws {
     var params = [String: Any]()
     params["sessionId"] = sessionId
     if let o = originStreamId {
       params["originStreamId"] = o
     }
     if let c = capabilities {
-      let cap = [c]
-      params["capabilities"] = cap
+      params["capabilities"] = c
     }
     try self.rest.request(method:.POST, path: Path.Stream.rawValue, params:params, completion: { _, result in
       if let dict = result as? Rest.Params, let token = dict["streamToken"] as? String{

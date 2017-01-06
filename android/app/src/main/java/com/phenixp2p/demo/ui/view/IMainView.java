@@ -14,12 +14,12 @@
  */
 package com.phenixp2p.demo.ui.view;
 
-import com.phenixp2p.demo.model.StreamList;
+import java.util.List;
 
 public interface IMainView {
   void previewLocalUserMedia();
 
-  void getListStreams(StreamList streamID);
+  void getListStreams(List<String> streamID);
 
   void onError(String error);
 }

@@ -15,6 +15,6 @@
   -->
 
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-  <item android:drawable="@drawable/ic_camera_rear_white_24dp" android:state_checked="true"/>
-  <item android:drawable="@drawable/ic_camera_front_white_24dp"/>
+  <item android:drawable="@drawable/ic_camera_front"/>
+  <item android:drawable="@drawable/ic_camera_rear" android:state_checked="true"/>
 </selector>

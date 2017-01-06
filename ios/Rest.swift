@@ -15,8 +15,9 @@
  */
 
 import Foundation
+import Crashlytics
 
-class Rest {
+final class Rest {
 
   enum RestError: Error {
     case InvalidUrlPath
@@ -29,24 +30,20 @@ class Rest {
     case DELETE = "DELETE"
   }
 
-  private var basePath: String
+  private var retryNumber = 1
 
   typealias Completion = (_ success:Bool, _ result:AnyObject?) -> ()
   typealias Params = Dictionary<String, Any>
 
-  init(basePath:String) {
-    self.basePath = basePath
-  }
-
   private func urlRequest(path: String, params: Params?) throws -> NSMutableURLRequest {
-    guard let url = URL(string: self.basePath + path) else {
+    guard let url = URL(string: Phenix.shared.addressServer! + path) else {
       throw Rest.RestError.InvalidUrlPath
     }
 
     let request = NSMutableURLRequest(url: url)
 
     if path == "streams" {
-      let jsonParams: [String: NSNumber] = ["length": NSNumber(value: 100)]
+      let jsonParams: [String: Any] = ["length": NSNumber(value: 100), "options":["global"]]
       let jsonData = try JSONSerialization.data(withJSONObject: jsonParams, options: JSONSerialization.WritingOptions())
       request.setValue("application/json", forHTTPHeaderField: "Content-Type")
       request.httpBody = jsonData
@@ -72,11 +69,11 @@ class Rest {
     return request
   }
 
-  private static func dataTask(request: NSMutableURLRequest, method: String, completion: @escaping Completion) {
+  private static func dataTask(numberOfRetry: Int, request: NSMutableURLRequest, method: String, completion: @escaping Completion) {
+    var retry = numberOfRetry
     request.httpMethod = method
     request.setValue("Keep-Alive", forHTTPHeaderField: "Connection")
     let session = URLSession(configuration: URLSessionConfiguration.default)
-
     DispatchQueue.global().async { // http request in background thread
       NSLog("%@", "\(request.url!) request: " + timeElapsed())
       session.dataTask(with: request as URLRequest) { (data, response, error) -> Void in
@@ -88,11 +85,18 @@ class Rest {
             let json = try? JSONSerialization.jsonObject(with: data, options: [])
             if let response = response as? HTTPURLResponse , 200...299 ~= response.statusCode {
               completion(true, json as AnyObject?)
+              return
             } else {
               completion(false, json as AnyObject?)
             }
+          } else if let err = error {
+            print(err.localizedDescription)
           } else {
             completion(false, nil)
+          }
+          if retry > 0 {
+            retry -= 1
+            Rest.dataTask(numberOfRetry: retry, request: request, method: method, completion: completion)
           }
         }
       }.resume()
@@ -101,6 +105,6 @@ class Rest {
 
   func request(method:Method, path:String, params: Params?, completion: @escaping Completion) throws {
     let ur = try self.urlRequest(path: path, params:params)
-    Rest.dataTask(request: ur, method: method.rawValue, completion: completion)
+    Rest.dataTask(numberOfRetry: retryNumber, request: ur, method: method.rawValue, completion: completion)
   }
 }
