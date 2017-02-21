@@ -21,6 +21,7 @@ final class Backend {
   static let shared = Backend()
   var rest = Rest()
   var authToken: String?
+
   private enum Path: String {
     case Login = "login"
     case Stream = "stream"
@@ -39,6 +40,7 @@ final class Backend {
   }
 
   func createStreamToken(sessionId:String, originStreamId:String?, capabilities:[String]?, done:@escaping (String?)->()) throws {
+    PhenixAssert.assert(condition: capabilities != nil, "capabilities are nil")
     var params = [String: Any]()
     params["sessionId"] = sessionId
     if let o = originStreamId {
@@ -59,7 +61,7 @@ final class Backend {
   func listStreams(done:@escaping (Array<String>)->()) throws {
     try self.rest.request(method:.PUT, path: Path.Streams.rawValue, params:nil, completion: { _, result in
       var streamsResult = Array<String>()
-      if let dict = result as? Rest.Params{
+      if let dict = result as? Rest.Params {
         if let streamIdArray = dict["streams"] as? NSArray {
           for streamIdDict in streamIdArray{
             if let dict = streamIdDict as? Rest.Params, let streamId = dict["streamId"] as? String{

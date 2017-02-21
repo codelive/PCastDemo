@@ -17,7 +17,6 @@ package com.phenixp2p.demo.events;
 
 import com.phenixp2p.pcast.DataQualityReason;
 import com.phenixp2p.pcast.DataQualityStatus;
-import com.phenixp2p.pcast.FacingMode;
 
 public final class Events {
   public static class ChangeCamera {
@@ -29,21 +28,11 @@ public final class Events {
   }
 
   public static class OnStopStream {
-    public OnStopStream() {
-    }
+    public OnStopStream() {}
   }
 
   public static class OnRestartStream {
-    public OnRestartStream() {
-    }
-  }
-
-  public static class GetFacingMode {
-    public final FacingMode facingMode;
-
-    public GetFacingMode(FacingMode facingMode) {
-      this.facingMode = facingMode;
-    }
+    public OnRestartStream() {}
   }
 
   public static class OnStateDataQuality {

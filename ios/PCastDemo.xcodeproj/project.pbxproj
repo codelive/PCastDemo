@@ -9,12 +9,16 @@
 /* Begin PBXBuildFile section */
 		6613E197112C6E5C323222A0 /* Pods_PCast_Demo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8E13BA171867A3AFC663F0F4 /* Pods_PCast_Demo.framework */; };
 		8554BA251D98E5A2004B3640 /* libPhenixApi.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8554BA241D98E5A2004B3640 /* libPhenixApi.a */; };
-		BD0C16D71DD39238003E8A0C /* StreamingVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD0C16D61DD39238003E8A0C /* StreamingVC.swift */; };
 		BD5788611E2487BA00176A17 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5788601E2487BA00176A17 /* Utilities.swift */; };
 		BD5788651E2497CE00176A17 /* UIColorExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5788641E2497CE00176A17 /* UIColorExtension.swift */; };
 		BD57886B1E24A2D900176A17 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD57886A1E24A2D900176A17 /* Constants.swift */; };
+		BD5EBE221E485F5000689E09 /* SecretUrlPopoverVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5EBE201E485F5000689E09 /* SecretUrlPopoverVC.swift */; };
 		BD738DDA1E35458A0057AACF /* UIViewExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD738DD91E35458A0057AACF /* UIViewExtension.swift */; };
+		BDA6F5641E5D76BF00EAFE48 /* PhenixAssert.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDA6F5631E5D76BF00EAFE48 /* PhenixAssert.swift */; };
 		BDAD7EF71DF902D6009B9D46 /* CapabilityPopoverVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDAD7EF61DF902D6009B9D46 /* CapabilityPopoverVC.swift */; };
+		BDAE4B621E4C5FE50069DB4C /* ServerLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDAE4B611E4C5FE50069DB4C /* ServerLocation.swift */; };
+		BDCB42A11E4DAAA00024B6D8 /* UserDefaultsExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDCB42A01E4DAAA00024B6D8 /* UserDefaultsExtension.swift */; };
+		BDF201B01E69355F0017A34E /* PulsingAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDF201AF1E69355F0017A34E /* PulsingAnimation.swift */; };
 		ED3CF38E1D640A1900CE9E48 /* Phenix.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED3CF38D1D640A1900CE9E48 /* Phenix.swift */; };
 		ED3CF3931D6413D000CE9E48 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ED3CF3921D6413D000CE9E48 /* SystemConfiguration.framework */; };
 		ED3CF3951D6413D700CE9E48 /* CoreTelephony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ED3CF3941D6413D700CE9E48 /* CoreTelephony.framework */; };
@@ -32,12 +36,16 @@
 		8554BA241D98E5A2004B3640 /* libPhenixApi.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libPhenixApi.a; path = IOSSDK/lib/libPhenixApi.a; sourceTree = "<group>"; };
 		8E13BA171867A3AFC663F0F4 /* Pods_PCast_Demo.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PCast_Demo.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A94AAD6FDBDC7970A81115AB /* Pods-PCast Demo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PCast Demo.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PCast Demo/Pods-PCast Demo.debug.xcconfig"; sourceTree = "<group>"; };
-		BD0C16D61DD39238003E8A0C /* StreamingVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = StreamingVC.swift; sourceTree = SOURCE_ROOT; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		BD5788601E2487BA00176A17 /* Utilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = SOURCE_ROOT; };
 		BD5788641E2497CE00176A17 /* UIColorExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIColorExtension.swift; sourceTree = "<group>"; };
-		BD57886A1E24A2D900176A17 /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Constants.swift; path = Extension/Constants.swift; sourceTree = SOURCE_ROOT; };
+		BD57886A1E24A2D900176A17 /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; name = Constants.swift; path = Extension/Constants.swift; sourceTree = SOURCE_ROOT; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		BD5EBE201E485F5000689E09 /* SecretUrlPopoverVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = SecretUrlPopoverVC.swift; sourceTree = SOURCE_ROOT; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		BD738DD91E35458A0057AACF /* UIViewExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIViewExtension.swift; sourceTree = "<group>"; };
-		BDAD7EF61DF902D6009B9D46 /* CapabilityPopoverVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = CapabilityPopoverVC.swift; sourceTree = SOURCE_ROOT; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		BDA6F5631E5D76BF00EAFE48 /* PhenixAssert.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhenixAssert.swift; sourceTree = "<group>"; };
+		BDAD7EF61DF902D6009B9D46 /* CapabilityPopoverVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CapabilityPopoverVC.swift; sourceTree = SOURCE_ROOT; };
+		BDAE4B611E4C5FE50069DB4C /* ServerLocation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServerLocation.swift; sourceTree = "<group>"; };
+		BDCB42A01E4DAAA00024B6D8 /* UserDefaultsExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserDefaultsExtension.swift; sourceTree = "<group>"; };
+		BDF201AF1E69355F0017A34E /* PulsingAnimation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PulsingAnimation.swift; sourceTree = SOURCE_ROOT; };
 		ED3CF38C1D64089F00CE9E48 /* Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = SOURCE_ROOT; };
 		ED3CF38D1D640A1900CE9E48 /* Phenix.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Phenix.swift; sourceTree = SOURCE_ROOT; };
 		ED3CF3921D6413D000CE9E48 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
@@ -82,8 +90,26 @@
 			children = (
 				BD5788641E2497CE00176A17 /* UIColorExtension.swift */,
 				BD738DD91E35458A0057AACF /* UIViewExtension.swift */,
+				BDCB42A01E4DAAA00024B6D8 /* UserDefaultsExtension.swift */,
 			);
 			path = Extension;
+			sourceTree = SOURCE_ROOT;
+		};
+		BDA6F5611E5D6C3000EAFE48 /* Common */ = {
+			isa = PBXGroup;
+			children = (
+				BD5788601E2487BA00176A17 /* Utilities.swift */,
+				BDA6F5631E5D76BF00EAFE48 /* PhenixAssert.swift */,
+			);
+			path = Common;
+			sourceTree = SOURCE_ROOT;
+		};
+		BDAE4B601E4C5FB90069DB4C /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				BDAE4B611E4C5FE50069DB4C /* ServerLocation.swift */,
+			);
+			path = Model;
 			sourceTree = SOURCE_ROOT;
 		};
 		ED3CF38F1D64128200CE9E48 /* Frameworks */ = {
@@ -118,15 +144,17 @@
 		EDB9E92F1D5FBC11000837B9 /* PCastDemo */ = {
 			isa = PBXGroup;
 			children = (
+				BDA6F5611E5D6C3000EAFE48 /* Common */,
+				BDAE4B601E4C5FB90069DB4C /* Model */,
 				BD5788631E2497B500176A17 /* Extension */,
+				BD5EBE201E485F5000689E09 /* SecretUrlPopoverVC.swift */,
 				BDAD7EF61DF902D6009B9D46 /* CapabilityPopoverVC.swift */,
 				ED5052071D60F5860072D7F2 /* AppDelegate.swift */,
 				ED5052081D60F5860072D7F2 /* ViewController.swift */,
-				BD0C16D61DD39238003E8A0C /* StreamingVC.swift */,
+				BDF201AF1E69355F0017A34E /* PulsingAnimation.swift */,
 				ED3CF38D1D640A1900CE9E48 /* Phenix.swift */,
 				ED5051FD1D60F4E30072D7F2 /* Backend.swift */,
 				ED5051FE1D60F4E30072D7F2 /* Rest.swift */,
-				BD5788601E2487BA00176A17 /* Utilities.swift */,
 				BD57886A1E24A2D900176A17 /* Constants.swift */,
 				ED50520B1D60F5D50072D7F2 /* LaunchScreen.storyboard */,
 				ED50520D1D60F5D50072D7F2 /* Main.storyboard */,
@@ -169,7 +197,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0800;
-				LastUpgradeCheck = 0810;
+				LastUpgradeCheck = 0820;
 				ORGANIZATIONNAME = Phenix;
 				TargetAttributes = {
 					EDB9E92C1D5FBC11000837B9 = {
@@ -283,10 +311,14 @@
 				ED3CF38E1D640A1900CE9E48 /* Phenix.swift in Sources */,
 				BD738DDA1E35458A0057AACF /* UIViewExtension.swift in Sources */,
 				ED50520A1D60F5860072D7F2 /* ViewController.swift in Sources */,
+				BDAE4B621E4C5FE50069DB4C /* ServerLocation.swift in Sources */,
 				BD5788611E2487BA00176A17 /* Utilities.swift in Sources */,
+				BDCB42A11E4DAAA00024B6D8 /* UserDefaultsExtension.swift in Sources */,
 				BD5788651E2497CE00176A17 /* UIColorExtension.swift in Sources */,
+				BDA6F5641E5D76BF00EAFE48 /* PhenixAssert.swift in Sources */,
 				ED5052001D60F4E30072D7F2 /* Rest.swift in Sources */,
-				BD0C16D71DD39238003E8A0C /* StreamingVC.swift in Sources */,
+				BDF201B01E69355F0017A34E /* PulsingAnimation.swift in Sources */,
+				BD5EBE221E485F5000689E09 /* SecretUrlPopoverVC.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -416,6 +448,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = A94AAD6FDBDC7970A81115AB /* Pods-PCast Demo.debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
@@ -448,6 +481,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 6FD9D5B9F3F52C29F44415D0 /* Pods-PCast Demo.release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";

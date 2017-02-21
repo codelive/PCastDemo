@@ -26,8 +26,13 @@ import android.util.AttributeSet;
 import android.view.View;
 
 import com.phenixp2p.demo.R;
+import com.phenixp2p.demo.StatusQualityValues;
+
+import static com.phenixp2p.demo.StatusQualityValues.NO_DATA;
 
 public final class QualityStatusView extends View {
+  private static final int QUARTER = 25;
+  private static final int STATUS_PADDING = 50;
   private int firstColor;
   private int secondColor;
   private int thirdColor;
@@ -40,49 +45,47 @@ public final class QualityStatusView extends View {
   private int greyColor;
 
   private Paint paint;
-  private int statusShow = 0;
+  private StatusQualityValues statusShow = NO_DATA;
 
   public QualityStatusView(Context context, AttributeSet attrs) {
     super(context, attrs);
-    initialize(context, attrs, 0);
+    this.initialize(context, attrs, 0);
   }
 
   public QualityStatusView(Context context, AttributeSet attrs, int defStyleAttr) {
     super(context, attrs, defStyleAttr);
-    initialize(context, attrs, defStyleAttr);
+    this.initialize(context, attrs, defStyleAttr);
   }
 
-  public void setStatusShow(int statusShow) {
+  public void setStatusShow(StatusQualityValues statusShow) {
     this.statusShow = statusShow;
     invalidate();
   }
 
   private void initialize(Context context, AttributeSet attrs, int defStyle) {
-    TypedArray typedArray = context.obtainStyledAttributes(attrs,
-            R.styleable.QualityStatusView,
-            defStyle, 0);
-    firstColor = typedArray.getColor(R.styleable.QualityStatusView_first_color,
+    TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.QualityStatusView, defStyle, 0);
+    this.firstColor = typedArray.getColor(R.styleable.QualityStatusView_first_color,
       ContextCompat.getColor(context, R.color.red));
-    secondColor = typedArray.getColor(R.styleable.QualityStatusView_second_color,
+    this.secondColor = typedArray.getColor(R.styleable.QualityStatusView_second_color,
       ContextCompat.getColor(context, R.color.orange));
-    thirdColor = typedArray.getColor(R.styleable.QualityStatusView_third_color,
+    this.thirdColor = typedArray.getColor(R.styleable.QualityStatusView_third_color,
       ContextCompat.getColor(context, R.color.blue));
-    fourthColor = typedArray.getColor(R.styleable.QualityStatusView_fourth_color,
+    this.fourthColor = typedArray.getColor(R.styleable.QualityStatusView_fourth_color,
       ContextCompat.getColor(context, R.color.blue));
 
-    firstProcess = typedArray.getInt(R.styleable.QualityStatusView_first_process, 25);
-    secondProcess = typedArray.getInt(R.styleable.QualityStatusView_second_process, 50);
-    thirdProcess = typedArray.getInt(R.styleable.QualityStatusView_third_process, 75);
-    fourthProcess = typedArray.getInt(R.styleable.QualityStatusView_fourth_process, 100);
+    this.firstProcess = typedArray.getInt(R.styleable.QualityStatusView_first_process, QUARTER);
+    this.secondProcess = typedArray.getInt(R.styleable.QualityStatusView_second_process, 2 * QUARTER);
+    this.thirdProcess = typedArray.getInt(R.styleable.QualityStatusView_third_process, 3 * QUARTER);
+    this.fourthProcess = typedArray.getInt(R.styleable.QualityStatusView_fourth_process, 4 * QUARTER);
 
-    paddingColumn = typedArray.getDimensionPixelSize(R.styleable.QualityStatusView_padding_column, 50);
-    statusShow = typedArray.getInt(R.styleable.QualityStatusView_status_show, 0);
-    greyColor = ContextCompat.getColor(context, R.color.gray);
+    this.paddingColumn = typedArray.getDimensionPixelSize(R.styleable.QualityStatusView_padding_column, STATUS_PADDING);
+    this.statusShow = StatusQualityValues.values()[typedArray.getInt(R.styleable.QualityStatusView_status_show, 0)];
+    this.greyColor = ContextCompat.getColor(context, R.color.gray);
     typedArray.recycle();
 
-    paint = new Paint();
-    paint.setAntiAlias(true);
-    paint.setStyle(Paint.Style.FILL);
+    this.paint = new Paint();
+    this.paint.setAntiAlias(true);
+    this.paint.setStyle(Paint.Style.FILL);
   }
 
   @SuppressLint("DrawAllocation")
@@ -90,57 +93,57 @@ public final class QualityStatusView extends View {
   protected void onDraw(Canvas canvas) {
     int width = getWidth() - getPaddingLeft() - getPaddingRight();
     int height = getHeight() - getPaddingTop() - getPaddingBottom();
-    int widthColumn = (width - paddingColumn * 3) / 4;
+    int widthColumn = (width - this.paddingColumn * 3) / 4;
 
     RectF rectFirst = new RectF(getPaddingLeft(), getPaddingTop() + height - firstProcess * height / 100,
       getPaddingLeft() + widthColumn, height + getPaddingTop());
 
-    RectF rectSecond = new RectF(rectFirst.right + paddingColumn, getPaddingTop() + height - secondProcess * height / 100,
-      rectFirst.right + paddingColumn + widthColumn, height + getPaddingTop());
+    RectF rectSecond = new RectF(rectFirst.right + this.paddingColumn, getPaddingTop() + height - this.secondProcess * height / 100,
+      rectFirst.right + this.paddingColumn + widthColumn, height + getPaddingTop());
 
-    RectF rectThird = new RectF(rectSecond.right + paddingColumn, getPaddingTop() + height - thirdProcess * height / 100,
-      rectSecond.right + paddingColumn + widthColumn, height + getPaddingTop());
+    RectF rectThird = new RectF(rectSecond.right + this.paddingColumn, getPaddingTop() + height - this.thirdProcess * height / 100,
+      rectSecond.right + this.paddingColumn + widthColumn, height + getPaddingTop());
 
-    RectF rectFourth = new RectF(rectThird.right + paddingColumn, getPaddingTop() + height - fourthProcess * height / 100,
-      rectThird.right + paddingColumn + widthColumn, height + getPaddingTop());
+    RectF rectFourth = new RectF(rectThird.right + this.paddingColumn, getPaddingTop() + height - this.fourthProcess * height / 100,
+      rectThird.right + this.paddingColumn + widthColumn, height + getPaddingTop());
 
     int firstItemColor, secondItemColor, thirdItemColor, fourItemColor;
-    switch (statusShow) {
-      case 1:
-        firstItemColor = firstColor;
-        secondItemColor = thirdItemColor = fourItemColor = greyColor;
+    switch (this.statusShow) {
+      case AUDIO_ONLY_LIMITED:
+        firstItemColor = this.firstColor;
+        secondItemColor = thirdItemColor = fourItemColor = this.greyColor;
         break;
-      case 2:
-        firstItemColor = secondColor;
-        secondItemColor = secondColor;
-        thirdItemColor = fourItemColor = greyColor;
+      case ALL_UPLOAD:
+        firstItemColor = this.secondColor;
+        secondItemColor = this.secondColor;
+        thirdItemColor = fourItemColor = this.greyColor;
         break;
-      case 3:
-        firstItemColor = thirdColor;
-        secondItemColor = thirdColor;
-        thirdItemColor = thirdColor;
-        fourItemColor = greyColor;
+      case ALL_DOWNLOAD:
+        firstItemColor = this.thirdColor;
+        secondItemColor = this.thirdColor;
+        thirdItemColor = this.thirdColor;
+        fourItemColor = this.greyColor;
         break;
-      case 4:
-        firstItemColor = fourthColor;
-        secondItemColor = fourthColor;
-        thirdItemColor = thirdColor;
-        fourItemColor = fourthColor;
+      case AUDIO_ONLY_NONE:
+        firstItemColor = this.fourthColor;
+        secondItemColor = this.fourthColor;
+        thirdItemColor = this.thirdColor;
+        fourItemColor = this.fourthColor;
         break;
       default:
-        firstItemColor = secondItemColor = thirdItemColor = fourItemColor = greyColor;
+        firstItemColor = secondItemColor = thirdItemColor = fourItemColor = this.greyColor;
         break;
     }
-    paint.setColor(firstItemColor);
-    canvas.drawRect(rectFirst, paint);
+    this.paint.setColor(firstItemColor);
+    canvas.drawRect(rectFirst, this.paint);
 
-    paint.setColor(secondItemColor);
-    canvas.drawRect(rectSecond, paint);
+    this.paint.setColor(secondItemColor);
+    canvas.drawRect(rectSecond, this.paint);
 
-    paint.setColor(thirdItemColor);
-    canvas.drawRect(rectThird, paint);
+    this.paint.setColor(thirdItemColor);
+    canvas.drawRect(rectThird, this.paint);
 
-    paint.setColor(fourItemColor);
-    canvas.drawRect(rectFourth, paint);
+    this.paint.setColor(fourItemColor);
+    canvas.drawRect(rectFourth, this.paint);
   }
 }

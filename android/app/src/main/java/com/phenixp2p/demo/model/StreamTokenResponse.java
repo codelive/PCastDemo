@@ -21,13 +21,9 @@ import com.google.gson.annotations.SerializedName;
 public final class StreamTokenResponse extends PhenixResponse {
   @Expose
   @SerializedName("streamToken")
-  private final String streamToken;
-
-  StreamTokenResponse() {
-    this.streamToken = null;
-  }
+  private final String streamToken = null;
 
   public String getStreamToken() {
-    return streamToken;
+    return this.streamToken;
   }
 }

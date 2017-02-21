@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent">
+
+  <SurfaceView
+    android:id="@+id/surfaceViewSub"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:visibility="gone"/>
+
+  <RelativeLayout
+    android:id="@+id/viewList"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_above="@+id/viewLocal"
+    android:layout_marginBottom="25dp"
+    android:layout_marginTop="24dp">
+
+    <android.support.v4.widget.SwipeRefreshLayout
+      android:id="@+id/swipRefresh"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent">
+
+      <android.support.v7.widget.RecyclerView
+        android:id="@+id/recry"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"/>
+
+    </android.support.v4.widget.SwipeRefreshLayout>
+  </RelativeLayout>
+
+  <RelativeLayout
+    android:id="@+id/viewToolBar"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_alignParentStart="true"
+    android:layout_alignParentTop="true"
+    android:background="@android:color/transparent"
+    android:minHeight="?attr/actionBarSize"
+    android:visibility="gone">
+
+    <android.support.v7.widget.Toolbar
+      android:id="@+id/toolbar"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_alignParentStart="true"
+      android:layout_alignParentTop="true"
+      android:background="@android:color/transparent"
+      android:minHeight="?attr/actionBarSize"
+      android:theme="?attr/actionBarTheme"/>
+
+    <RelativeLayout
+      android:id="@+id/back"
+      android:layout_width="36dp"
+      android:layout_height="36dp"
+      android:layout_centerVertical="true"
+      android:layout_marginStart="10dp"
+      android:alpha="51"
+      android:background="@drawable/circle_shape"
+      android:gravity="center">
+
+      <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_centerVertical="true"
+        app:srcCompat="@drawable/ic_arrow_back_white_24dp"/>
+    </RelativeLayout>
+
+    <RelativeLayout
+      android:id="@+id/menu"
+      android:layout_width="36dp"
+      android:layout_height="36dp"
+      android:layout_alignParentRight="true"
+      android:layout_centerVertical="true"
+      android:layout_marginEnd="10dp"
+      android:background="@drawable/circle_shape"
+      android:gravity="center">
+
+      <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        app:srcCompat="@drawable/ic_menu_white_24dp"/>
+    </RelativeLayout>
+
+  </RelativeLayout>
+
+  <TextView
+    android:id="@+id/textViewNull"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_centerInParent="true"
+    android:gravity="center"
+    android:text="@string/list_null"
+    android:visibility="gone"
+    tools:visibility="visible"/>
+
+  <ImageView
+    android:id="@+id/imageLoad"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_centerHorizontal="true"
+    android:layout_centerVertical="true"
+    android:visibility="gone"
+    app:srcCompat="@mipmap/ic_launcher"/>
+
+  <ImageView
+    android:id="@+id/imageType"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_centerHorizontal="true"
+    android:layout_centerVertical="true"
+    android:visibility="gone"
+    app:srcCompat="@drawable/ic_audio_gray"
+    tools:visibility="visible"/>
+
+  <RelativeLayout
+    android:id="@+id/view"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_alignParentBottom="true"
+    android:layout_alignTop="@+id/viewLocal"
+    android:layout_marginBottom="8dp"
+    android:layout_toLeftOf="@+id/viewLocal"
+    android:gravity="center_horizontal">
+
+    <com.phenixp2p.demo.ui.ArcImage
+      android:id="@+id/arc"
+      android:layout_width="@dimen/with_parabol"
+      android:layout_height="wrap_content"
+      android:layout_above="@+id/viewState"
+      android:layout_centerHorizontal="true"
+      android:layout_marginBottom="8dp"
+      app:color_seek="#585858"
+      app:color_shadow="#858484"
+      app:padding="20dp"
+      app:process="100"
+      app:size_icon="36dp"
+      app:start_angle="22"/>
+
+    <com.phenixp2p.demo.ui.QualityStatusView
+      android:id="@+id/qualityRenderer"
+      android:layout_width="24dp"
+      android:layout_height="24dp"
+      android:layout_alignParentBottom="true"
+      android:layout_marginLeft="8dp"
+      android:visibility="gone"
+      app:padding_column="2.5dp"
+      app:status_show="one"/>
+
+    <LinearLayout
+      android:id="@+id/viewState"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_alignParentBottom="true"
+      android:gravity="bottom|center_horizontal"
+      android:orientation="horizontal">
+
+      <RelativeLayout
+        android:id="@+id/viewVersion"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:alpha="51"
+        android:background="@drawable/shape"
+        android:gravity="center"
+        android:paddingLeft="15dp"
+        android:paddingRight="15dp">
+
+        <TextView
+          android:id="@+id/textViewVersion"
+          android:layout_width="wrap_content"
+          android:layout_height="24dp"
+          android:gravity="center"
+          android:textColor="@android:color/white"
+          tools:text="TextView"/>
+      </RelativeLayout>
+
+    </LinearLayout>
+
+  </RelativeLayout>
+
+  <android.support.v7.widget.CardView
+    android:id="@+id/viewLocal"
+    android:layout_width="100dp"
+    android:layout_height="180dp"
+    android:layout_marginBottom="10dp"
+    android:layout_marginEnd="10dp"
+    app:cardBackgroundColor="@color/window"
+    app:cardCornerRadius="6dp"
+    app:contentPadding="2dp"
+    android:layout_alignParentBottom="true"
+    android:layout_alignParentEnd="true">
+
+    <RelativeLayout
+      android:layout_width="match_parent"
+      android:layout_height="match_parent">
+
+      <com.phenixp2p.demo.ui.RoundedRectSurfaceView
+        android:id="@+id/previewLocal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+      <View
+        android:id="@+id/viewStop"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/black"
+        android:visibility="gone"/>
+
+      <android.support.v7.widget.AppCompatImageView
+        android:id="@+id/record"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="2dp"
+        android:layout_marginTop="2dp"
+        android:padding="4dp"
+        android:visibility="gone"
+        app:srcCompat="@drawable/ic_fiber_manual_record_24dp"
+        tools:visibility="visible"/>
+
+      <ToggleButton
+        android:id="@+id/imageFull"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:background="@null"
+        android:drawableStart="@drawable/ic_full_view"
+        android:gravity="center"
+        android:textOff=""
+        android:textOn=""/>
+
+      <ToggleButton
+        android:id="@+id/toggleCamera"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="4dp"
+        android:background="@null"
+        android:drawableStart="@drawable/ic_select_camera"
+        android:gravity="center"
+        android:textOff=""
+        android:textOn=""/>
+
+      <com.phenixp2p.demo.ui.QualityStatusView
+        android:id="@+id/qualityPublisher"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="2.5dp"
+        android:layout_marginLeft="4dp"
+        app:padding_column="2.5dp"
+        app:status_show="one"/>
+
+      <RelativeLayout
+        android:id="@+id/viewAc"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/record"
+        android:layout_centerInParent="true"
+        android:gravity="center">
+
+        <android.support.v7.widget.AppCompatImageView
+          android:id="@+id/audio"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_centerHorizontal="true"
+          android:layout_marginBottom="8dp"
+          android:visibility="gone"
+          app:srcCompat="@drawable/ic_audio"
+          tools:visibility="visible"/>
+
+        <android.support.v7.widget.AppCompatImageView
+          android:id="@+id/video"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_below="@+id/audio"
+          android:layout_centerHorizontal="true"
+          android:layout_marginBottom="8dp"
+          android:visibility="gone"
+          app:srcCompat="@drawable/ic_video"
+          tools:visibility="visible"/>
+
+        <LinearLayout
+          android:id="@+id/play"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_below="@+id/video"
+          android:layout_centerHorizontal="true"
+          android:layout_marginBottom="8dp"
+          android:gravity="center"
+          android:orientation="horizontal"
+          android:visibility="gone"
+          tools:visibility="visible">
+
+          <android.support.v7.widget.AppCompatImageView
+            android:id="@+id/imageAudio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/ic_audio"/>
+
+          <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="-5.5dp"
+            android:layout_marginRight="-4dp"
+            android:text="+"
+            android:textColor="#B91B64"/>
+
+          <android.support.v7.widget.AppCompatImageView
+            android:id="@+id/imageVideo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/ic_video"/>
+        </LinearLayout>
+
+        <android.support.v7.widget.AppCompatImageView
+          android:id="@+id/share"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_below="@+id/play"
+          android:layout_centerHorizontal="true"
+          android:visibility="gone"
+          app:srcCompat="@drawable/ic_share_src"
+          tools:visibility="visible"/>
+      </RelativeLayout>
+    </RelativeLayout>
+
+  </android.support.v7.widget.CardView>
+
+</RelativeLayout>

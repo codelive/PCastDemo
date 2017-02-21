@@ -18,8 +18,7 @@ import java.util.List;
 
 public interface IMainView {
   void previewLocalUserMedia();
-
   void getListStreams(List<String> streamId);
-
   void onError(String error);
+  void onNullStreamToken();
 }

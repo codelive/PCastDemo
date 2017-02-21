@@ -30,16 +30,19 @@ func timeElapsed() -> String {
 }
 
 @UIApplicationMain
-final class AppDelegate: UIResponder, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate {
 
+  let isPhenixFirstLaunch = UserDefaults.isPhenixFirstLaunch()
   var window: UIWindow?
   let reachability = Reachability()!
   var isAlertShowing = false
 
   func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions:[UIApplicationLaunchOptionsKey : Any]?) -> Bool {
     Fabric.with([Crashlytics.self])
+    UIApplication.shared.isIdleTimerDisabled = true
+
     if !reachability.isReachable {
-        notifyNetworkNotReachability()
+      notifyNetworkNotReachability()
     }
 
     NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.reachabilityChanged), name: ReachabilityChangedNotification,object: reachability)
@@ -47,6 +50,8 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
       try reachability.startNotifier()
     } catch{
       print("could not start reachability notifier")
+      print(error.localizedDescription)
+      abort()
     }
     return true
   }
@@ -63,6 +68,8 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
       try reachability.startNotifier()
     } catch {
       print("could not start reachability notifier")
+      print(error.localizedDescription)
+      abort()
     }
   }
 

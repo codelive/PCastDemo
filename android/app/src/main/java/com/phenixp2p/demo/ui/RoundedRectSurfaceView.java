@@ -22,10 +22,11 @@ import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.SurfaceView;
 
-import static com.phenixp2p.demo.Constants.MAX_RECT_WIDTH;
-import static com.phenixp2p.demo.Constants.RECT_ROUND_RADIUS;
-
 public final class RoundedRectSurfaceView extends SurfaceView {
+
+  private final static int MAX_WIDTH = 1000;
+  private final static int ROUNDING_RADIUS = 15;
+
   public RoundedRectSurfaceView(Context context) {
     super(context);
   }
@@ -44,10 +45,10 @@ public final class RoundedRectSurfaceView extends SurfaceView {
     Path rectPath = new Path();
     int width = this.getWidth();
     int height = this.getHeight();
-    if (width >= MAX_RECT_WIDTH) {
+    if (width >= MAX_WIDTH) {
       rectPath.addRoundRect(new RectF(0, 0, width, height), 0, 0, Path.Direction.CW);
     } else {
-      rectPath.addRoundRect(new RectF(0, 0, width, height), RECT_ROUND_RADIUS, RECT_ROUND_RADIUS, Path.Direction.CW);
+      rectPath.addRoundRect(new RectF(0, 0, width, height), ROUNDING_RADIUS, ROUNDING_RADIUS, Path.Direction.CW);
     }
     canvas.clipPath(rectPath);
     super.dispatchDraw(canvas);

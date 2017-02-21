@@ -22,6 +22,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.phenixp2p.demo.R;
+import com.phenixp2p.demo.utils.TokenUtil;
 
 import java.util.List;
 
@@ -43,9 +44,7 @@ public final class StreamIdAdapter extends RecyclerView.Adapter<StreamIdAdapter.
   public void onBindViewHolder(final StreamViewHolder holder, final int position) {
     if (this.listener.getListStreams().size() >= 1) {
       String streamId = this.listener.getListStreams().get(position);
-      String newStreamId = streamId.substring(0,
-              streamId.indexOf("#") + 1).concat("...").concat(streamId.substring(streamId.length() - 4,
-              streamId.length()));
+      String newStreamId = TokenUtil.getStreamId(streamId);
       if (position == 0 && this.listener.isThisPhone()) {
         holder.title.setText(holder.title.getContext().getResources().getString(R.string.this_phone, newStreamId));
       } else {
@@ -61,9 +60,7 @@ public final class StreamIdAdapter extends RecyclerView.Adapter<StreamIdAdapter.
 
   public interface OnItemClickListener {
     void onItemClick(View itemView, int position);
-
     List<String> getListStreams();
-
     boolean isThisPhone();
   }
 
@@ -72,7 +69,7 @@ public final class StreamIdAdapter extends RecyclerView.Adapter<StreamIdAdapter.
 
     StreamViewHolder(View view) {
       super(view);
-      title = (TextView) view.findViewById(R.id.textViewId);
+      this.title = (TextView) view.findViewById(R.id.textViewId);
       view.setOnClickListener(new View.OnClickListener() {
         @Override
         public void onClick(View view) {

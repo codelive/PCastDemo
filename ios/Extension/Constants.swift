@@ -17,25 +17,31 @@
 import Foundation
 import UIKit
 
+let PhenixDefaults = UserDefaults.standard
+struct PhenixDefaultsKey {
+  static let FirstLaunch = "UserDefaults.Phenix.FirstLaunch"
+}
+
 enum PublishOption: Int {
-  case audioOnly = 1
-  case videoOnly = 2
-  case all = 3
-  case shareScreen = 4
+  case None = 0
+  case AudioOnly = 1
+  case VideoOnly = 2
+  case All = 3
+  case ShareScreen = 4
 }
 
 enum QualityStatus: String {
-  case statusNoData = "no data"
-  case statusAll = "all"
-  case statusAudioOnly = "audio only"
+  case NoData = "no data"
+  case All = "all"
+  case AudioOnly = "audio only"
 }
 
 enum QualityReason: String {
-  case reasonNone = "none"
-  case reasonUpload = "upload limited"
-  case reasonDownload = "download limited"
-  case reasonNetwork = "network limited"
-  case reasonPublisher = "publisher limited"
+  case None = "none"
+  case Upload = "upload limited"
+  case Download = "download limited"
+  case Network = "network limited"
+  case Publisher = "publisher limited"
 }
 
 struct PhenixColor {
@@ -49,8 +55,10 @@ struct PhenixColor {
   static let GradientEnd = UIColor.rgb(red: 137, green: 43, blue: 96, alpha: 1.0)
 }
 
-struct PhenixName {
-  static let BackToHomeNotification = "Notification.Phenix.BackToHome"
+struct PhenixNotification {
+  static let BackToHome = "Notification.Phenix.BackToHome"
+  static let ReconnectStream = "Notification.Phenix.ReconnectStream"
+  static let ServerChanged = "Notification.Phenix.ServerChanged"
 }
 
 struct PhenixSegue {

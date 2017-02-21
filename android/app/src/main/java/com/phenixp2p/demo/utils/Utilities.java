@@ -23,6 +23,9 @@ import android.util.Log;
 
 import com.crashlytics.android.Crashlytics;
 
+import java.io.Closeable;
+import java.io.IOException;
+
 import io.fabric.sdk.android.Fabric;
 
 public final class Utilities {
@@ -45,6 +48,19 @@ public final class Utilities {
     if (Fabric.isInitialized()) {
       Crashlytics.log(Log.ERROR, TAG, e.getMessage());
     }
-    DialogUtils.showToast(activity, e.getMessage());
+    DialogUtil.showToast(activity, e.getMessage());
+  }
+
+  public static boolean areEqual(String a, String b) {
+    return ((a == null && b == null) || (a != null && a.equals(b)));
+  }
+
+  public static void close(Activity activity, Closeable closeable) {
+    try {
+      closeable.close();
+    } catch (IOException exception) {
+      handleException(activity, exception);
+    }
   }
 }
+

@@ -16,13 +16,18 @@
 package com.phenixp2p.demo;
 
 import android.app.Application;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.media.projection.MediaProjectionManager;
+import android.util.Log;
 
 import com.crashlytics.android.Crashlytics;
 import com.crashlytics.android.answers.Answers;
 import com.phenixp2p.pcast.PCast;
 
 import io.fabric.sdk.android.Fabric;
+
+import static com.phenixp2p.demo.Constants.APP_TAG;
 
 public final class PhenixApplication extends Application {
   private MediaProjectionManager projectionManager = null;
@@ -31,10 +36,19 @@ public final class PhenixApplication extends Application {
   private boolean isShare;
   private boolean isBackground;
   private PCast pCast;
+  private int positionUriMenu;
+  private String serverAddress;
+  private String pcastAddress;
 
   @Override
   public void onCreate() {
     super.onCreate();
+    try {
+      PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+      Log.d(APP_TAG, "version [" + pInfo.versionName +"] ["+ pInfo.versionCode + "]");
+    } catch (PackageManager.NameNotFoundException e) {
+      e.printStackTrace();
+    }
     // Initialize crash analytics by Fabric
     Fabric.with(this, new Crashlytics(), new Answers());
   }
@@ -85,5 +99,29 @@ public final class PhenixApplication extends Application {
 
   public void setBackground(boolean background) {
     this.isBackground = background;
+  }
+
+  public int getPositionUriMenu() {
+    return this.positionUriMenu;
+  }
+
+  public void setPositionUriMenu(int positionUriMenu) {
+    this.positionUriMenu = positionUriMenu;
+  }
+
+  public String getServerAddress() {
+    return this.serverAddress != null ? this.serverAddress : ServerAddress.PRODUCTION_ENDPOINT.getServerAddress();
+  }
+
+  public void setServerAddress(String serverAddress) {
+    this.serverAddress = serverAddress;
+  }
+
+  public String getPcastAddress() {
+    return this.pcastAddress;
+  }
+
+  public void setPcastAddress(String pcastAddress) {
+    this.pcastAddress = pcastAddress;
   }
 }

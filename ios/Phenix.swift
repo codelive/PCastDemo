@@ -21,16 +21,17 @@ import Crashlytics
 final class Phenix {
 
   static let shared = Phenix()
-
-  var publisher:PhenixPublisher?
-  var pcast:PhenixPCast?
-  var renderer:PhenixRenderer?
-  var subscribeStream:PhenixMediaStream?
-  var userMediaStream:PhenixUserMediaStream?
-  var streamId:String?
-  var authSession:String?
-  var addressServer:String?
-  var addressPCast = ""
+  var serverOption = 1
+  var userMediaLayer: CALayer?
+  var publisher: PhenixPublisher?
+  var pcast: PhenixPCast?
+  var renderer: PhenixRenderer?
+  var subscribeStream: PhenixMediaStream?
+  var userMediaStream: PhenixUserMediaStream?
+  var streamId: String?
+  var authSession: String?
+  var phenixInfo: ServerLocation!
+  var phenixPublishingOption = PublishOption.All
 
   typealias SuccessCallback = (Bool) -> ()
   typealias MediaReadyCallback = SuccessCallback
@@ -42,10 +43,20 @@ final class Phenix {
   typealias QualityChangedCallback = ()->()
 
   init() {
-     self.addressServer = "https://demo.phenixp2p.com/demoApp/"
-    if let p = PhenixPCastFactory.createPCast() {
+    let dataArray = PhenixServerList
+    if dataArray.count > 0 {
+      let dataDict = dataArray[0]
+      phenixInfo = ServerLocation.init(name: dataDict["name"]!, uri: dataDict["uri"]!, http: dataDict["http"]!)
+    }
+    self.initPcast()
+  }
+
+  func initPcast() {
+    if let p = PhenixPCastFactory.createPCast(phenixInfo.uri) {
       self.pcast = p
       p.initialize()
+    } else {
+      PhenixAssert.assert(condition: false, "Failed to init Pcast")
     }
   }
 
@@ -60,10 +71,14 @@ final class Phenix {
   func getLocalUserMedia(mediaOption: PublishOption, mediaReady:@escaping MediaReadyCallback) {
     let gumOptions = PhenixUserMediaOptions()
     switch mediaOption {
-    case .audioOnly: gumOptions.video.enabled = false
-    case .videoOnly: gumOptions.audio.enabled = false
-    case .all: break
-    case .shareScreen: break
+    case .AudioOnly:
+      gumOptions.video.enabled = false
+    case .VideoOnly:
+      gumOptions.audio.enabled = false
+    case .None:
+      gumOptions.video.enabled = false
+      gumOptions.audio.enabled = false
+    case .All, .ShareScreen: break
     }
     gumOptions.video.facingMode = .environment
     gumOptions.video.flashMode = .automatic
@@ -112,7 +127,6 @@ final class Phenix {
 
   func stop() {
     self.publisher?.stop("ended")
-    self.renderer?.stop()
     self.subscribeStream?.stop()
     self.pcast?.stop()
   }

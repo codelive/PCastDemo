@@ -36,12 +36,6 @@ public final class RxBus {
     return SingletonHolder.INSTANCE;
   }
 
-  /**
-   * PublishSubject<Object> subject = PublishSubject.create(); // observer1 will receive all onNext
-   * and onCompleted events subject.subscribe(observer1); subject.onNext("one");
-   * subject.onNext("two"); // observer2 will only receive "three" and onCompleted
-   * subject.subscribe(observer2); subject.onNext("three"); subject.onCompleted();
-   */
   private PublishSubject<Object> mEventBus = PublishSubject.create();
 
   public void post(Object event) {
@@ -52,10 +46,6 @@ public final class RxBus {
     return mEventBus;
   }
 
-  /**
-   * A simple logger for RxBus which can also prevent potential crash(OnErrorNotImplementedException)
-   * caused by error in the workflow.
-   */
   public static Subscriber<Object> defaultSubscriber() {
     return new Subscriber<Object>() {
       @Override

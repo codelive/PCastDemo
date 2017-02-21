@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2016 PhenixP2P Inc. All Rights Reserved.
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,6 +32,7 @@ import java.util.concurrent.ExecutorService;
 
 import io.fabric.sdk.android.Fabric;
 
+import static com.phenixp2p.demo.Constants.APP_TAG;
 import static com.phenixp2p.demo.Constants.NUM_HTTP_RETRIES;
 
 public final class HttpTask<TRequest, TResponse> {
@@ -76,7 +77,7 @@ public final class HttpTask<TRequest, TResponse> {
 
   private class HttpResponse {
     TResponse response;
-    Boolean success = true;
+    boolean success = true;
     HttpResponse() {
       this.success = false;
     }
@@ -93,26 +94,27 @@ public final class HttpTask<TRequest, TResponse> {
       int countRetry = 0;
       while (countRetry < NUM_HTTP_RETRIES) {
         try {
+          Log.d(APP_TAG, "HTTP [" + HttpTask.this.method +"] ["+ HttpTask.this.path +"]");
           URL url = new URL(HttpTask.this.path);
           urlConnection = (HttpURLConnection) url.openConnection();
-          urlConnection.setRequestMethod(method.toString());
+          urlConnection.setRequestMethod(HttpTask.this.method.toString());
 
-          String requestAsString = new Gson().toJson(request);
+          String requestAsString = new Gson().toJson(HttpTask.this.request);
           byte[] postData = requestAsString.getBytes(StandardCharsets.UTF_8);
           urlConnection.setRequestProperty("content-type", "application/json");
           urlConnection.setRequestProperty("content-length", Integer.toString(postData.length));
           urlConnection.setUseCaches(false);
-          Log.d(TAG, path + " request");
+          Log.d(TAG, "[" + HttpTask.this.path + "] request");
           try (DataOutputStream outputStream = new DataOutputStream(urlConnection.getOutputStream())) {
             outputStream.write(postData);
           }
           try (InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream())) {
             String result = HttpTask.convertStreamToString(inputStream);
-            TResponse response = new Gson().fromJson(result, classResponse);
+            TResponse response = new Gson().fromJson(result, HttpTask.this.classResponse);
             return new HttpResponse(response);
           }
         } catch (Exception e) {
-          callback.onError(e);
+          HttpTask.this.callback.onError(e);
           if (Fabric.isInitialized()) {
             Crashlytics.log(Log.ERROR, TAG, e.getMessage());
           }
@@ -123,14 +125,14 @@ public final class HttpTask<TRequest, TResponse> {
         }
         countRetry++;
       }
-      Log.d(TAG, HttpTask.this.path + " response");
+      Log.d(TAG, "[" + HttpTask.this.path + "] response");
       return new HttpResponse();
     }
 
     @Override
     protected void onPostExecute(HttpResponse result) {
       if (result.success) {
-        callback.onResponse(result.response);
+        HttpTask.this.callback.onResponse(result.response);
       }
     }
   };

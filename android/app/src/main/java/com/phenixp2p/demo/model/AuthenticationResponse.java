@@ -28,6 +28,6 @@ public final class AuthenticationResponse extends PhenixResponse {
   }
 
   public String getAuthenticationToken() {
-    return authenticationToken;
+    return this.authenticationToken;
   }
 }

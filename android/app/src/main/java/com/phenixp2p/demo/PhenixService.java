@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2016 PhenixP2P Inc. All Rights Reserved.
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -55,7 +55,7 @@ public final class PhenixService extends Service {
   }
 
   @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-  private final ShareScreenSession.Listener listener = new ShareScreenSession.Listener() {
+  private final ShareScreenSession.IListener listener = new ShareScreenSession.IListener() {
 
     @Override
     public void onStart(Context context, MediaProjection projection) {
@@ -107,7 +107,7 @@ public final class PhenixService extends Service {
     }
 
     this.shareScreenSession =
-      new ShareScreenSession(this, listener, resultCode, data);
+      new ShareScreenSession(this, this.listener, resultCode, data);
     this.shareScreenSession.startShareScreen();
     return START_NOT_STICKY;
   }
@@ -116,7 +116,9 @@ public final class PhenixService extends Service {
   public void onDestroy() {
     this.shareScreenSession.destroy();
     running = false;
-    ((PhenixApplication)getApplicationContext()).setShare(false);
+    PhenixApplication phenixApplication = (PhenixApplication)getApplication();
+    phenixApplication.setShare(false);
+    phenixApplication.setBackground(false);
     super.onDestroy();
   }
 

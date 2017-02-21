@@ -51,7 +51,7 @@ public final class CaptureHelper {
       activity.startService(PhenixService.newIntent(activity, resultCode, data));
     } else {
       if (Fabric.isInitialized()) {
-        Crashlytics.log(Log.DEBUG, TAG, "Failed to acquire permission to screen capture.");
+        Crashlytics.log(Log.DEBUG, TAG, "Failed to acquire permission for screen capture.");
       }
     }
     return true;

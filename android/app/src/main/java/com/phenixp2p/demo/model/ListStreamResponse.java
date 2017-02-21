@@ -30,7 +30,7 @@ public final class ListStreamResponse extends PhenixResponse {
   }
 
   public List<Stream> getStreams() {
-    return streams;
+    return this.streams;
   }
 
   public static class Stream {

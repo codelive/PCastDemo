@@ -30,6 +30,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.phenixp2p.demo.R;
 import com.phenixp2p.demo.ui.activities.MainActivity;
@@ -43,12 +44,13 @@ import static com.phenixp2p.demo.utils.Utilities.handleException;
 
 public abstract class BaseFragment extends Fragment {
   private static final String TAG = BaseFragment.class.getSimpleName();
+  private Toast toast;
   private CompositeSubscription subscriptions;
 
   @Override
   public void onActivityCreated(@Nullable Bundle savedInstanceState) {
     super.onActivityCreated(savedInstanceState);
-    addSubscription(subscribeEvents());
+    this.addSubscription(subscribeEvents());
   }
 
   protected Subscription subscribeEvents() {
@@ -65,31 +67,31 @@ public abstract class BaseFragment extends Fragment {
 
   public static void openFragment(Context context,
                                   FragmentManager manager,
-                                  Class<? extends Fragment> clazz,
-                                  AnimationStyle style,
+                                  Class<? extends Fragment> classNameOfFragmentToOpen,
+                                  AnimationDirection style,
                                   Bundle args,
                                   int frameContent,
                                   String fragmentName) {
     FragmentTransaction transaction = manager.beginTransaction();
-    String tag = clazz.getName();
+    String tag = classNameOfFragmentToOpen.getName();
 
     if (!isFragmentAdded(manager, tag)) {
       android.support.v4.app.Fragment fragment;
       try {
-        fragment = clazz.newInstance();
+        fragment = classNameOfFragmentToOpen.newInstance();
         android.support.v4.app.Fragment currentFragment = getCurrentFragment(manager);
         if (currentFragment != null) {
-          if (style == AnimationStyle.FROM_LEFT) {
+          if (style == AnimationDirection.FROM_LEFT) {
             BaseFragment.slideFragment(context, currentFragment, transaction, R.anim.exit_to_right);
-          } else if (style == AnimationStyle.FROM_RIGHT) {
+          } else if (style == AnimationDirection.FROM_RIGHT) {
             BaseFragment.slideFragment(context, currentFragment, transaction, R.anim.exit_to_left);
           }
           transaction.hide(currentFragment);
         }
 
-        if (style == AnimationStyle.FROM_LEFT) {
+        if (style == AnimationDirection.FROM_LEFT) {
           transaction.setCustomAnimations(R.anim.enter_from_left, 0);
-        } else if (style == AnimationStyle.FROM_RIGHT) {
+        } else if (style == AnimationDirection.FROM_RIGHT) {
           transaction.setCustomAnimations(R.anim.enter_from_right, 0);
         }
         transaction.replace(frameContent, fragment, tag);
@@ -131,19 +133,13 @@ public abstract class BaseFragment extends Fragment {
     } else transaction.setCustomAnimations(0, exitAnimation);
   }
 
-  /**
-   * Check a fragment if added
-   * @param manager fragment manager
-   * @param tag     name of fragment
-   * @return true if added
-   */
-  private static Boolean isFragmentAdded(FragmentManager manager, String tag) {
+  private static boolean isFragmentAdded(FragmentManager manager, String classNameOfFragment) {
     List<Fragment> fragmentList = manager.getFragments();
     if (fragmentList != null) {
       if (fragmentList.size() > 0) {
         for (android.support.v4.app.Fragment fragment : fragmentList) {
           if (fragment != null) {
-            if (fragment.getClass().getName().equals(tag)) {
+            if (fragment.getClass().getName().equals(classNameOfFragment)) {
               return true;
             }
           }
@@ -153,34 +149,25 @@ public abstract class BaseFragment extends Fragment {
     return false;
   }
 
-  /**
-   * Show a fragment which added
-   * @param manager     fragment manager
-   * @param tag         name of fragment
-   * @param transaction fragment transaction
-   * @param style       transaction anim style
-   */
-  private static void showFragment(FragmentManager manager,
-                                   String tag,
-                                   FragmentTransaction transaction,
-                                   AnimationStyle style) {
+  private static void showFragment(FragmentManager manager, String tag,
+                                   FragmentTransaction transaction, AnimationDirection style) {
     List<Fragment> fragmentList = manager.getFragments();
     if (fragmentList != null)
       for (android.support.v4.app.Fragment fragment : fragmentList) {
         if (fragment != null) {
           if (fragment.getClass().getName().equals(tag)) {
-            if (style == AnimationStyle.FROM_LEFT) {
+            if (style == AnimationDirection.FROM_LEFT) {
               transaction.setCustomAnimations(R.anim.enter_from_left, 0);
-            } else if (style == AnimationStyle.FROM_RIGHT) {
+            } else if (style == AnimationDirection.FROM_RIGHT) {
               transaction.setCustomAnimations(R.anim.enter_from_right, 0);
             }
             transaction.show(fragment);
             if (fragment instanceof BaseFragment)
               ((BaseFragment) fragment).reloadWhenOpened();
           } else {
-            if (style == AnimationStyle.FROM_LEFT) {
+            if (style == AnimationDirection.FROM_LEFT) {
               transaction.setCustomAnimations(0, R.anim.exit_to_right);
-            } else if (style == AnimationStyle.FROM_RIGHT) {
+            } else if (style == AnimationDirection.FROM_RIGHT) {
               transaction.setCustomAnimations(0, R.anim.exit_to_left);
             }
             transaction.hide(fragment);
@@ -190,11 +177,6 @@ public abstract class BaseFragment extends Fragment {
     transaction.commitAllowingStateLoss();
   }
 
-  /**
-   * Get current showing fragment
-   * @param manager fragment manager
-   * @return current fragment
-   */
   public static Fragment getCurrentFragment(FragmentManager manager) {
     List<Fragment> fragmentList = manager.getFragments();
     if (fragmentList != null) {
@@ -224,7 +206,7 @@ public abstract class BaseFragment extends Fragment {
   @Override
   public void onViewCreated(View view, Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
-    bindEventHandlers(view);
+    this.bindEventHandlers(view);
   }
 
   protected abstract int getFragmentLayout();
@@ -240,14 +222,22 @@ public abstract class BaseFragment extends Fragment {
       this.subscriptions.unsubscribe();
     }
     super.onDestroyView();
-    Log.d(TAG, "onDestroyView: " + getClass().getSimpleName());
+    Log.d(TAG, "onDestroyView: [" + getClass().getSimpleName() + "]");
   }
 
   public MainActivity getMainActivity() {
     return ((MainActivity) getActivity());
   }
 
-  public enum AnimationStyle {
+  public void showAToast(String str) {
+    if (this.toast != null) {
+      this.toast.cancel();
+    }
+    this.toast = Toast.makeText(getActivity(), str, Toast.LENGTH_SHORT);
+    this.toast.show();
+  }
+
+  public enum AnimationDirection {
     FROM_LEFT, FROM_RIGHT
   }
 }

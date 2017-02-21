@@ -17,10 +17,7 @@ package com.phenixp2p.demo.ui.view;
 
 public interface IMainActivityView {
   void authenticationToken(String authenticationToken);
-
   void onError(String error);
-
   void showProgress();
-
   void hideProgress();
 }

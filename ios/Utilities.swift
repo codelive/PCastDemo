@@ -19,14 +19,18 @@ import UIKit
 import SceneKit
 
 public enum PathType {
-  case publish        // Publishing only
-  case subscribe      // Subscribing only
-  case all            // Both
+  case Publish
+  case Subscribe
+  case All
+  case None
 }
 
 final class Utilities {
+  // Prevent object construction
+  @available(*, unavailable, message: "'Utilities' cannot be constructed because it has no accessible initializers")
+  init() {}
 
-    // Define 2D path for the parabola shape
+  //Define 2D path for the parabola shape
   public static func parabolaPath(pathType: PathType, viewToDraw: UIView, flatness: CGFloat) -> UIBezierPath {
     let path = UIBezierPath()
     let viewWidth = viewToDraw.bounds.size.width
@@ -34,17 +38,18 @@ final class Utilities {
     let startPoint = CGPoint(x: 0, y: viewHeight)
     let endPoint = CGPoint(x: viewWidth, y: viewHeight)
     let controlPoint = CGPoint(x: viewWidth * 0.5, y: viewHeight * -1)
-
     switch pathType {
-    case .all:
+    case .All:
       path.move(to: startPoint)
       path.addQuadCurve(to: endPoint, controlPoint: controlPoint)
-    case .publish:
+    case .Publish:
       path.move(to: startPoint)
       path.addQuadCurve(to: CGPoint(x: endPoint.x * 0.5, y: 0), controlPoint: CGPoint(x: viewWidth * 0.3, y: viewHeight * -0.1))
-    case .subscribe:
+    case .Subscribe:
       path.move(to: CGPoint(x: endPoint.x * 0.5, y: 0))
       path.addQuadCurve(to: endPoint, controlPoint: CGPoint(x: viewWidth - (viewWidth * 0.3), y: viewHeight * -0.1))
+    case .None:
+      break
     }
     path.flatness = flatness
 
@@ -58,13 +63,8 @@ final class Utilities {
     return layer
   }
 
-  /*
-   Executes the closure on the main queue after a set amount of seconds.
-   - parameter delay:   Delay in seconds
-   - parameter closure: Code to execute after delay
-   */
-  public static func delayOnMainQueue(delay: Double, closure: @escaping ()->()) {
-    DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+  public static func executeOnMainQueueAfterDelay(seconds: Double, closure: @escaping ()->()) {
+    DispatchQueue.main.asyncAfter(deadline: .now() + seconds) {
       closure()
     }
   }

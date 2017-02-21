@@ -15,8 +15,16 @@
 
 package com.phenixp2p.demo.presenters.inter;
 
+import com.phenixp2p.demo.presenters.MainPresenter;
+
 public interface IMainPresenter {
+  void login(String user, String password, String endpoint);
+
   void startRendering();
-  void listStreams(String endpoint);
+
+  void listStreams(int length, String endpoint);
+
+  void createStreamToken(String endpoint, String sessionId, String originStreamId, String[] capabilities, MainPresenter.IStreamer streamer);
+
   void onDestroy();
 }

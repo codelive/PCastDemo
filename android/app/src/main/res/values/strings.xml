@@ -1,11 +1,13 @@
 <resources>
+
   <string name="action_settings">Settings</string>
+  <string name="let_stream">Let\'s stream!</string>
   <string name="permissions_denied">Some permissions were denied</string>
   <string name="action_filter_stream">Select stream</string>
   <string name="mode_real_time">Real-time</string>
   <string name="mode_live">Live</string>
   <string name="mode_broadcast">Broadcast</string>
-  <string name="stop_pub">The publisher stopped.</string>
+  <string name="stop_video_pub">The publisher stopped. %1$s</string>
   <string name="this_phone">%1$s (this device)</string>
   <string name="version">v %1$s</string>
   <string name="render_error">Error: %1$s</string>
@@ -23,5 +25,34 @@
   <string name="notification_share_subtitle">Touch the to open home</string>
   <string name="server_address">Server address:</string>
   <string name="pcast_address">PCast address:</string>
-  <string name="publishStopFail">Publishing failed to stop</string>
+  <string name="list_server">Server List: </string>
+  <string name="list_manual">Manual</string>
+  <string name="list_anycast">Anycast (Closest Data Center)</string>
+  <string name="list_apac">APAC West</string>
+  <string name="list_us_west">US West</string>
+  <string name="list_us_central">US Central</string>
+  <string name="list_us_east">US East</string>
+  <string name="list_eu_west">EU West</string>
+  <string name="list_anycast_staging">Anycast - Staging</string>
+  <string name="list_us_central_staging">US Central - Staging</string>
+  <string name="list_eu_west_staging">EU West - Staging</string>
+  <string name="list_anycast_local">Anycast - Local</string>
+  <string name="list_local">Local</string>
+  <string name="unable">Unable to connect to server.</string>
+  <string name="input_address">Please input a server address</string>
+
+  <string-array name="server_array">
+    <item>Manual</item>
+    <item>Anycast (Closest Data Center)</item>
+    <item>APAC West</item>
+    <item>US West</item>
+    <item>US Central</item>
+    <item>US East</item>
+    <item>EU West</item>
+    <item>Anycast - Staging</item>
+    <item>US Central - Staging</item>
+    <item>EU West - Staging</item>
+    <item>Anycast - Local</item>
+    <item>Local</item>
+  </string-array>
 </resources>

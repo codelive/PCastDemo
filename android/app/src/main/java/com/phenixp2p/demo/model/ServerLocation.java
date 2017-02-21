@@ -13,18 +13,28 @@
  * limitations under the License.
  */
 
-package com.phenixp2p.demo.presenters.inter;
+package com.phenixp2p.demo.model;
 
-import com.phenixp2p.demo.presenters.MainActivityPresenter;
+public final class ServerLocation {
+  private String title;
+  private String serverAddress;
+  private String pcastAddress;
 
-public interface IMainActivityPresenter {
-  void login(String user, String password, String endpoint);
+  public ServerLocation(String title, String serverAddress, String pcastAddress) {
+    this.serverAddress = serverAddress;
+    this.pcastAddress = pcastAddress;
+    this.title = title;
+  }
 
-  void createStreamToken(String sessionId,
-                         String originStreamId,
-                         String endpoint,
-                         String[] capabilities,
-                         MainActivityPresenter.IStreamer streamer);
+  public String getServerAddress() {
+    return this.serverAddress;
+  }
 
-  void onDestroy();
+  public String getPcastAddress() {
+    return this.pcastAddress;
+  }
+
+  public String getTitle() {
+    return this.title;
+  }
 }

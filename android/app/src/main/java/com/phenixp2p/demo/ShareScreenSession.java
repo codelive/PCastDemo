@@ -24,7 +24,7 @@ import android.support.annotation.RequiresApi;
 
 final class ShareScreenSession {
   private final Context context;
-  private final Listener listener;
+  private final IListener listener;
   private final int resultCode;
   private final Intent data;
   private final MediaProjectionManager projectionManager;
@@ -32,7 +32,7 @@ final class ShareScreenSession {
   private boolean running;
   private MediaProjectionCallback mediaProjectionCallback;
 
-  ShareScreenSession(Context context, Listener listener, int resultCode, Intent data) {
+  ShareScreenSession(Context context, IListener listener, int resultCode, Intent data) {
     this.context = context;
     this.listener = listener;
     this.resultCode = resultCode;
@@ -47,7 +47,7 @@ final class ShareScreenSession {
       this.projection = this.projectionManager.getMediaProjection(this.resultCode, this.data);
       this.projection.registerCallback(this.mediaProjectionCallback, null);
       this.listener.onStart(this.context, this.projection);
-      running = true;
+      this.running = true;
     }
   }
 
@@ -60,7 +60,7 @@ final class ShareScreenSession {
       // Stop the projection in order to flush everything to the recorder.
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
         if (this.projection != null) {
-          this.projection.unregisterCallback(mediaProjectionCallback);
+          this.projection.unregisterCallback(this.mediaProjectionCallback);
           this.projection.stop();
           this.projection = null;
         }
@@ -84,8 +84,8 @@ final class ShareScreenSession {
     }
   }
 
-  interface Listener {
-    // Invoked immediately prior to the start of share screen.
+  interface IListener {
+     // Invoked immediately prior to the start of share screen.
     void onStart(Context context, MediaProjection projection);
 
     // Invoked immediately after the end of share screen.

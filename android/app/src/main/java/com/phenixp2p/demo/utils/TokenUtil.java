@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2016 PhenixP2P Inc. All Rights Reserved.
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,7 +22,7 @@ import android.preference.PreferenceManager;
 import static com.phenixp2p.demo.Constants.SESSION_ID;
 import static com.phenixp2p.demo.Constants.STREAM_ID_FROM_LIST;
 
-public final class TokenUtils {
+public final class TokenUtil {
   public static String getStreamId(String streamId) {
     return streamId.substring(0,
             streamId.indexOf("#") + 1).concat("...").concat(streamId.substring(streamId.length() - 4,
@@ -43,9 +43,5 @@ public final class TokenUtils {
 
   public static String getStreamIdLocal(Context context) {
     return PreferenceManager.getDefaultSharedPreferences(context).getString(STREAM_ID_FROM_LIST, null);
-  }
-
-  public static void clearAll(Context context) {
-    PreferenceManager.getDefaultSharedPreferences(context).edit().clear().apply();
   }
 }

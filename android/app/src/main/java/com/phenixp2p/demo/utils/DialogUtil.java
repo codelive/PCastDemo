@@ -16,33 +16,18 @@
 package com.phenixp2p.demo.utils;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
-public final class DialogUtils {
-  private static final String TAG = DialogUtils.class.getSimpleName();
+public final class DialogUtil {
+  private static final String TAG = DialogUtil.class.getSimpleName();
   private static Toast toast;
 
-  public static void showToast ( final Activity activity, final String str){
-    activity.runOnUiThread(new Runnable() {
-      @Override
-      public void run() {
-        if (toast != null) {
-          toast.cancel();
-        }
-        toast = Toast.makeText(activity, str, Toast.LENGTH_LONG);
-        toast.show();
-      }
-    });
-  }
-
   public static void showDialog(String title, String message, final ActionDialog actionDialog) {
-    Context context = actionDialog.getContext();
-    if (context != null) {
-      AlertDialog.Builder builder = new AlertDialog.Builder(context);
+    if (actionDialog.getContext() != null && !actionDialog.getContext().isFinishing()) {
+      AlertDialog.Builder builder = new AlertDialog.Builder((actionDialog.getContext()));
       builder.setTitle(title);
       builder.setMessage(message);
       builder.setCancelable(false);
@@ -63,5 +48,18 @@ public final class DialogUtils {
     AppCompatActivity getContext();
     void buttonYes();
     void autoDismiss(AlertDialog alertDialog);
+  }
+
+  static void showToast(final Activity activity, final String str) {
+    activity.runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+        if (toast != null) {
+          toast.cancel();
+        }
+        toast = Toast.makeText(activity, str, Toast.LENGTH_LONG);
+        toast.show();
+      }
+    });
   }
 }

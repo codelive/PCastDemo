@@ -18,7 +18,6 @@ import Foundation
 import Crashlytics
 
 final class Rest {
-
   enum RestError: Error {
     case InvalidUrlPath
   }
@@ -36,7 +35,7 @@ final class Rest {
   typealias Params = Dictionary<String, Any>
 
   private func urlRequest(path: String, params: Params?) throws -> NSMutableURLRequest {
-    guard let url = URL(string: Phenix.shared.addressServer! + path) else {
+    guard let url = URL(string: Phenix.shared.phenixInfo.http! + path) else {
       throw Rest.RestError.InvalidUrlPath
     }
 
@@ -83,7 +82,7 @@ final class Rest {
         DispatchQueue.main.sync { // UX callback in main thread
           if let data = data {
             let json = try? JSONSerialization.jsonObject(with: data, options: [])
-            if let response = response as? HTTPURLResponse , 200...299 ~= response.statusCode {
+            if let response = response as? HTTPURLResponse, 200...299 ~= response.statusCode {
               completion(true, json as AnyObject?)
               return
             } else {
@@ -97,6 +96,9 @@ final class Rest {
           if retry > 0 {
             retry -= 1
             Rest.dataTask(numberOfRetry: retry, request: request, method: method, completion: completion)
+          } else {
+            completion(false, nil)
+            return
           }
         }
       }.resume()

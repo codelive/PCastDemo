@@ -30,10 +30,14 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.phenixp2p.demo.BuildConfig;
 import com.phenixp2p.demo.Capabilities;
 import com.phenixp2p.demo.CaptureHelper;
 import com.phenixp2p.demo.Constants;
@@ -41,21 +45,25 @@ import com.phenixp2p.demo.PhenixApplication;
 import com.phenixp2p.demo.PhenixService;
 import com.phenixp2p.demo.R;
 import com.phenixp2p.demo.RxBus;
+import com.phenixp2p.demo.UriMenu;
 import com.phenixp2p.demo.events.Events;
-import com.phenixp2p.demo.presenters.MainActivityPresenter;
-import com.phenixp2p.demo.presenters.inter.IMainActivityPresenter;
+import com.phenixp2p.demo.presenters.MainPresenter;
+import com.phenixp2p.demo.presenters.inter.IMainPresenter;
 import com.phenixp2p.demo.ui.fragments.BaseFragment;
 import com.phenixp2p.demo.ui.fragments.MainFragment;
-import com.phenixp2p.demo.ui.fragments.ViewDetailStreamFragment;
 import com.phenixp2p.demo.ui.view.IMainActivityView;
-import com.phenixp2p.demo.utils.DialogUtils;
-import com.phenixp2p.demo.utils.TokenUtils;
+import com.phenixp2p.demo.utils.DialogUtil;
+import com.phenixp2p.demo.utils.TokenUtil;
+import com.phenixp2p.demo.utils.Utilities;
+import com.phenixp2p.environment.android.AndroidContext;
 import com.phenixp2p.pcast.DataQualityReason;
 import com.phenixp2p.pcast.DataQualityStatus;
 import com.phenixp2p.pcast.FacingMode;
 import com.phenixp2p.pcast.FlashMode;
+import com.phenixp2p.pcast.MediaStream;
 import com.phenixp2p.pcast.MediaType;
 import com.phenixp2p.pcast.PCast;
+import com.phenixp2p.pcast.PCastFactory;
 import com.phenixp2p.pcast.PCastInitializeOptions;
 import com.phenixp2p.pcast.Publisher;
 import com.phenixp2p.pcast.RequestStatus;
@@ -64,8 +72,6 @@ import com.phenixp2p.pcast.SourceDeviceType;
 import com.phenixp2p.pcast.UserMediaOptions;
 import com.phenixp2p.pcast.UserMediaStream;
 import com.phenixp2p.pcast.android.AndroidPCastFactory;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -76,22 +82,25 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.subscriptions.CompositeSubscription;
 
+import static com.phenixp2p.demo.Constants.APP_TAG;
 import static com.phenixp2p.demo.Constants.CREATE_SCREEN_CAPTURE;
-import static com.phenixp2p.demo.Constants.ENDPOINT;
+import static com.phenixp2p.demo.Constants.NUM_HTTP_RETRIES;
 import static com.phenixp2p.demo.Constants.REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS;
 import static com.phenixp2p.demo.Constants.REQUEST_CODE_SECRET_URL;
 import static com.phenixp2p.demo.Constants.SESSION_ID;
 import static com.phenixp2p.demo.Constants.STREAM_ID;
 import static com.phenixp2p.demo.Constants.STREAM_TOKEN;
-import static com.phenixp2p.demo.utils.TokenUtils.clearAll;
+import static com.phenixp2p.demo.Constants.TIME_TO_TAP;
+import static com.phenixp2p.demo.Constants.NUMBER_TOUCHES;
 import static com.phenixp2p.demo.utils.Utilities.handleException;
 import static com.phenixp2p.demo.utils.Utilities.hasInternet;
 
-public final class MainActivity extends AppCompatActivity implements
-        IMainActivityView,
-        Publisher.DataQualityChangedCallback {
+public final class MainActivity extends AppCompatActivity implements IMainActivityView,
+        Publisher.DataQualityChangedCallback,
+        View.OnTouchListener {
 
-  private final static String TAG = "PCast";
+  private static final String TAG = MainActivity.class.getSimpleName();
+
   private PCast pcast;
   private UserMediaStream publishMedia;
   private PowerManager.WakeLock wakeLock;
@@ -100,43 +109,50 @@ public final class MainActivity extends AppCompatActivity implements
   private PulsatorLayout pulsator;
   private Publisher publisher;
   private ProgressBar progressBar;
+  private TextView textViewVersion;
   private boolean isStarted = false;
-  private IMainActivityPresenter presenter;
+  private IMainPresenter presenter;
   private DataQualityReason dataQualityReason;
   private DataQualityStatus dataQualityStatus;
   private String screenCaptureDeviceId;
   private boolean isShare = false;
 
   private CompositeSubscription subscriptions;
-  private boolean isResume = false;
   private boolean isEnableBackPress = false;
   private UserMediaOptions gumOptions;
   private boolean isError = false;
+  private int onError = 0;
+  private long startMillis = 0;
+  private long count = 0;
+  private boolean isVideo = false;
+  private boolean isOnlyVideoOrAudio = false;
+  private PhenixApplication phenixApplication;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
+    this.phenixApplication = ((PhenixApplication) getApplication());
+    getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
     this.pulsator = (PulsatorLayout) findViewById(R.id.pulsator);
     this.progressBar = (ProgressBar) findViewById(R.id.prog);
-    this.presenter = new MainActivityPresenter(this);
+    this.textViewVersion = (TextView) findViewById(R.id.textViewVersion);
+    String version = BuildConfig.VERSION_NAME.concat(" (" + String.valueOf(BuildConfig.VERSION_CODE) + ")");
+    this.textViewVersion.setText(getResources().getString(R.string.version, version));
+    this.textViewVersion.setOnTouchListener(this);
+    this.presenter = new MainPresenter(this);
     if (!PhenixService.isReady()) {
       this.checkPermissions();
       this.pulsator.setVisibility(View.VISIBLE);
     } else {
       this.isStarted = true;
       this.pulsator.setVisibility(View.GONE);
-      onGetMediaShareScreen(false);
+      this.onGetMediaShareScreen(false);
       Bundle bundle = new Bundle();
-      bundle.putString(SESSION_ID, TokenUtils.getSessionIdLocal(this));
-      bundle.putString(STREAM_ID, TokenUtils.getStreamIdLocal(this));
-      BaseFragment.openFragment(MainActivity.this,
-              getSupportFragmentManager(),
-              MainFragment.class,
-              null,
-              bundle,
-              R.id.content,
-              null);
+      bundle.putString(SESSION_ID, TokenUtil.getSessionIdLocal(this));
+      bundle.putString(STREAM_ID, TokenUtil.getStreamIdLocal(this));
+      BaseFragment.openFragment(this, getSupportFragmentManager(), MainFragment.class, null, bundle,
+        R.id.content_content, null);
     }
   }
 
@@ -145,8 +161,8 @@ public final class MainActivity extends AppCompatActivity implements
     switch (requestCode) {
       case CREATE_SCREEN_CAPTURE:
         if (resultCode != RESULT_OK) {
-          getUserMedia();
-          ((PhenixApplication) getApplication()).setProjectionManager(null);
+          this.getUserMedia();
+          this.phenixApplication.setProjectionManager(null);
           return;
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -188,7 +204,7 @@ public final class MainActivity extends AppCompatActivity implements
         });
         return;
       }
-      ActivityCompat.requestPermissions(MainActivity.this,
+      ActivityCompat.requestPermissions(this,
               permissionsList.toArray(new String[permissionsList.size()]),
               REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS);
       return;
@@ -197,7 +213,7 @@ public final class MainActivity extends AppCompatActivity implements
   }
 
   private void showMessageOKCancel(String message, DialogInterface.OnClickListener okListener) {
-    new AlertDialog.Builder(MainActivity.this)
+    new AlertDialog.Builder(this)
       .setMessage(message)
       .setPositiveButton("OK", okListener)
       .setNegativeButton("Cancel", null)
@@ -227,7 +243,7 @@ public final class MainActivity extends AppCompatActivity implements
           this.commenceSession();
         } else {
           // Permission Denied
-          Toast.makeText(MainActivity.this, getResources().getString(R.string.permissions_denied), Toast.LENGTH_SHORT).show();
+          Toast.makeText(this, getResources().getString(R.string.permissions_denied), Toast.LENGTH_SHORT).show();
         }
       }
       break;
@@ -237,10 +253,10 @@ public final class MainActivity extends AppCompatActivity implements
   }
 
   private boolean addPermission(List<String> permissionsList, String permission) {
-    if (ActivityCompat.checkSelfPermission(MainActivity.this, permission) != PackageManager.PERMISSION_GRANTED) {
+    if (ActivityCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
       permissionsList.add(permission);
       // Check for Rationale Option
-      if (!ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, permission)) {
+      if (!ActivityCompat.shouldShowRequestPermissionRationale(this, permission)) {
         return false;
       }
     }
@@ -249,120 +265,112 @@ public final class MainActivity extends AppCompatActivity implements
 
   @Override
   protected void onPause() {
-    final PhenixApplication appContext = (PhenixApplication) getApplicationContext();
     if (!this.isShare) {
-      appContext.setStopPublish(false);
-      appContext.setBackground(false);
-      onClear();
+      this.phenixApplication.setStopPublish(false);
+      this.phenixApplication.setBackground(false);
+      this.onClear();
       if (this.presenter != null) {
         this.presenter.onDestroy();
       }
       this.progressBar.setVisibility(View.GONE);
-      System.gc();
       if (this.subscriptions != null) {
         this.subscriptions.clear();
         this.subscriptions.unsubscribe();
         this.subscriptions = null;
       }
-    }
-    if (this.wakeLock != null && this.wakeLock.isHeld()) {
-      this.wakeLock.release();
+      System.gc();
     }
     super.onPause();
   }
 
-  private void onClear() {
+  public void onClear() {
     // Stop pcast when we exit the app.
     if (this.publisher != null) {
-      MainActivity.this.publisher.stop("exit-app");
-      if (!MainActivity.this.publisher.isClosed()) {
-        try {
-          MainActivity.this.publisher.close();
-        } catch (IOException e) {
-          handleException(this, e);
-        }
-        MainActivity.this.publisher = null;
+      this.publisher.stop("exit-app");
+      if (!this.publisher.isClosed()) {
+        Utilities.close(this, this.publisher);
+        this.publisher = null;
       }
     }
 
-    if (MainActivity.this.publishMedia != null) {
+    if (this.publishMedia != null) {
       //not call close(), because when reopen will error
-      MainActivity.this.publishMedia = null;
+      this.publishMedia = null;
     }
 
     if (this.pcast != null) {
       this.pcast.stop();
       this.pcast.shutdown();
-      if (!this.pcast.isClosed()) {
-        try {
-          this.pcast.close();
-        } catch (IOException e) {
-          handleException(this, e);
-        }
+      if (!pcast.isClosed()) {
+        Utilities.close(this, this.pcast);
       }
-      ((PhenixApplication) getApplicationContext()).setPCast(null);
+      this.phenixApplication.setPCast(null);
       this.pcast = null;
+    }
+  }
+
+  private void onClearSecretUrl() {
+    if (this.phenixApplication != null) {
+      this.phenixApplication.setPcastAddress(null);
+      this.phenixApplication.setServerAddress(null);
+      this.phenixApplication.setPositionUriMenu(0);
     }
   }
 
   @Override
   protected void onResume() {
-    super.onResume();
+    this.phenixApplication = ((PhenixApplication) getApplication());
+    PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+    this.wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
+    this.wakeLock.acquire();
+    if (this.phenixApplication.isBackground()) {
+      this.isShare = true;
+    }
     if (!this.isShare) {
-      PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
-      this.wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
-      this.wakeLock.acquire();
       if (this.sessionId != null) {
-        this.presenter = new MainActivityPresenter(this);
+        this.presenter = new MainPresenter(this);
         this.login();
       }
-      addSubscription(subscribeEvents());
+      this.addSubscription(subscribeEvents());
     }
-    this.isResume = true;
     if (this.isEnableBackPress) {
       onBackPressed();
     } else {
-      if (this.isShare && ((PhenixApplication) getApplicationContext()).isBackground()) {
+      if (this.isShare && this.phenixApplication.isBackground()) {
         Fragment fragmentMain = getSupportFragmentManager().findFragmentByTag(MainFragment.class.getName());
         if (fragmentMain != null && fragmentMain.isVisible()) {
-          ((MainFragment) fragmentMain).callReload(this.sessionId, MainActivity.this.streamId);
+          ((MainFragment) fragmentMain).callReload(this.sessionId, this.streamId);
         }
       }
       this.isEnableBackPress = false;
     }
+    super.onResume();
   }
 
   @Override
   public void onBackPressed() {
-    if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
-      ((PhenixApplication) getApplicationContext()).setStopPublish(false);
-      ((PhenixApplication) getApplicationContext()).setLandscape(false);
+    Fragment fragmentMain = getSupportFragmentManager().findFragmentByTag(MainFragment.class.getName());
+    if (fragmentMain != null && fragmentMain.isVisible()) {
+      ((MainFragment) fragmentMain).onBackButtonPressed();
     }
-    super.onBackPressed();
+    if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
+      PhenixApplication context = this.phenixApplication;
+      context.setStopPublish(false);
+      context.setLandscape(false);
+      this.onClearSecretUrl();
+    }
   }
 
   @Override
   public boolean onKeyDown(int keyCode, KeyEvent event) {
-    if (keyCode == KeyEvent.KEYCODE_BACK && this.isShare) {
-      ((PhenixApplication) getApplicationContext()).setBackground(false);
+    PhenixApplication context = this.phenixApplication;
+    if (keyCode == KeyEvent.KEYCODE_BACK && !context.isShare()) {
+      context.setBackground(false);
+      this.isShare = false;
     } else {
-      ((PhenixApplication) getApplicationContext()).setBackground(true);
+      context.setBackground(true);
     }
     return super.onKeyDown(keyCode, event);
-  }
-
-  @Override
-  protected void onSaveInstanceState(Bundle outState) {
-    this.isResume = false;
-    super.onSaveInstanceState(outState);
-  }
-
-  public boolean isSaveInstance() {
-    return !this.isResume;
-  }
-
-  public void setEnableBackPress(boolean enableBackPress) {
-    this.isEnableBackPress = enableBackPress;
   }
 
   // 0. Commence sequence
@@ -372,12 +380,12 @@ public final class MainActivity extends AppCompatActivity implements
     }
   }
 
-  // 1. REST API: authenticate with the app-maker's own server.
-  // The app talks to a Phenix demo server, but you could also use the node.js server provided in this repo.
-  private void login() {
+  // 1. REST API: authenticate with the app-maker's own server. The app talks to a Phenix demo server, but you could also use the node.js server provided in this repo.
+  public void login() {
     // Check the connection to the internet.
     if (hasInternet(this)) {
-      this.presenter.login("demo-user", "demo-password", ENDPOINT);
+      Log.d(APP_TAG, "1. REST API: authenticate");
+      this.presenter.login("demo-user", "demo-password", this.phenixApplication.getServerAddress());
     } else {
       runOnUiThread(new Runnable() {
         @Override
@@ -402,62 +410,98 @@ public final class MainActivity extends AppCompatActivity implements
   // Get authentication token when REST APIs
   @Override
   public void authenticationToken(String authenticationToken) {
-    start(authenticationToken);
+    this.start(authenticationToken);
   }
 
   //error when login
   @Override
   public void onError(final String error) {
-    onClear();
+    this.onError++;
+    if (this.onError == NUM_HTTP_RETRIES) { // inform user that we can't connect
+      runOnUiThread(new Runnable() {
+        @Override
+        public void run() {
+          MainActivity.this.pulsator.stop();
+          MainActivity.this.pulsator.setVisibility(View.GONE);
+          MainActivity.this.isStarted = true;
+          Bundle bundle = new Bundle();
+          bundle.putBoolean(Constants.BUNDLE_ERROR, true);
+          BaseFragment.openFragment(MainActivity.this,
+                  getSupportFragmentManager(),
+                  MainFragment.class,
+                  null,
+                  bundle,
+                  R.id.content_content,
+                  null);
+        }
+      });
+      this.onError = 0;
+      return;
+    }
+    this.onClear();
     this.isError = true;
-    clearAll(this);
-    Log.d(TAG, "onError: ");
     this.presenter.onDestroy();
-    checkPermissions();
   }
 
   @Override
   public void showProgress() {
-    if (this.pulsator.getVisibility() == View.GONE) {
-      this.pulsator.setVisibility(View.VISIBLE);
-    }
-    this.pulsator.start();
+    runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+        if (MainActivity.this.pulsator.getVisibility() == View.GONE) {
+          MainActivity.this.pulsator.setVisibility(View.VISIBLE);
+        }
+        MainActivity.this.pulsator.start();
+      }
+    });
   }
 
   @Override
   public void hideProgress() {
-    goneAnimation();
+    this.goneAnimation();
   }
 
   // 2. PCast SDK API: start.
   private void start(final String authenticationToken) {
-    MainActivity.this.pcast = AndroidPCastFactory.createPCast(MainActivity.this);
-    MainActivity.this.pcast.initialize(new PCastInitializeOptions(false, true));
-    MainActivity.this.pcast.start(authenticationToken, new PCast.AuthenticationCallback() {
+    String pcastUrl = this.phenixApplication.getPcastAddress();
+    Log.d(APP_TAG, "2. PCast SDK API: start [" + (pcastUrl == null ? "" : pcastUrl) + "]");
+    if (pcastUrl == null) {
+      this.pcast = AndroidPCastFactory.createPCast(this);
+    } else {
+      AndroidContext.setContext(this);
+      this.pcast = PCastFactory.createPCast(pcastUrl);
+    }
+    this.pcast.initialize(new PCastInitializeOptions(false, true));
+    this.pcast.start(authenticationToken, new PCast.AuthenticationCallback() {
         public void onEvent(PCast var1, RequestStatus status, final String sessionId) {
           if (status == RequestStatus.OK) {
-            ((PhenixApplication) getApplicationContext()).setPCast(MainActivity.this.pcast);
+            MainActivity.this.phenixApplication.setPCast(MainActivity.this.pcast);
             MainActivity.this.sessionId = sessionId;
-            getUserMedia();
+            if (MainActivity.this.isOnlyVideoOrAudio) {
+              MainActivity.this.onlyVideoOrAudio(MainActivity.this.isVideo);
+            } else {
+              MainActivity.this.getUserMedia();
+            }
           } else {
-            onTryAfterError(getResources().getString(R.string.render_error, status.name()));
+            MainActivity.this.onTryAfterError(getResources().getString(R.string.render_error, status.name()));
           }
         }
       },
       new PCast.OnlineCallback() {
         public void onEvent(PCast var1) {
-          Log.d(TAG, "online");
+          Log.d(APP_TAG, "SDK online");
         }
       },
       new PCast.OfflineCallback() {
         public void onEvent(PCast var1) {
-          Log.d(TAG, "offline");
+          Log.d(APP_TAG, "SDK offline");
         }
       });
   }
 
   // 3. Get user publishMedia from SDK.
   private void getUserMedia() {
+    Log.d(APP_TAG, "3. Get user publishMedia from SDK");
     UserMediaOptions gumOptions = new UserMediaOptions();
     gumOptions.getAudioOptions().setEnabled(true);
     gumOptions.getVideoOptions().setFacingMode(FacingMode.ENVIRONMENT);
@@ -467,18 +511,18 @@ public final class MainActivity extends AppCompatActivity implements
 
   private void onUserMedia(UserMediaOptions gumOptions) {
     try {
-      if (pcast != null) {
-        MainActivity.this.pcast.getUserMedia(gumOptions, new PCast.UserMediaCallback() {
+      if (this.pcast != null) {
+        this.pcast.getUserMedia(gumOptions, new PCast.UserMediaCallback() {
           public void onEvent(PCast p, RequestStatus status, UserMediaStream media) {
             if (status == RequestStatus.OK) {
               if (media != null) {
                 MainActivity.this.publishMedia = media;
-                getPublishToken();
+                MainActivity.this.getPublishToken();
               } else {
-                onTryAfterError(getResources().getString(R.string.media_null));
+                MainActivity.this.onTryAfterError(getResources().getString(R.string.media_null));
               }
             } else {
-              onTryAfterError(getResources().getString(R.string.render_error, status.name()));
+              MainActivity.this.onTryAfterError(getResources().getString(R.string.render_error, status.name()));
             }
           }
         });
@@ -489,16 +533,16 @@ public final class MainActivity extends AppCompatActivity implements
   }
 
   private void onTryAfterError(final String title) {
-    if (((PhenixApplication) getApplicationContext()).isShare()) {
+    if (this.phenixApplication.isShare()) {
       if (PhenixService.isReady()) {
-        stopService(new Intent(MainActivity.this, PhenixService.class));
+        this.stopService(new Intent(this, PhenixService.class));
       }
     }
-    onClear();
+    this.onClear();
     runOnUiThread(new Runnable() {
       @Override
       public void run() {
-        DialogUtils.showDialog(title, "Please try again", new DialogUtils.ActionDialog() {
+        DialogUtil.showDialog(title, "Please try again", new DialogUtil.ActionDialog() {
           @Override
           public AppCompatActivity getContext() {
             return MainActivity.this;
@@ -506,7 +550,7 @@ public final class MainActivity extends AppCompatActivity implements
 
           @Override
           public void buttonYes() {
-            login();
+            MainActivity.this.login();
           }
 
           @Override
@@ -516,20 +560,31 @@ public final class MainActivity extends AppCompatActivity implements
     });
   }
 
+  private String getSessionId() {
+    return this.sessionId == null ? TokenUtil.getSessionIdLocal(this) : this.sessionId;
+  }
+
   // 4. Get publish token from REST admin API.
   private void getPublishToken() {
-    presenter.createStreamToken(ENDPOINT,
-            getLocalSessiondId(),
+    Log.d(APP_TAG, "4. Get publish token from REST admin API");
+    presenter.createStreamToken(this.phenixApplication.getServerAddress(),
+            this.getSessionId(),
             null,
             new String[]{Capabilities.ARCHIVE.getValue(), Capabilities.STREAMING.getValue()},
-            new MainActivityPresenter.IStreamer() {
-
+            new MainPresenter.IStreamer() {
         @Override
         public void hereIsYourStreamToken(String streamToken) {
           if (streamToken != null) {
-            publishStream(streamToken);
+            MainActivity.this.publishStream(streamToken);
           } else {
             MainActivity.this.getPublishToken();
+          }
+        }
+
+        @Override
+        public void isError(int count) {
+          if (count == NUM_HTTP_RETRIES) {
+            MainActivity.this.setGoneVersion();
           }
         }
       });
@@ -537,24 +592,16 @@ public final class MainActivity extends AppCompatActivity implements
 
   // 5. Publish streamToken with SDK.
   private void publishStream(String publishStreamToken) {
-    if (pcast != null && this.publishMedia != null && this.publishMedia.getMediaStream() != null) {
-      MainActivity.this.pcast.publish(publishStreamToken,
-              this.publishMedia.getMediaStream(),
-              new PCast.PublishCallback() {
+    if (this.pcast != null && this.publishMedia != null ) {
+      Log.d(APP_TAG, "5. Publish streamToken with SDK");
+      MediaStream mediaStream = this.publishMedia.getMediaStream();
+      if (mediaStream == null) {
+        return;
+      }
+      this.pcast.publish(publishStreamToken, mediaStream, new PCast.PublishCallback() {
         public void onEvent(PCast p, final RequestStatus status, Publisher publisher) {
           if (status == RequestStatus.OK) {
-            if (publisher.hasEnded() && !publisher.isClosed()) {
-              publisher.stop("close");
-              try {
-                publisher.close();
-              } catch (IOException e) {
-                handleException(MainActivity.this, e);
-              }
-            }
-            MainActivity.this.publisher = publisher;
-            MainActivity.this.streamId = publisher.getStreamId();
-            MainActivity.this.publisher.setDataQualityChangedCallback(MainActivity.this);
-            getSubscribeToken();
+            didPublishStream(publisher);
           } else {
             runOnUiThread(new Runnable() {
               @Override
@@ -562,31 +609,41 @@ public final class MainActivity extends AppCompatActivity implements
                 if (MainActivity.this.progressBar != null) {
                   MainActivity.this.progressBar.setVisibility(View.GONE);
                 }
-                onTryAfterError(getResources().getString(R.string.render_error, status.name()));
+                MainActivity.this.onTryAfterError(getResources().getString(R.string.render_error, status.name()));
               }
             });
           }
         }
       });
     } else {
-      onTryAfterError("Media is null");
+      this.onTryAfterError("Media is null");
     }
   }
 
-  private String getLocalSessiondId() {
-    return this.sessionId == null ? TokenUtils.getSessionIdLocal(this) : this.sessionId;
+  private void didPublishStream(Publisher publisher) {
+    if (publisher.hasEnded() && !publisher.isClosed()) {
+      publisher.stop("close");
+      Utilities.close(this, publisher);
+    }
+    this.publisher = publisher;
+    this.streamId = publisher.getStreamId();
+    this.publisher.setDataQualityChangedCallback(this);
+    this.getSubscribeToken();
   }
 
   // 6. Get streamToken token from REST admin API.
   private void getSubscribeToken() {
-    presenter.createStreamToken(ENDPOINT,
-            getLocalSessiondId(),
+    Log.d(APP_TAG, "6. Get streamToken token from REST admin API");
+    presenter.createStreamToken(this.phenixApplication.getServerAddress(),
+            this.getSessionId(),
             this.streamId,
             null,
-            new MainActivityPresenter.IStreamer() {
+            new MainPresenter.IStreamer() {
+
         @Override
         public void hereIsYourStreamToken(final String streamToken) {
           MainActivity.this.progressBar.setVisibility(View.GONE);
+          MainActivity.this.textViewVersion.setVisibility(View.GONE);
           if (!MainActivity.this.isStarted) {
             MainActivity.this.isStarted = true;
             Bundle bundle = new Bundle();
@@ -598,28 +655,25 @@ public final class MainActivity extends AppCompatActivity implements
                     MainFragment.class,
                     null,
                     bundle,
-                    R.id.content,
-                    null);
+              R.id.content_content, null);
           } else {
-            Fragment fragmentViewDetail = getSupportFragmentManager().findFragmentByTag(ViewDetailStreamFragment.class.getName());
-            if (fragmentViewDetail != null && fragmentViewDetail.isVisible()) {
-              ((ViewDetailStreamFragment) fragmentViewDetail).callReload(MainActivity.this.streamId);
-            }
             Fragment fragmentMain = getSupportFragmentManager().findFragmentByTag(MainFragment.class.getName());
             if (fragmentMain != null && fragmentMain.isVisible() && !isError) {
-              ((MainFragment) fragmentMain).callReload(sessionId, MainActivity.this.streamId);
+              ((MainFragment) fragmentMain).callReload(MainActivity.this.sessionId, MainActivity.this.streamId);
             }
           }
         }
-      }
-    );
+
+        @Override
+        public void isError(int count) {}
+      });
   }
 
   private void onShareScreen() {
     if (this.pcast == null) {
-      this.pcast = ((PhenixApplication) getApplicationContext()).getPCast();
+      this.pcast = this.phenixApplication.getPCast();
     }
-    pcast.enumerateSourceDevices(
+    this.pcast.enumerateSourceDevices(
       new PCast.EnumerateSourceDevicesCallback() {
         @Override
         public void onEvent(PCast pcast, SourceDeviceInfo[] devices) {
@@ -674,30 +728,38 @@ public final class MainActivity extends AppCompatActivity implements
   }
 
   public void onStartShareScreen() {
-    showProgressBar();
+    this.showProgressBar();
     this.isShare = true;
   }
 
   public void onlyVideoOrAudio(boolean isVideo) {
-    showProgressBar();
+    this.isOnlyVideoOrAudio = true;
+    this.showProgressBar();
     UserMediaOptions gumOptions = new UserMediaOptions();
     if (isVideo) {
+      this.isVideo = true;
       gumOptions.getAudioOptions().setEnabled(false);
       gumOptions.getVideoOptions().setEnabled(true);
       gumOptions.getVideoOptions().setFacingMode(FacingMode.ENVIRONMENT);
       gumOptions.getVideoOptions().setFlashMode(FlashMode.AUTOMATIC);
     } else {
+      this.isVideo = false;
       gumOptions.getAudioOptions().setEnabled(true);
       gumOptions.getVideoOptions().setEnabled(false);
     }
-    onUserMedia(gumOptions);
+    this.onUserMedia(gumOptions);
   }
 
   @Override
   protected void onDestroy() {
     if (!this.isShare) {
-      clearAll(this);
+      getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+      if (this.wakeLock != null && this.wakeLock.isHeld()) {
+        this.wakeLock.release();
+      }
     }
+    this.isOnlyVideoOrAudio = false;
+    this.isVideo = false;
     super.onDestroy();
   }
 
@@ -708,72 +770,72 @@ public final class MainActivity extends AppCompatActivity implements
         @Override
         public void call(Object objectEvent) {
           if (objectEvent instanceof Events.ChangeCamera) {
-            if (MainActivity.this.gumOptions == null) {
-              MainActivity.this.gumOptions = new UserMediaOptions();
-            }
-            MainActivity.this.gumOptions.getAudioOptions().setEnabled(true);
-            MainActivity.this.gumOptions.getVideoOptions().setFlashMode(FlashMode.AUTOMATIC);
-            if (((Events.ChangeCamera) objectEvent).isChange) {
-              MainActivity.this.gumOptions.getVideoOptions().setFacingMode(FacingMode.USER);
-              if (MainActivity.this.publishMedia != null) {
-                MainActivity.this.publishMedia.applyOptions(MainActivity.this.gumOptions);
-              }
-              onChangeIconCamera(MainActivity.this.gumOptions);
-            } else {
-              MainActivity.this.gumOptions.getVideoOptions().setFacingMode(FacingMode.ENVIRONMENT);
-              if (MainActivity.this.publishMedia != null) {
-                MainActivity.this.publishMedia.applyOptions(MainActivity.this.gumOptions);
-              }
-              onChangeIconCamera(MainActivity.this.gumOptions);
-            }
+            MainActivity.this.changeCamera(objectEvent);
           }
           // stop streamToken with click preview
           if (objectEvent instanceof Events.OnStopStream) {
-            if (MainActivity.this.publisher != null) {
-              if (!MainActivity.this.publisher.isClosed()) {
-                MainActivity.this.publisher.stop("close");
-                try {
-                  MainActivity.this.publisher.close();
-                } catch (IOException e) {
-                  handleException(MainActivity.this, e);
-                }
-              }
-              MainActivity.this.publisher = null;
-            }
-
-            if (MainActivity.this.publishMedia != null) {
-              if (!MainActivity.this.publishMedia.isClosed()) {
-                try {
-                  MainActivity.this.publishMedia.close();
-                } catch (IOException e) {
-                  handleException(MainActivity.this, e);
-                }
-              }
-              MainActivity.this.publishMedia = null;
-            }
-
-            if (MainActivity.this.isShare) {
-              stopService(new Intent(MainActivity.this, PhenixService.class));
-              MainActivity.this.screenCaptureDeviceId = null;
-              MainActivity.this.isShare = false;
-              ((PhenixApplication) getApplicationContext()).setShare(false);
-            }
-            MainActivity.this.presenter.onDestroy();
+            MainActivity.this.onEventStopStream();
           }
           //restart streamToken with click preview is stop
           if (objectEvent instanceof Events.OnRestartStream) {
-            showProgressBar();
-            getUserMedia();
+            MainActivity.this.showProgressBar();
+            MainActivity.this.getUserMedia();
           }
 
           if (objectEvent instanceof Events.OnShareScreen) {
             if (((Events.OnShareScreen) objectEvent).isStart) {
-              onGetMediaShareScreen(true);
-              ((PhenixApplication) getApplicationContext()).setShare(true);
+              MainActivity.this.onGetMediaShareScreen(true);
+              MainActivity.this.phenixApplication.setShare(true);
             }
           }
         }
       }).subscribe(RxBus.defaultSubscriber());
+  }
+
+  private void changeCamera(Object objectEvent) {
+    if (this.gumOptions == null) {
+      this.gumOptions = new UserMediaOptions();
+    }
+    this.gumOptions.getAudioOptions().setEnabled(true);
+    this.gumOptions.getVideoOptions().setFlashMode(FlashMode.AUTOMATIC);
+    if (((Events.ChangeCamera) objectEvent).isChange) {
+      this.gumOptions.getVideoOptions().setFacingMode(FacingMode.USER);
+      if (this.publishMedia != null) {
+        this.publishMedia.applyOptions(gumOptions);
+      }
+      this.onChangeIconCamera(gumOptions);
+    } else {
+      this.gumOptions.getVideoOptions().setFacingMode(FacingMode.ENVIRONMENT);
+      if (this.publishMedia != null) {
+        this.publishMedia.applyOptions(gumOptions);
+      }
+      this.onChangeIconCamera(gumOptions);
+    }
+  }
+
+  public void onEventStopStream() {
+    if (this.publisher != null) {
+      if (!this.publisher.isClosed()) {
+        this.publisher.stop("close");
+        Utilities.close(this, this.publisher);
+      }
+      this.publisher = null;
+    }
+
+    if (this.publishMedia != null) {
+      if (!this.publishMedia.isClosed()) {
+        Utilities.close(this, this.publishMedia);
+      }
+      this.publishMedia = null;
+    }
+
+    if (this.isShare) {
+      this.stopService(new Intent(this, PhenixService.class));
+      this.screenCaptureDeviceId = null;
+      this.isShare = false;
+      this.phenixApplication.setShare(false);
+    }
+    this.presenter.onDestroy();
   }
 
   private void onChangeIconCamera(UserMediaOptions gumOptions) {
@@ -783,12 +845,12 @@ public final class MainActivity extends AppCompatActivity implements
     }
   }
 
-  private void onGetMediaShareScreen(final boolean isStarted) {
-    onShareScreen();
+  private void onGetMediaShareScreen(final boolean isShare) {
+    this.onShareScreen();
     UserMediaOptions gumOptions = new UserMediaOptions();
     gumOptions.getVideoOptions().setDeviceId(this.screenCaptureDeviceId);
     if (this.pcast == null) {
-      this.pcast = ((PhenixApplication) getApplicationContext()).getPCast();
+      this.pcast = this.phenixApplication.getPCast();
     }
     this.pcast.getUserMedia(
       gumOptions,
@@ -800,19 +862,29 @@ public final class MainActivity extends AppCompatActivity implements
           UserMediaStream userMediaStream) {
           // Check status and store 'userMediaStream'
           if (status == RequestStatus.OK) {
-            if (userMediaStream != null) {
-              MainActivity.this.publishMedia = userMediaStream;
-              if (isStarted) {
-                getPublishToken();
-              }
-            } else {
-              onTryAfterError(getResources().getString(R.string.media_null));
-            }
+            didGetUserMedia(userMediaStream, isShare);
           } else {
-            onTryAfterError(getResources().getString(R.string.render_error, status.name()));
+            MainActivity.this.onTryAfterError(getResources().getString(R.string.render_error, status.name()));
           }
         }
       });
+  }
+
+  private void didGetUserMedia(UserMediaStream userMediaStream, boolean isShare) {
+    if (userMediaStream == null) {
+      this.onTryAfterError(getResources().getString(R.string.media_null));
+      return;
+    }
+    if (this.publishMedia != null) {
+      if (!this.publishMedia.isClosed()) {
+        Utilities.close(this, this.publishMedia);
+      }
+      this.publishMedia = null;
+    }
+    this.publishMedia = userMediaStream;
+    if (isShare) {
+      this.getPublishToken();
+    }
   }
 
   protected void addSubscription(Subscription subscription) {
@@ -831,8 +903,44 @@ public final class MainActivity extends AppCompatActivity implements
     runOnUiThread(new Runnable() {
       @Override
       public void run() {
-        MainActivity.this.progressBar.setVisibility(View.VISIBLE);
+        if (MainActivity.this.pulsator.getVisibility() == View.GONE) {
+          MainActivity.this.progressBar.setVisibility(View.VISIBLE);
+        }
       }
     });
+  }
+
+  public void onRemove() {
+    this.isStarted = false;
+  }
+
+  @Override
+  public boolean onTouch(View view, MotionEvent motionEvent) {
+    switch (view.getId()) {
+      case R.id.textViewVersion:
+        this.onShowSecretMenu(motionEvent);
+        return true;
+    }
+    return false;
+  }
+
+  public void onShowSecretMenu(MotionEvent motionEvent) {
+    int eventaction = motionEvent.getAction();
+    if (eventaction == MotionEvent.ACTION_DOWN) {
+      long time = System.currentTimeMillis();
+      if (this.startMillis == 0 || (time - this.startMillis > TIME_TO_TAP)) {
+        this.startMillis = time;
+        this.count = 1;
+      } else {
+        this.count++;
+      }
+      if (this.count == NUMBER_TOUCHES) {
+        new UriMenu().onActionSecretUrl(this);
+      }
+    }
+  }
+
+  public void setGoneVersion() {
+    this.textViewVersion.setVisibility(View.GONE);
   }
 }

@@ -18,9 +18,9 @@ import Foundation
 import UIKit
 
 enum CapabilitySelection: Int {
-    case RealTime = 1
-    case Broadcast = 2
-    case Live = 3
+  case RealTime = 1
+  case Broadcast = 2
+  case Live = 3
 }
 
 protocol CapabilityDelegate {
@@ -28,28 +28,29 @@ protocol CapabilityDelegate {
 }
 
 final class CapabilityPopoverVC : UIViewController {
+
   @IBOutlet weak var capabilityView: UIView!
   @IBOutlet weak var imageRealtimeSelected: UIImageView!
   @IBOutlet weak var imageBroadcastSelected: UIImageView!
   @IBOutlet weak var imageLiveSelected: UIImageView!
-  let selectionCircle = UIImage(named: "selection-circle")
+
+  let selectionCircle = #imageLiteral(resourceName: "selection-circle")
   var currentCapability = CapabilitySelection.RealTime
   var capabilityDelegate : CapabilityDelegate?
 
   override func viewDidAppear(_ animated: Bool) {
-    super.viewWillAppear(animated)
-    self.setImageForCurrentCapability(currentCapability: currentCapability)
+    super.viewDidAppear(animated)
+    self.setImageForCurrentCapability(currentCapability: self.currentCapability)
   }
 
-  func setImageForCurrentCapability(currentCapability: CapabilitySelection) {
+  func setImageForCurrentCapability(currentCapability : CapabilitySelection) {
     self.imageRealtimeSelected.image = nil
     self.imageBroadcastSelected.image = nil
     self.imageLiveSelected.image = nil
-
     switch currentCapability {
-    case .RealTime: self.imageRealtimeSelected.image = selectionCircle
-    case .Broadcast: self.imageBroadcastSelected.image = selectionCircle
-    case .Live: self.imageLiveSelected.image = selectionCircle
+    case .RealTime: self.imageRealtimeSelected.image = self.selectionCircle
+    case .Broadcast: self.imageBroadcastSelected.image = self.selectionCircle
+    case .Live: self.imageLiveSelected.image = self.selectionCircle
     }
   }
 
