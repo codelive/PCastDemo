@@ -67,7 +67,11 @@ public final class MainActivityPresenter implements IMainActivityPresenter {
   }
 
   @Override
-  public void createStreamToken(String sessionId, final String originStreamId, String endpoint, String[] capabilities, final Streamer streamer) {
+  public void createStreamToken(String endpoint,
+                                String sessionId,
+                                final String originStreamId,
+                                String[] capabilities,
+                                final IStreamer createStreamTokenCallback) {
     StreamTokenRequest request = new StreamTokenRequest();
     request.setSessionId(sessionId);
     if (originStreamId != null) {
@@ -83,7 +87,7 @@ public final class MainActivityPresenter implements IMainActivityPresenter {
       @Override
       public void onResponse(StreamTokenResponse result) {
         if (result != null) {
-          streamer.hereIsYourStreamToken(result.getStreamToken());
+          createStreamTokenCallback.hereIsYourStreamToken(result.getStreamToken());
           if (originStreamId != null && MainActivityPresenter.this.view != null) {
             MainActivityPresenter.this.view.hideProgress();
           }
@@ -101,14 +105,18 @@ public final class MainActivityPresenter implements IMainActivityPresenter {
       @Override
       public void onError(Exception e) {}
     };
-    HttpTask<StreamTokenRequest, StreamTokenResponse> task = new HttpTask<>(callback, endpoint.concat("stream"), POST, request, StreamTokenResponse.class);
+    HttpTask<StreamTokenRequest, StreamTokenResponse> task = new HttpTask<>(callback,
+            endpoint.concat("stream"),
+            POST,
+            request,
+            StreamTokenResponse.class);
     task.execute(AsyncService.getInstance().getExecutorService());
   }
 
   @Override
   public void onDestroy() {}
 
-  public interface Streamer {
+  public interface IStreamer {
     void hereIsYourStreamToken(String streamToken);
   }
 }

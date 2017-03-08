@@ -51,7 +51,9 @@ public final class Events {
     public final DataQualityReason dataQualityReason;
     public final boolean isStateRender;
 
-    public OnStateDataQuality(boolean isStateRender, DataQualityStatus dataQualityStatus, DataQualityReason dataQualityReason) {
+    public OnStateDataQuality(boolean isStateRender,
+                              DataQualityStatus dataQualityStatus,
+                              DataQualityReason dataQualityReason) {
       this.isStateRender = isStateRender;
       this.dataQualityStatus = dataQualityStatus;
       this.dataQualityReason = dataQualityReason;

@@ -71,11 +71,11 @@ public final class PhenixApplication extends Application {
     this.isShare = share;
   }
 
-  public PCast getpCast() {
+  public PCast getPCast() {
     return this.pCast;
   }
 
-  public void setpCast(PCast pCast) {
+  public void setPCast(PCast pCast) {
     this.pCast = pCast;
   }
 

@@ -22,6 +22,7 @@ import java.util.concurrent.Executors;
 public final class AsyncService {
   private ExecutorService service;
   private static AsyncService instance = new AsyncService();
+
   private AsyncService() {
     this.service = Executors.newFixedThreadPool(1);
   }

@@ -38,7 +38,6 @@ In order to build **PCast™ Demo** for IOS
 
 ## To run the Android app:
 1. In Android Studio, open the project in the android/ directory, and run the app on a physical device, not the emulator.
-2. From the Android Studio, open Terminal on Android Studio button Bar, run `./gradlew assembleProdRelease`. This will pull in all the necessary dependencies from Maven.
 _Note: please press the button "**Sync Project with Gradles Files**" on Android Studio menu bar, in case of build error._
 
 ## To run the iOS app:

@@ -63,8 +63,13 @@ public abstract class BaseFragment extends Fragment {
     this.subscriptions.add(subscription);
   }
 
-  public static void openFragment(Context context, FragmentManager manager, Class<? extends Fragment> clazz,
-                                  AnimStyle style, Bundle args, int frameContent, String fragmentName) {
+  public static void openFragment(Context context,
+                                  FragmentManager manager,
+                                  Class<? extends Fragment> clazz,
+                                  AnimationStyle style,
+                                  Bundle args,
+                                  int frameContent,
+                                  String fragmentName) {
     FragmentTransaction transaction = manager.beginTransaction();
     String tag = clazz.getName();
 
@@ -74,17 +79,17 @@ public abstract class BaseFragment extends Fragment {
         fragment = clazz.newInstance();
         android.support.v4.app.Fragment currentFragment = getCurrentFragment(manager);
         if (currentFragment != null) {
-          if (style == AnimStyle.FROM_LEFT) {
+          if (style == AnimationStyle.FROM_LEFT) {
             BaseFragment.slideFragment(context, currentFragment, transaction, R.anim.exit_to_right);
-          } else if (style == AnimStyle.FROM_RIGHT) {
+          } else if (style == AnimationStyle.FROM_RIGHT) {
             BaseFragment.slideFragment(context, currentFragment, transaction, R.anim.exit_to_left);
           }
           transaction.hide(currentFragment);
         }
 
-        if (style == AnimStyle.FROM_LEFT) {
+        if (style == AnimationStyle.FROM_LEFT) {
           transaction.setCustomAnimations(R.anim.enter_from_left, 0);
-        } else if (style == AnimStyle.FROM_RIGHT) {
+        } else if (style == AnimationStyle.FROM_RIGHT) {
           transaction.setCustomAnimations(R.anim.enter_from_right, 0);
         }
         transaction.replace(frameContent, fragment, tag);
@@ -105,7 +110,10 @@ public abstract class BaseFragment extends Fragment {
   }
 
   @SuppressLint("RtlHardcoded")
-  private static void slideFragment(Context context, Fragment currentFragment, FragmentTransaction transaction, int exitAnimation) {
+  private static void slideFragment(Context context,
+                                    Fragment currentFragment,
+                                    FragmentTransaction transaction,
+                                    int exitAnimation) {
     if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
       Slide slideTransition;
       try {
@@ -152,25 +160,27 @@ public abstract class BaseFragment extends Fragment {
    * @param transaction fragment transaction
    * @param style       transaction anim style
    */
-  private static void showFragment(FragmentManager manager, String tag,
-                                   FragmentTransaction transaction, AnimStyle style) {
+  private static void showFragment(FragmentManager manager,
+                                   String tag,
+                                   FragmentTransaction transaction,
+                                   AnimationStyle style) {
     List<Fragment> fragmentList = manager.getFragments();
     if (fragmentList != null)
       for (android.support.v4.app.Fragment fragment : fragmentList) {
         if (fragment != null) {
           if (fragment.getClass().getName().equals(tag)) {
-            if (style == AnimStyle.FROM_LEFT) {
+            if (style == AnimationStyle.FROM_LEFT) {
               transaction.setCustomAnimations(R.anim.enter_from_left, 0);
-            } else if (style == AnimStyle.FROM_RIGHT) {
+            } else if (style == AnimationStyle.FROM_RIGHT) {
               transaction.setCustomAnimations(R.anim.enter_from_right, 0);
             }
             transaction.show(fragment);
             if (fragment instanceof BaseFragment)
               ((BaseFragment) fragment).reloadWhenOpened();
           } else {
-            if (style == AnimStyle.FROM_LEFT) {
+            if (style == AnimationStyle.FROM_LEFT) {
               transaction.setCustomAnimations(0, R.anim.exit_to_right);
-            } else if (style == AnimStyle.FROM_RIGHT) {
+            } else if (style == AnimationStyle.FROM_RIGHT) {
               transaction.setCustomAnimations(0, R.anim.exit_to_left);
             }
             transaction.hide(fragment);
@@ -205,7 +215,9 @@ public abstract class BaseFragment extends Fragment {
 
   @Nullable
   @Override
-  public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+  public View onCreateView(LayoutInflater inflater,
+                           @Nullable ViewGroup container,
+                           @Nullable Bundle savedInstanceState) {
     return inflater.inflate(getFragmentLayout(), container, false);
   }
 
@@ -235,10 +247,7 @@ public abstract class BaseFragment extends Fragment {
     return ((MainActivity) getActivity());
   }
 
-  /**
-   * Anim for fragment transaction
-   */
-  public enum AnimStyle {
+  public enum AnimationStyle {
     FROM_LEFT, FROM_RIGHT
   }
 }

@@ -58,7 +58,9 @@ public final class QualityStatusView extends View {
   }
 
   private void initialize(Context context, AttributeSet attrs, int defStyle) {
-    TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.QualityStatusView, defStyle, 0);
+    TypedArray typedArray = context.obtainStyledAttributes(attrs,
+            R.styleable.QualityStatusView,
+            defStyle, 0);
     firstColor = typedArray.getColor(R.styleable.QualityStatusView_first_color,
       ContextCompat.getColor(context, R.color.red));
     secondColor = typedArray.getColor(R.styleable.QualityStatusView_second_color,
@@ -68,17 +70,12 @@ public final class QualityStatusView extends View {
     fourthColor = typedArray.getColor(R.styleable.QualityStatusView_fourth_color,
       ContextCompat.getColor(context, R.color.blue));
 
-    firstProcess = typedArray.getInt(R.styleable.QualityStatusView_first_process,
-      25);
-    secondProcess = typedArray.getInt(R.styleable.QualityStatusView_second_process,
-      50);
-    thirdProcess = typedArray.getInt(R.styleable.QualityStatusView_third_process,
-      75);
-    fourthProcess = typedArray.getInt(R.styleable.QualityStatusView_fourth_process,
-      100);
+    firstProcess = typedArray.getInt(R.styleable.QualityStatusView_first_process, 25);
+    secondProcess = typedArray.getInt(R.styleable.QualityStatusView_second_process, 50);
+    thirdProcess = typedArray.getInt(R.styleable.QualityStatusView_third_process, 75);
+    fourthProcess = typedArray.getInt(R.styleable.QualityStatusView_fourth_process, 100);
 
-    paddingColumn = typedArray.getDimensionPixelSize(R.styleable.QualityStatusView_padding_column,
-      50);
+    paddingColumn = typedArray.getDimensionPixelSize(R.styleable.QualityStatusView_padding_column, 50);
     statusShow = typedArray.getInt(R.styleable.QualityStatusView_status_show, 0);
     greyColor = ContextCompat.getColor(context, R.color.gray);
     typedArray.recycle();

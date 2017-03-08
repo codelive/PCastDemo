@@ -39,7 +39,9 @@ public final class CaptureHelper {
     }
   }
 
-  public static boolean handleActivityResult(Activity activity, int requestCode, int resultCode,
+  public static boolean handleActivityResult(Activity activity,
+                                             int requestCode,
+                                             int resultCode,
                                              Intent data) {
     if (requestCode != CREATE_SCREEN_CAPTURE) {
       return false;

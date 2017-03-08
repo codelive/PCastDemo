@@ -24,7 +24,9 @@ import static com.phenixp2p.demo.Constants.STREAM_ID_FROM_LIST;
 
 public final class TokenUtils {
   public static String getStreamId(String streamId) {
-    return streamId.substring(0, streamId.indexOf("#") + 1).concat("...").concat(streamId.substring(streamId.length() - 4, streamId.length()));
+    return streamId.substring(0,
+            streamId.indexOf("#") + 1).concat("...").concat(streamId.substring(streamId.length() - 4,
+            streamId.length()));
   }
 
   public static void saveSessionIdIntoLocal(Context context, String sessionId) {

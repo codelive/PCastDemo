@@ -87,7 +87,9 @@ import static com.phenixp2p.demo.utils.TokenUtils.clearAll;
 import static com.phenixp2p.demo.utils.Utilities.handleException;
 import static com.phenixp2p.demo.utils.Utilities.hasInternet;
 
-public final class MainActivity extends AppCompatActivity implements IMainActivityView, Publisher.DataQualityChangedCallback {
+public final class MainActivity extends AppCompatActivity implements
+        IMainActivityView,
+        Publisher.DataQualityChangedCallback {
 
   private final static String TAG = "PCast";
   private PCast pcast;
@@ -128,7 +130,13 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
       Bundle bundle = new Bundle();
       bundle.putString(SESSION_ID, TokenUtils.getSessionIdLocal(this));
       bundle.putString(STREAM_ID, TokenUtils.getStreamIdLocal(this));
-      BaseFragment.openFragment(MainActivity.this, getSupportFragmentManager(), MainFragment.class, null, bundle, R.id.content, null);
+      BaseFragment.openFragment(MainActivity.this,
+              getSupportFragmentManager(),
+              MainFragment.class,
+              null,
+              bundle,
+              R.id.content,
+              null);
     }
   }
 
@@ -173,12 +181,16 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
         showMessageOKCancel(message, new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which) {
-            ActivityCompat.requestPermissions(MainActivity.this, permissionsList.toArray(new String[permissionsList.size()]), REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS);
+            ActivityCompat.requestPermissions(MainActivity.this,
+                    permissionsList.toArray(new String[permissionsList.size()]),
+                    REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS);
           }
         });
         return;
       }
-      ActivityCompat.requestPermissions(MainActivity.this, permissionsList.toArray(new String[permissionsList.size()]), REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS);
+      ActivityCompat.requestPermissions(MainActivity.this,
+              permissionsList.toArray(new String[permissionsList.size()]),
+              REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS);
       return;
     }
     this.commenceSession();
@@ -195,7 +207,9 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
   }
 
   @Override
-  public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+  public void onRequestPermissionsResult(int requestCode,
+                                         @NonNull String[] permissions,
+                                         @NonNull int[] grantResults) {
     switch (requestCode) {
       case Constants.REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS: {
         Map<String, Integer> permissionCodes = new ArrayMap<>();
@@ -286,7 +300,7 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
           handleException(this, e);
         }
       }
-      ((PhenixApplication) getApplicationContext()).setpCast(null);
+      ((PhenixApplication) getApplicationContext()).setPCast(null);
       this.pcast = null;
     }
   }
@@ -358,7 +372,8 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
     }
   }
 
-  // 1. REST API: authenticate with the app-maker's own server. The app talks to a Phenix demo server, but you could also use the node.js server provided in this repo.
+  // 1. REST API: authenticate with the app-maker's own server.
+  // The app talks to a Phenix demo server, but you could also use the node.js server provided in this repo.
   private void login() {
     // Check the connection to the internet.
     if (hasInternet(this)) {
@@ -421,7 +436,7 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
     MainActivity.this.pcast.start(authenticationToken, new PCast.AuthenticationCallback() {
         public void onEvent(PCast var1, RequestStatus status, final String sessionId) {
           if (status == RequestStatus.OK) {
-            ((PhenixApplication) getApplicationContext()).setpCast(MainActivity.this.pcast);
+            ((PhenixApplication) getApplicationContext()).setPCast(MainActivity.this.pcast);
             MainActivity.this.sessionId = sessionId;
             getUserMedia();
           } else {
@@ -503,8 +518,11 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
 
   // 4. Get publish token from REST admin API.
   private void getPublishToken() {
-    presenter.createStreamToken(getLocalSessiondId(),
-      null, ENDPOINT, new String[]{Capabilities.ARCHIVE.getValue(), Capabilities.STREAMING.getValue()}, new MainActivityPresenter.Streamer() {
+    presenter.createStreamToken(ENDPOINT,
+            getLocalSessiondId(),
+            null,
+            new String[]{Capabilities.ARCHIVE.getValue(), Capabilities.STREAMING.getValue()},
+            new MainActivityPresenter.IStreamer() {
 
         @Override
         public void hereIsYourStreamToken(String streamToken) {
@@ -520,7 +538,9 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
   // 5. Publish streamToken with SDK.
   private void publishStream(String publishStreamToken) {
     if (pcast != null && this.publishMedia != null && this.publishMedia.getMediaStream() != null) {
-      MainActivity.this.pcast.publish(publishStreamToken, this.publishMedia.getMediaStream(), new PCast.PublishCallback() {
+      MainActivity.this.pcast.publish(publishStreamToken,
+              this.publishMedia.getMediaStream(),
+              new PCast.PublishCallback() {
         public void onEvent(PCast p, final RequestStatus status, Publisher publisher) {
           if (status == RequestStatus.OK) {
             if (publisher.hasEnded() && !publisher.isClosed()) {
@@ -559,8 +579,11 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
 
   // 6. Get streamToken token from REST admin API.
   private void getSubscribeToken() {
-    presenter.createStreamToken(getLocalSessiondId(), this.streamId,
-      ENDPOINT, null, new MainActivityPresenter.Streamer() {
+    presenter.createStreamToken(ENDPOINT,
+            getLocalSessiondId(),
+            this.streamId,
+            null,
+            new MainActivityPresenter.IStreamer() {
         @Override
         public void hereIsYourStreamToken(final String streamToken) {
           MainActivity.this.progressBar.setVisibility(View.GONE);
@@ -570,7 +593,13 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
             bundle.putString(SESSION_ID, MainActivity.this.sessionId);
             bundle.putString(STREAM_TOKEN, streamToken);
             bundle.putString(STREAM_ID, MainActivity.this.streamId);
-            BaseFragment.openFragment(MainActivity.this, getSupportFragmentManager(), MainFragment.class, null, bundle, R.id.content, null);
+            BaseFragment.openFragment(MainActivity.this,
+                    getSupportFragmentManager(),
+                    MainFragment.class,
+                    null,
+                    bundle,
+                    R.id.content,
+                    null);
           } else {
             Fragment fragmentViewDetail = getSupportFragmentManager().findFragmentByTag(ViewDetailStreamFragment.class.getName());
             if (fragmentViewDetail != null && fragmentViewDetail.isVisible()) {
@@ -582,12 +611,13 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
             }
           }
         }
-      });
+      }
+    );
   }
 
   private void onShareScreen() {
     if (this.pcast == null) {
-      this.pcast = ((PhenixApplication) getApplicationContext()).getpCast();
+      this.pcast = ((PhenixApplication) getApplicationContext()).getPCast();
     }
     pcast.enumerateSourceDevices(
       new PCast.EnumerateSourceDevicesCallback() {
@@ -635,7 +665,9 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
 
   //Data Quality Status For Publishers
   @Override
-  public void onEvent(Publisher publisher, DataQualityStatus dataQualityStatus, DataQualityReason dataQualityReason) {
+  public void onEvent(Publisher publisher,
+                      DataQualityStatus dataQualityStatus,
+                      DataQualityReason dataQualityReason) {
     this.dataQualityReason = dataQualityReason;
     this.dataQualityStatus = dataQualityStatus;
     RxBus.getInstance().post(new Events.OnStateDataQuality(false, dataQualityStatus, dataQualityReason));
@@ -756,7 +788,7 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
     UserMediaOptions gumOptions = new UserMediaOptions();
     gumOptions.getVideoOptions().setDeviceId(this.screenCaptureDeviceId);
     if (this.pcast == null) {
-      this.pcast = ((PhenixApplication) getApplicationContext()).getpCast();
+      this.pcast = ((PhenixApplication) getApplicationContext()).getPCast();
     }
     this.pcast.getUserMedia(
       gumOptions,

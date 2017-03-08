@@ -92,8 +92,14 @@ public final class LayoutUtils {
     return Math.round(dp * (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT));
   }
 
-  public static void setLayout(Activity activity, boolean isLandscape, View buttonAudio, View buttonVideo, View buttonVideoAudio,
-                               View buttonShareScreen, ImageView imageAudio, ImageView imageVideo) {
+  public static void setLayout(Activity activity,
+                               boolean isLandscape,
+                               View buttonAudio,
+                               View buttonVideo,
+                               View buttonVideoAudio,
+                               View buttonShareScreen,
+                               ImageView imageAudio,
+                               ImageView imageVideo) {
     RelativeLayout.LayoutParams audio = new RelativeLayout.LayoutParams(
     isLandscape ? dpToPx(activity, 38) : WRAP_CONTENT, isLandscape ? dpToPx(activity, 38) : WRAP_CONTENT);
     if (isLandscape) {

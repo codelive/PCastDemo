@@ -53,7 +53,11 @@ public final class HttpTask<TRequest, TResponse> {
   private final TRequest request;
   private final Class<TResponse> classResponse;
 
-  public HttpTask(Callback<TResponse> callback, String path, Method method, TRequest request, Class<TResponse> classResponse) {
+  public HttpTask(Callback<TResponse> callback,
+                  String path,
+                  Method method,
+                  TRequest request,
+                  Class<TResponse> classResponse) {
     this.callback = callback;
     this.path = path;
     this.method = method;
@@ -102,10 +106,11 @@ public final class HttpTask<TRequest, TResponse> {
           try (DataOutputStream outputStream = new DataOutputStream(urlConnection.getOutputStream())) {
             outputStream.write(postData);
           }
-          InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-          String result = HttpTask.convertStreamToString(in);
-          TResponse response = new Gson().fromJson(result, classResponse);
-          return new HttpResponse(response);
+          try (InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream())) {
+            String result = HttpTask.convertStreamToString(inputStream);
+            TResponse response = new Gson().fromJson(result, classResponse);
+            return new HttpResponse(response);
+          }
         } catch (Exception e) {
           callback.onError(e);
           if (Fabric.isInitialized()) {

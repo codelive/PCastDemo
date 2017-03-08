@@ -32,7 +32,8 @@ public final class Utilities {
     if (context == null) {
       return false;
     }
-    ConnectivityManager connectivityManager = (ConnectivityManager) context.getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+    ConnectivityManager connectivityManager =
+            (ConnectivityManager) context.getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
     if (connectivityManager != null) {
       NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
       return networkInfo != null && networkInfo.isConnectedOrConnecting();

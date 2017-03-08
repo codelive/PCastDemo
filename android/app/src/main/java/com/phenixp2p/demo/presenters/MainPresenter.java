@@ -99,7 +99,11 @@ public final class MainPresenter implements IMainPresenter {
         }
       }
     };
-    HttpTask<T, ListStreamResponse> task = new HttpTask<>(callback, endpoint.concat("streams"), PUT, params, ListStreamResponse.class);
+    HttpTask<T, ListStreamResponse> task = new HttpTask<>(callback,
+            endpoint.concat("streams"),
+            PUT,
+            params,
+            ListStreamResponse.class);
     task.execute(AsyncService.getInstance().getExecutorService());
   }
 

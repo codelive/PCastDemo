@@ -37,19 +37,6 @@ public final class ListStreamResponse extends PhenixResponse {
     @SerializedName("streamId")
     private String streamId;
 
-    @Override
-    public boolean equals(Object obj) {
-      if (obj instanceof Stream) {
-        return this.streamId.equals(((Stream) obj).streamId);
-      }
-      if (obj instanceof String) {
-        if (this.streamId.equals(obj)) {
-          return true;
-        }
-      }
-      return super.equals(obj);
-    }
-
     public String getStreamId() {
       return this.streamId;
     }

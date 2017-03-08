@@ -98,9 +98,13 @@ import static com.phenixp2p.pcast.DataQualityReason.UPLOAD_LIMITED;
 /**
  * A simple {@link Fragment} subclass.
  */
-public final class MainFragment extends BaseFragment implements View.OnClickListener,
-  IMainView, StreamIdAdapter.OnItemClickListener, CompoundButton.OnCheckedChangeListener,
-  SwipeRefreshLayout.OnRefreshListener, ValueAnimator.AnimatorUpdateListener {
+public final class MainFragment extends BaseFragment implements
+        View.OnClickListener,
+        IMainView,
+        StreamIdAdapter.OnItemClickListener,
+        CompoundButton.OnCheckedChangeListener,
+        SwipeRefreshLayout.OnRefreshListener,
+        ValueAnimator.AnimatorUpdateListener {
 
   private static final String TAG = MainFragment.class.getSimpleName();
   private SurfaceView surfaceView;
@@ -111,7 +115,7 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
   private CardView viewVideo;
   private ToggleButton viewFull;
   private StreamIdAdapter adapter;
-  private List<String> streamIDList = new ArrayList<>();
+  private List<String> streamIdList = new ArrayList<>();
   private IMainPresenter presenter;
   private Renderer renderPreView;
   private SurfaceHolder surfaceHolder;
@@ -250,7 +254,7 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
     }
 
     if (dontShare) {
-      this.streamIDList.clear();
+      this.streamIdList.clear();
       this.surfaceHolder = null;
       this.viewDelay.setVisibility(View.VISIBLE);
       this.buttonStop.setVisibility(View.GONE);
@@ -259,7 +263,7 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
       this.arcImage.setVisibility(View.GONE);
       if (this.recyclerView != null) {
         this.recyclerView.setVisibility(View.GONE);
-        this.streamIDList.clear();
+        this.streamIdList.clear();
         this.viewVideo.setVisibility(View.GONE);
         this.viewFull.setVisibility(View.GONE);
         this.tvVersion.setVisibility(View.GONE);
@@ -296,7 +300,9 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
 
     if (this.toggleCamera.isChecked())
       this.toggleCamera.setChecked(true);
-    this.toggleCamera.setCompoundDrawablesWithIntrinsicBounds(ContextCompat.getDrawable(activity, R.drawable.ic_camera_rear), null, null, null);
+    this.toggleCamera.setCompoundDrawablesWithIntrinsicBounds(
+            ContextCompat.getDrawable(activity, R.drawable.ic_camera_rear),
+            null, null, null);
 
     if (this.isStopPreview) {
       this.recyclerView.setVisibility(View.GONE);
@@ -387,7 +393,9 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
         if (!this.isAudio) {
           this.renderPreView = getMainActivity().getPublishMedia().getMediaStream().createRenderer();
           if (this.renderPreView.start(new AndroidVideoRenderSurface(this.surfaceHolder)) == RendererStartStatus.OK) {
-            if (viewVideo.getVisibility() == View.GONE && viewFull.getVisibility() == View.GONE && tvVersion.getVisibility() == View.GONE) {
+            if (viewVideo.getVisibility() == View.GONE
+                    && viewFull.getVisibility() == View.GONE
+                    && tvVersion.getVisibility() == View.GONE) {
               this.viewVideo.setVisibility(View.VISIBLE);
               this.viewFull.setVisibility(View.VISIBLE);
               this.tvVersion.setVisibility(View.VISIBLE);
@@ -440,42 +448,29 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
   }
 
   @Override
-  public void getListStreams(List<String> streamlist) {
-    if (streamlist.size() > 0) {
-      ListStreamResponse.Stream stream = new ListStreamResponse.Stream();
-      stream.setStreamId(this.currentStreamId);
-      boolean isContain = streamlist.contains(stream.getStreamId());
-      if (isContain) {
-        streamlist.remove(stream.getStreamId());
-      }
+  public void getListStreams(List<String> streamId) {
+    ListStreamResponse.Stream stream = new ListStreamResponse.Stream();
+    stream.setStreamId(this.currentStreamId);
+    boolean containsCurrentStream = streamId.contains(stream.getStreamId());
+    if (containsCurrentStream) {
+      streamId.remove(stream.getStreamId());
+    }
 
-      if (streamlist.size() > 1) {
-        Collections.sort(streamlist, new Comparator<String>() {
-          @Override
-          public int compare(String stream, String t1) {
-            return stream.compareTo(t1);
-          }
-        });
+    Collections.sort(streamId, new Comparator<String>() {
+      @Override
+      public int compare(String stream, String t1) {
+        return stream.compareTo(t1);
       }
+    });
 
-      if (isContain) {
-        streamlist.add(0, stream.getStreamId());
-      }
+    if (containsCurrentStream) {
+      streamId.add(0, stream.getStreamId());
+    }
 
-      if (this.streamIDList.size() == 0) {
-        this.streamIDList = streamlist;
-      } else {
-        this.streamIDList.clear();
-        this.streamIDList = streamlist;
-      }
+    this.streamIdList = streamId;
 
-      if (this.adapter != null) {
-        this.recyclerView.setAdapter(adapter);
-        this.adapter.notifyDataSetChanged();
-        this.refreshLayout.setRefreshing(false);
-      }
-    } else {
-      this.streamIDList.clear();
+    if (this.adapter != null) {
+      this.recyclerView.setAdapter(adapter);
       this.adapter.notifyDataSetChanged();
       this.refreshLayout.setRefreshing(false);
     }
@@ -534,16 +529,16 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
         this.isCheckResume = true;
         this.toggleCamera.clearAnimation();
         this.toggleCamera.setVisibility(View.GONE);
-        if (this.streamIDList.size() >= 1) {
+        if (this.streamIdList.size() >= 1) {
           this.isThisPhone = false;
-          this.streamIDList.remove(0);
-          if (this.streamIDList.size() == 0) {
+          this.streamIdList.remove(0);
+          if (this.streamIdList.size() == 0) {
             this.adapter.notifyItemChanged(0);
           } else {
             this.adapter.notifyDataSetChanged();
           }
         } else {
-          this.streamIDList.clear();
+          this.streamIdList.clear();
           this.adapter.notifyDataSetChanged();
         }
         this.buttonAudio.setVisibility(View.VISIBLE);
@@ -617,7 +612,7 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
   //select streamToken id
   @Override
   public void onItemClick(View itemView, int position) {
-    String streamIdByList = this.streamIDList.get(position);
+    String streamIdByList = this.streamIdList.get(position);
     Bundle bundle = new Bundle();
     bundle.putString(SESSION_ID, this.currentSessionId);
     bundle.putString(Constants.STREAM_ID_FROM_LIST, streamIdByList);
@@ -625,12 +620,19 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
     bundle.putBoolean(Constants.IS_PUBLISH_STOPPED, this.isStopPreview);
     bundle.putBoolean(Constants.IS_LANDSCAPE, this.isLandscape);
     bundle.putBoolean(Constants.IS_AUDIO, this.isAudio);
-    openFragment(getActivity(), getFragmentManager(), ViewDetailStreamFragment.class, null, bundle, R.id.content, "MainFragment");
+    AnimationStyle animationStyle = null;
+    openFragment(getActivity(),
+            getFragmentManager(),
+            ViewDetailStreamFragment.class,
+            animationStyle,
+            bundle,
+            R.id.content,
+            "MainFragment");
   }
 
   @Override
   public List<String> getListStreams() {
-    return this.streamIDList;
+    return this.streamIdList;
   }
 
   @Override
@@ -694,7 +696,11 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
           setPreviewDimensions(activity, this.viewVideo);
         }
       }
-      viewAnimation.setPadding(dpToPx(activity, 4), dpToPx(activity, 0), dpToPx(activity, 4), dpToPx(activity, 4));
+      viewAnimation.setPadding(
+              dpToPx(activity, 4),
+              dpToPx(activity, 0),
+              dpToPx(activity, 4),
+              dpToPx(activity, 4));
     } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
       setLayout(activity,
               false,
@@ -719,7 +725,11 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
           setPreviewDimensions(activity, this.viewVideo);
         }
       }
-      viewAnimation.setPadding(dpToPx(activity, 4), dpToPx(activity, 4), dpToPx(activity, 4), dpToPx(activity, 4));
+      viewAnimation.setPadding(
+              dpToPx(activity, 4),
+              dpToPx(activity, 4),
+              dpToPx(activity, 4),
+              dpToPx(activity, 4));
     }
   }
 
@@ -730,7 +740,11 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
 
   private void onChangeLayout() {
     Activity activity = getActivity();
-    this.viewVideo.setContentPadding(dpToPx(activity, 2), dpToPx(activity, 2), dpToPx(activity, 2), dpToPx(activity, 2));
+    this.viewVideo.setContentPadding(
+            dpToPx(activity, 2),
+            dpToPx(activity, 2),
+            dpToPx(activity, 2),
+            dpToPx(activity, 2));
     this.viewVideo.setRadius(dpToPx(activity, 6));
     boolean tabletSize = getResources().getBoolean(R.bool.isTablet);
     if (tabletSize) {
@@ -796,7 +810,8 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
   }
 
   //set view data quality publish and subscribe
-  private void setViewQuality(final DataQualityStatus dataQualityStatus, final DataQualityReason dataQualityReason) {
+  private void setViewQuality(final DataQualityStatus dataQualityStatus,
+                              final DataQualityReason dataQualityReason) {
     final Activity activity = getActivity();
     if (activity != null && isAdded()) {
       //view data quaity publish

@@ -26,17 +26,14 @@ import rx.subjects.PublishSubject;
 
 public final class RxBus {
   private static final String TAG = "RxBus";
-  private static volatile RxBus instance;
+  private RxBus() {}
+
+  private static class SingletonHolder {
+    private static final RxBus INSTANCE = new RxBus();
+  }
 
   public static RxBus getInstance() {
-    if (instance == null) {
-      synchronized (RxBus.class) {
-        if (instance == null) {
-          instance = new RxBus();
-        }
-      }
-    }
-    return instance;
+    return SingletonHolder.INSTANCE;
   }
 
   /**

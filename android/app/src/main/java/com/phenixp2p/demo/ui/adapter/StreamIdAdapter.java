@@ -43,7 +43,9 @@ public final class StreamIdAdapter extends RecyclerView.Adapter<StreamIdAdapter.
   public void onBindViewHolder(final StreamViewHolder holder, final int position) {
     if (this.listener.getListStreams().size() >= 1) {
       String streamId = this.listener.getListStreams().get(position);
-      String newStreamId = streamId.substring(0, streamId.indexOf("#") + 1).concat("...").concat(streamId.substring(streamId.length() - 4, streamId.length()));
+      String newStreamId = streamId.substring(0,
+              streamId.indexOf("#") + 1).concat("...").concat(streamId.substring(streamId.length() - 4,
+              streamId.length()));
       if (position == 0 && this.listener.isThisPhone()) {
         holder.title.setText(holder.title.getContext().getResources().getString(R.string.this_phone, newStreamId));
       } else {

@@ -112,6 +112,8 @@ public final class ViewDetailStreamFragment extends BaseFragment implements Medi
 
   private static final String TAG = ViewDetailStreamFragment.class.getSimpleName();
   private static final int DELAY = 3000;
+  private static final String OBSOLETE_ANDROID_VERSION = "This app requires Android 5.0 or newer";
+
   private String streamId;
   private String sessionId;
   private boolean first = false;
@@ -119,7 +121,6 @@ public final class ViewDetailStreamFragment extends BaseFragment implements Medi
   private boolean isStreamEnded = false;
   private MediaStream mediaStream;
   private IMainActivityPresenter presenter;
-
   private TextView tvStreamId;
   private SurfaceView renderSurface, previewLocal;
   private ViewGroup viewLocal, buttonVideoAudio, viewState;
@@ -409,7 +410,11 @@ public final class ViewDetailStreamFragment extends BaseFragment implements Medi
 
   // 6. Get streamToken token from REST admin API.
   private void getSubscribeToken(String sessionId, String streamId, String capability) {
-    this.presenter.createStreamToken(sessionId, streamId, ENDPOINT, new String[]{capability}, new MainActivityPresenter.Streamer() {
+    this.presenter.createStreamToken(ENDPOINT,
+            sessionId,
+            streamId,
+            new String[]{capability},
+            new MainActivityPresenter.IStreamer() {
       @Override
       public void hereIsYourStreamToken(String streamToken) {
         subscribeStream(streamToken);
@@ -599,10 +604,14 @@ public final class ViewDetailStreamFragment extends BaseFragment implements Medi
       case R.id.toggleCamera:
         try {
           if (isChecked) {
-            compoundButton.setCompoundDrawablesWithIntrinsicBounds(ContextCompat.getDrawable(getActivity(), R.drawable.ic_camera_front), null, null, null);
+            compoundButton.setCompoundDrawablesWithIntrinsicBounds(
+                    ContextCompat.getDrawable(getActivity(), R.drawable.ic_camera_front),
+                    null, null, null);
             RxBus.getInstance().post(new Events.ChangeCamera(true));
           } else {
-            compoundButton.setCompoundDrawablesWithIntrinsicBounds(ContextCompat.getDrawable(getActivity(), R.drawable.ic_camera_rear), null, null, null);
+            compoundButton.setCompoundDrawablesWithIntrinsicBounds(
+                    ContextCompat.getDrawable(getActivity(), R.drawable.ic_camera_rear),
+                    null, null, null);
             RxBus.getInstance().post(new Events.ChangeCamera(false));
           }
         } catch (NullPointerException e) {
@@ -675,7 +684,7 @@ public final class ViewDetailStreamFragment extends BaseFragment implements Medi
         }
         break;
       case R.id.menu:
-        this.popupWindow.showAsDropDown(view, 50, - 80);
+        this.popupWindow.showAsDropDown(view, 50, -80);
         break;
       case R.id.record:
         this.arcImage.setTypeNomal(false);
@@ -714,7 +723,7 @@ public final class ViewDetailStreamFragment extends BaseFragment implements Medi
           ((MainActivity) getActivity()).onStartShareScreen();
           CaptureHelper.fireScreenCaptureIntent(getActivity());
         } else {
-          Toast.makeText(getActivity(), "Support Device ANDROID 5.0 OR LATER", Toast.LENGTH_SHORT).show();
+          Toast.makeText(getActivity(), OBSOLETE_ANDROID_VERSION, Toast.LENGTH_SHORT).show();
         }
         break;
       case R.id.play:
@@ -921,7 +930,9 @@ public final class ViewDetailStreamFragment extends BaseFragment implements Medi
   }
 
   //set view data quality publish and subscribe
-  private void setViewQuality(final boolean isRender, final DataQualityStatus dataQualityStatus, final DataQualityReason dataQualityReason) {
+  private void setViewQuality(final boolean isRender,
+                              final DataQualityStatus dataQualityStatus,
+                              final DataQualityReason dataQualityReason) {
     final Activity activity = getActivity();
     if (activity != null && isAdded()) {
       if (isRender) {

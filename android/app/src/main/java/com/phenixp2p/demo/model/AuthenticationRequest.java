@@ -18,7 +18,7 @@ package com.phenixp2p.demo.model;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public final class AuthenticationRequest{
+public final class AuthenticationRequest {
   @Expose
   @SerializedName("name")
   private String name;
