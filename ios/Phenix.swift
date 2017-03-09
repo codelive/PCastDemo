@@ -52,6 +52,9 @@ final class Phenix {
   }
 
   func initPcast() {
+    if self.pcast != nil {
+      Phenix.shared.shutdown()
+    }
     if let p = PhenixPCastFactory.createPCast(phenixInfo.uri) {
       self.pcast = p
       p.initialize()
@@ -134,6 +137,7 @@ final class Phenix {
   func shutdown() {
     self.stop()
     self.pcast?.shutdown()
+    self.pcast = nil
   }
 
   // callbacks

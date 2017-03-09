@@ -37,7 +37,8 @@ enum EndpointType: String {
 
 let PhenixServerList: [[String : String]] = [
   ["name":"Anycast (Closest Data Center)", "uri":"http://pcast.phenixp2p.com", "http":EndpointType.Production.rawValue],
-  ["name":"APAC West", "uri":"wss://pcast-asia-east.phenixp2p.com", "http":EndpointType.Production.rawValue],
+  ["name":"APAC East", "uri":"wss://pcast-asia-east.phenixp2p.com", "http":EndpointType.Production.rawValue],
+  ["name":"APAC Northeast", "uri":"wss://pcast-asia-northeast.phenixp2p.com", "http":EndpointType.Production.rawValue],
   ["name":"US West", "uri":"wss://pcast-us-west.phenixp2p.com", "http":EndpointType.Production.rawValue],
   ["name":"US Central", "uri":"wss://pcast-us-central.phenixp2p.com", "http":EndpointType.Production.rawValue],
   ["name":"US East", "uri":"wss://pcast-us-east.phenixp2p.com", "http":EndpointType.Production.rawValue],
@@ -46,5 +47,5 @@ let PhenixServerList: [[String : String]] = [
   ["name":"US Central - Staging", "uri":"wss://pcast-stg-us-central.phenixp2p.com", "http":EndpointType.Staging.rawValue],
   ["name":"EU West - Staging", "uri":"wss://pcast-stg-europe-west.phenixp2p.com", "http":EndpointType.Staging.rawValue],
   ["name":"Anycast - Local", "uri":"http://192.168.2.111:8080", "http":EndpointType.Local.rawValue],
-  ["name":"Local", "uri":"wss://192.168.2.111:8433/ws", "http":EndpointType.Local.rawValue]
+  ["name":"Local", "uri":"wss://192.168.2.111:8443", "http":EndpointType.Local.rawValue]
 ]

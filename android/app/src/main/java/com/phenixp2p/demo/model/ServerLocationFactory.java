@@ -39,7 +39,8 @@ public class ServerLocationFactory {
     String localEndpoint = ServerAddress.LOCAL_ENDPOINT.getServerAddress();
     this.addLocation(context, R.string.list_manual, productionEndpoint, "");
     this.addLocation(context, R.string.list_anycast, productionEndpoint, "http://pcast.phenixp2p.com");
-    this.addLocation(context, R.string.list_apac, productionEndpoint, "wss://pcast-asia-east.phenixp2p.com");
+    this.addLocation(context, R.string.list_apac_east, productionEndpoint, "wss://pcast-asia-east.phenixp2p.com");
+    this.addLocation(context, R.string.list_apac_northeast, productionEndpoint, "wss://pcast-asia-northeast.phenixp2p.com");
     this.addLocation(context, R.string.list_us_west, productionEndpoint, "wss://pcast-us-west.phenixp2p.com");
     this.addLocation(context, R.string.list_us_central, productionEndpoint, "wss://pcast-us-central.phenixp2p.com");
     this.addLocation(context, R.string.list_us_east, productionEndpoint, "wss://pcast-us-east.phenixp2p.com");
@@ -47,8 +48,8 @@ public class ServerLocationFactory {
     this.addLocation(context, R.string.list_anycast_staging, stagingEndpoint, "http://pcast-stg.phenixp2p.com");
     this.addLocation(context, R.string.list_us_central_staging, stagingEndpoint, "wss://pcast-stg-us-central.phenixp2p.com");
     this.addLocation(context, R.string.list_eu_west_staging, stagingEndpoint, "wss://pcast-stg-europe-west.phenixp2p.com");
-    this.addLocation(context, R.string.list_anycast_local, localEndpoint, "172.20.10.4:8080");
-    this.addLocation(context, R.string.list_local, localEndpoint, "wss://192.168.2.111:8433");
+    this.addLocation(context, R.string.list_anycast_local, localEndpoint, "192.168.2.111:8080");
+    this.addLocation(context, R.string.list_local, localEndpoint, "wss://192.168.2.111:8443");
   }
 
   public final List<ServerLocation> getLocations() {
