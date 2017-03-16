@@ -19,6 +19,7 @@ import android.app.Application;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.media.projection.MediaProjectionManager;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.crashlytics.android.Crashlytics;
@@ -110,7 +111,9 @@ public final class PhenixApplication extends Application {
   }
 
   public String getServerAddress() {
-    return this.serverAddress != null ? this.serverAddress : ServerAddress.PRODUCTION_ENDPOINT.getServerAddress();
+    return !TextUtils.isEmpty(this.serverAddress) ?
+            this.serverAddress :
+            ServerAddress.PRODUCTION_ENDPOINT.getServerAddress();
   }
 
   public void setServerAddress(String serverAddress) {

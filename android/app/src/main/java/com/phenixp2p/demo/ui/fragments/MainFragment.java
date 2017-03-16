@@ -1016,13 +1016,13 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
         this.onFullScreen();
       } else {
         setLayoutTablet(this.viewList, true);
-        setPreviewDimensionsTablet(this.activity, this.viewLocal);
+        setPreviewDimensionsTablet(this.activity, getViewLocal());
       }
     } else {
       if (this.isFullScreen) {
         this.onFullScreen();
       } else {
-        setPreviewDimensions(this.activity, this.viewLocal);
+        setPreviewDimensions(this.activity, getViewLocal());
       }
     }
     this.viewAnimation.setPadding(dpToPx(this.activity, 4),
