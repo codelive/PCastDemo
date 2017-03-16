@@ -102,7 +102,7 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
         View.OnTouchListener {
 
   private static final String TAG = MainActivity.class.getSimpleName();
-
+  private static final int ACTION_WIFI = 120;
   private PCast pcast;
   private UserMediaStream publishMedia;
   private PowerManager.WakeLock wakeLock;
@@ -177,6 +177,11 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
         break;
       case REQUEST_CODE_SECRET_URL:
         this.checkPermissions();
+        break;
+      case ACTION_WIFI:
+        this.login();
+        break;
+      default:
         break;
     }
   }
@@ -405,7 +410,7 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
                 public void onClick(DialogInterface dialogInterface, int i) {
                   Intent intent = new Intent(Intent.ACTION_MAIN);
                   intent.setClassName("com.android.settings", "com.android.settings.wifi.WifiSettings");
-                  startActivity(intent);
+                  startActivityForResult(intent, ACTION_WIFI);
                   dialogInterface.dismiss();
                 }
               }
