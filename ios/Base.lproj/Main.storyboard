@@ -815,10 +815,10 @@
             </objects>
             <point key="canvasLocation" x="1841" y="-24"/>
         </scene>
-        <!--Secret Url PopoverVC-->
+        <!--Secret Url Popover View Controller-->
         <scene sceneID="yne-b3-tai">
             <objects>
-                <viewController storyboardIdentifier="SecretUrlPopover" automaticallyAdjustsScrollViewInsets="NO" id="x5p-UX-ccU" customClass="SecretUrlPopoverVC" customModule="PCast_Demo" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="SecretUrlPopover" automaticallyAdjustsScrollViewInsets="NO" id="x5p-UX-ccU" customClass="SecretUrlPopoverViewController" customModule="PCast_Demo" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="TPQ-Qc-Ebb"/>
                         <viewControllerLayoutGuide type="bottom" id="eq4-Ef-hoN"/>
@@ -834,7 +834,7 @@
                                         <rect key="frame" x="0.0" y="0.0" width="320" height="300"/>
                                         <subviews>
                                             <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="Anycast (Closest Data Center)" borderStyle="roundedRect" textAlignment="center" minimumFontSize="9" translatesAutoresizingMaskIntoConstraints="NO" id="DkK-5W-mkA">
-                                                <rect key="frame" x="5" y="5" width="310" height="30"/>
+                                                <rect key="frame" x="5" y="40" width="310" height="30"/>
                                                 <color key="backgroundColor" red="0.34509803919999998" green="0.34509803919999998" blue="0.34509803919999998" alpha="1" colorSpace="calibratedRGB"/>
                                                 <color key="tintColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                                 <constraints>
@@ -845,16 +845,16 @@
                                                 <textInputTraits key="textInputTraits"/>
                                             </textField>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Server address" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="f4M-Wl-N2D">
-                                                <rect key="frame" x="5" y="38" width="310" height="21"/>
+                                                <rect key="frame" x="5" y="75" width="310" height="18"/>
                                                 <constraints>
-                                                    <constraint firstAttribute="height" constant="21" id="noC-Yy-fDZ"/>
+                                                    <constraint firstAttribute="height" constant="18" id="noC-Yy-fDZ"/>
                                                 </constraints>
                                                 <fontDescription key="fontDescription" type="system" weight="medium" pointSize="15"/>
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="https://demo.phenixp2p.com/demoApp/" borderStyle="roundedRect" textAlignment="center" minimumFontSize="9" translatesAutoresizingMaskIntoConstraints="NO" id="PiF-hn-318">
-                                                <rect key="frame" x="5" y="59" width="310" height="30"/>
+                                                <rect key="frame" x="5" y="93" width="310" height="30"/>
                                                 <color key="backgroundColor" red="0.34509803921568627" green="0.34509803921568627" blue="0.34509803921568627" alpha="1" colorSpace="calibratedRGB"/>
                                                 <color key="tintColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                 <constraints>
@@ -865,16 +865,16 @@
                                                 <textInputTraits key="textInputTraits"/>
                                             </textField>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="PCast address" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="fcN-T8-vdq">
-                                                <rect key="frame" x="5" y="94" width="310" height="21"/>
+                                                <rect key="frame" x="5" y="128" width="310" height="18"/>
                                                 <constraints>
-                                                    <constraint firstAttribute="height" constant="21" id="syr-G4-ToR"/>
+                                                    <constraint firstAttribute="height" constant="18" id="syr-G4-ToR"/>
                                                 </constraints>
                                                 <fontDescription key="fontDescription" type="system" weight="medium" pointSize="15"/>
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="https://pcast.phenixp2p.com" borderStyle="roundedRect" textAlignment="center" minimumFontSize="9" translatesAutoresizingMaskIntoConstraints="NO" id="3vD-4F-BRo" userLabel="Address PCast">
-                                                <rect key="frame" x="5" y="115" width="310" height="30"/>
+                                                <rect key="frame" x="5" y="146" width="310" height="30"/>
                                                 <color key="backgroundColor" red="0.34509803919999998" green="0.34509803919999998" blue="0.34509803919999998" alpha="1" colorSpace="calibratedRGB"/>
                                                 <color key="tintColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                 <constraints>
@@ -885,7 +885,7 @@
                                                 <textInputTraits key="textInputTraits"/>
                                             </textField>
                                             <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="ELP-fU-JzC">
-                                                <rect key="frame" x="5" y="155" width="310" height="50"/>
+                                                <rect key="frame" x="5" y="186" width="310" height="50"/>
                                                 <subviews>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="J8M-6K-NGO">
                                                         <rect key="frame" x="0.0" y="0.0" width="150" height="50"/>
@@ -918,7 +918,7 @@
                                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                         <constraints>
                                             <constraint firstItem="ELP-fU-JzC" firstAttribute="top" secondItem="3vD-4F-BRo" secondAttribute="bottom" constant="10" id="3u1-dS-No2"/>
-                                            <constraint firstItem="f4M-Wl-N2D" firstAttribute="top" secondItem="DkK-5W-mkA" secondAttribute="bottom" constant="3" id="4Y1-qk-qS5"/>
+                                            <constraint firstItem="f4M-Wl-N2D" firstAttribute="top" secondItem="DkK-5W-mkA" secondAttribute="bottom" constant="5" id="4Y1-qk-qS5"/>
                                             <constraint firstItem="fcN-T8-vdq" firstAttribute="leading" secondItem="th9-oh-yp7" secondAttribute="leading" constant="5" id="7YI-1i-eQf"/>
                                             <constraint firstItem="DkK-5W-mkA" firstAttribute="leading" secondItem="th9-oh-yp7" secondAttribute="leading" constant="5" id="IMf-zn-KaZ"/>
                                             <constraint firstItem="ELP-fU-JzC" firstAttribute="leading" secondItem="th9-oh-yp7" secondAttribute="leading" constant="5" id="JXv-Hj-YUZ"/>
@@ -929,7 +929,6 @@
                                             <constraint firstAttribute="trailing" secondItem="PiF-hn-318" secondAttribute="trailing" constant="5" id="gJD-9g-9du"/>
                                             <constraint firstAttribute="trailing" secondItem="ELP-fU-JzC" secondAttribute="trailing" constant="5" id="gg1-2u-VJK"/>
                                             <constraint firstAttribute="trailing" secondItem="f4M-Wl-N2D" secondAttribute="trailing" constant="5" id="j6a-ZS-xxS"/>
-                                            <constraint firstItem="DkK-5W-mkA" firstAttribute="top" secondItem="th9-oh-yp7" secondAttribute="top" constant="5" id="jcV-8U-3hZ"/>
                                             <constraint firstAttribute="trailing" secondItem="DkK-5W-mkA" secondAttribute="trailing" constant="5" id="kYO-K2-atN"/>
                                             <constraint firstItem="PiF-hn-318" firstAttribute="leading" secondItem="th9-oh-yp7" secondAttribute="leading" constant="5" id="nwH-Ag-Jry"/>
                                             <constraint firstItem="fcN-T8-vdq" firstAttribute="top" secondItem="PiF-hn-318" secondAttribute="bottom" constant="5" id="rmL-en-LTD"/>
@@ -937,16 +936,35 @@
                                             <constraint firstItem="3vD-4F-BRo" firstAttribute="top" secondItem="fcN-T8-vdq" secondAttribute="bottom" id="x74-ah-Hgv"/>
                                         </constraints>
                                     </view>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="OCA-Vm-7RJ">
+                                        <rect key="frame" x="5" y="5" width="310" height="30"/>
+                                        <color key="backgroundColor" red="0.34509803919999998" green="0.34509803919999998" blue="0.34509803919999998" alpha="1" colorSpace="calibratedRGB"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="30" id="7vf-E3-jsP"/>
+                                            <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="30" id="RqT-xa-RBF"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" type="system" weight="medium" pointSize="15"/>
+                                        <state key="normal" title="Email logs">
+                                            <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="buttonEmailLogClicked:" destination="x5p-UX-ccU" eventType="touchUpInside" id="cuh-Cr-Eox"/>
+                                        </connections>
+                                    </button>
                                 </subviews>
                                 <constraints>
                                     <constraint firstItem="th9-oh-yp7" firstAttribute="centerY" secondItem="3aD-mA-v2c" secondAttribute="centerY" id="0Gd-Gu-Qnk"/>
                                     <constraint firstItem="th9-oh-yp7" firstAttribute="leading" secondItem="3aD-mA-v2c" secondAttribute="leading" id="7K7-OI-09b"/>
                                     <constraint firstItem="th9-oh-yp7" firstAttribute="height" secondItem="3aD-mA-v2c" secondAttribute="height" id="7bP-f8-8R4"/>
+                                    <constraint firstItem="DkK-5W-mkA" firstAttribute="top" secondItem="OCA-Vm-7RJ" secondAttribute="bottom" constant="5" id="AZc-FF-hE8"/>
                                     <constraint firstItem="th9-oh-yp7" firstAttribute="top" secondItem="3aD-mA-v2c" secondAttribute="top" id="PeN-qI-uLt"/>
+                                    <constraint firstAttribute="trailing" secondItem="OCA-Vm-7RJ" secondAttribute="trailing" constant="5" id="R7d-1u-0rK"/>
                                     <constraint firstAttribute="trailing" secondItem="th9-oh-yp7" secondAttribute="trailing" id="SH1-cM-kWK"/>
                                     <constraint firstItem="th9-oh-yp7" firstAttribute="width" secondItem="3aD-mA-v2c" secondAttribute="width" id="amA-a4-jvU"/>
                                     <constraint firstItem="th9-oh-yp7" firstAttribute="centerX" secondItem="3aD-mA-v2c" secondAttribute="centerX" id="bAH-76-pEc"/>
+                                    <constraint firstItem="OCA-Vm-7RJ" firstAttribute="leading" secondItem="3aD-mA-v2c" secondAttribute="leading" constant="5" id="f8m-kd-KT4"/>
                                     <constraint firstAttribute="bottom" secondItem="th9-oh-yp7" secondAttribute="bottom" id="tSN-Yk-9Id"/>
+                                    <constraint firstItem="OCA-Vm-7RJ" firstAttribute="top" secondItem="3aD-mA-v2c" secondAttribute="top" constant="5" id="yIb-da-r32"/>
                                 </constraints>
                             </scrollView>
                         </subviews>
@@ -965,6 +983,7 @@
                         <outlet property="addressPCast" destination="3vD-4F-BRo" id="h25-Nq-Suh"/>
                         <outlet property="addressServer" destination="PiF-hn-318" id="d6e-xW-27m"/>
                         <outlet property="buttonCancel" destination="Q3f-5k-BSe" id="BAS-bx-oA0"/>
+                        <outlet property="buttonEmail" destination="OCA-Vm-7RJ" id="P4a-94-XEv"/>
                         <outlet property="buttonOk" destination="J8M-6K-NGO" id="8gU-K7-EHr"/>
                         <outlet property="scrollPopover" destination="3aD-mA-v2c" id="OHt-by-2TI"/>
                         <outlet property="serverList" destination="DkK-5W-mkA" id="pU6-Oj-GrI"/>

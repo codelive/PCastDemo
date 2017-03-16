@@ -17,6 +17,7 @@ package com.phenixp2p.demo;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatButton;
 import android.support.v7.widget.AppCompatSpinner;
@@ -25,6 +26,7 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -38,6 +40,8 @@ import com.phenixp2p.demo.utils.Utilities;
 import java.util.List;
 
 import static com.phenixp2p.demo.Constants.REQUEST_CODE_SECRET_URL;
+import static com.phenixp2p.demo.utils.LogsUtil.currentDate;
+import static com.phenixp2p.demo.utils.LogsUtil.generateLog;
 
 public final class UriMenu {
   private int selection = 0;
@@ -51,10 +55,11 @@ public final class UriMenu {
     builder.setView(customView);
     final EditText editServerAddress = (EditText) customView.findViewById(R.id.editServerAddress);
     final EditText editPcastAddress = (EditText) customView.findViewById(R.id.editPcastAddress);
+    final Button buttonEmailLog  = (Button) customView.findViewById(R.id.buttonEmailLog);
     editServerAddress.setSelection(editServerAddress.getText().length());
 
     this.createSpinner(phenixApplication, activity, customView, editPcastAddress, editServerAddress);
-    this.createAlertDialog(phenixApplication, activity, builder, customView, editServerAddress, editPcastAddress);
+    this.createAlertDialog(phenixApplication, activity, builder, customView, editServerAddress, editPcastAddress, buttonEmailLog);
   }
 
   private void createSpinner(final PhenixApplication application,
@@ -109,7 +114,8 @@ public final class UriMenu {
                                  final AlertDialog.Builder builder,
                                  final View customView,
                                  final EditText editServerAddress,
-                                 final EditText editPcastAddress) {
+                                 final EditText editPcastAddress,
+                                 final Button buttonEmailLog) {
 
     AppCompatButton buttonSubmit = (AppCompatButton) customView.findViewById(R.id.buttonSubmit);
     AppCompatButton buttonCancel = (AppCompatButton) customView.findViewById(R.id.buttonCancel);
@@ -140,6 +146,24 @@ public final class UriMenu {
       @Override
       public void onClick(View v) {
         dialog.dismiss();
+      }
+    });
+
+    buttonEmailLog.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        String subject = "Log collected at " + currentDate();
+        String bodyText = "Describe the issue you encountered";
+        Uri path = Uri.fromFile(generateLog());
+        if (path != null) {
+          Intent mail = new Intent(Intent.ACTION_SENDTO);
+          mail.setData(Uri.parse("mailto:"));
+          mail.putExtra(Intent.EXTRA_EMAIL, new String[]{""});
+          mail.putExtra(Intent.EXTRA_SUBJECT, subject);
+          mail.putExtra(Intent.EXTRA_TEXT, bodyText);
+          mail.putExtra(Intent.EXTRA_STREAM, path);
+          activity.startActivity(Intent.createChooser(mail, "Send email..."));
+        }
       }
     });
     dialog.setCancelable(false);

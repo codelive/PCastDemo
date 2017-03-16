@@ -16,13 +16,18 @@
 
 import UIKit
 
-final class SecretUrlPopoverVC: UIViewController {
+protocol SecretUrlPopoverDelegate {
+  func startComposingEmail()
+}
+
+final class SecretUrlPopoverViewController: UIViewController {
   @IBOutlet weak var scrollPopover: UIScrollView!
   @IBOutlet weak var serverList: UITextField!
   @IBOutlet weak var addressServer: UITextField!
   @IBOutlet weak var addressPCast: UITextField!
   @IBOutlet weak var buttonOk: UIButton!
   @IBOutlet weak var buttonCancel: UIButton!
+  @IBOutlet weak var buttonEmail: UIButton!
 
   var serverPicker = UIPickerView()
   var arrayListServer = Array<ServerLocation>()
@@ -31,6 +36,7 @@ final class SecretUrlPopoverVC: UIViewController {
   var currentServerHttp: String!
   var currentServerName: String!
   var isManualSet = false
+  var secretPopoverDelegate : SecretUrlPopoverDelegate?
 
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -52,6 +58,8 @@ final class SecretUrlPopoverVC: UIViewController {
     self.buttonOk.layer.masksToBounds = true
     self.buttonCancel.layer.cornerRadius = 5.0
     self.buttonCancel.layer.masksToBounds = true
+    self.buttonEmail.layer.cornerRadius = 3.0
+    self.buttonEmail.layer.masksToBounds = true
     let iconDown = UIImageView.init(frame: CGRect.init(x: 0, y: 0, width: 30, height: 30))
     iconDown.image = #imageLiteral(resourceName: "icon-menu-down")
     self.serverList.rightView = iconDown
@@ -72,7 +80,7 @@ final class SecretUrlPopoverVC: UIViewController {
     toolBar.tintColor = .white
     toolBar.sizeToFit()
 
-    let doneButton = UIBarButtonItem(title: "Done", style: UIBarButtonItemStyle.plain, target: self, action: #selector(SecretUrlPopoverVC.donePicker))
+    let doneButton = UIBarButtonItem(title: "Done", style: UIBarButtonItemStyle.plain, target: self, action: #selector(SecretUrlPopoverViewController.donePicker))
     doneButton.tintColor = PhenixColor.Gray
     let spaceButton = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.flexibleSpace, target: nil, action: nil)
 
@@ -129,9 +137,17 @@ final class SecretUrlPopoverVC: UIViewController {
     self.view.endEditing(true)
     self.dismiss(animated: true, completion: nil)
   }
+
+  @IBAction func buttonEmailLogClicked(_ sender: Any) {
+    self.view.endEditing(true)
+    self.dismiss(animated: true, completion: nil)
+    if let delegate = secretPopoverDelegate {
+      delegate.startComposingEmail()
+    }
+  }
 }
 
-extension SecretUrlPopoverVC: UIPickerViewDataSource, UIPickerViewDelegate {
+extension SecretUrlPopoverViewController: UIPickerViewDataSource, UIPickerViewDelegate {
 
   func numberOfComponents(in pickerView: UIPickerView) -> Int {
     return 1
@@ -189,7 +205,7 @@ extension SecretUrlPopoverVC: UIPickerViewDataSource, UIPickerViewDelegate {
   }
 }
 
-extension SecretUrlPopoverVC: UITextFieldDelegate {
+extension SecretUrlPopoverViewController: UITextFieldDelegate {
   func textFieldShouldReturn(_ textField: UITextField) -> Bool {
     textField.resignFirstResponder()
     return true

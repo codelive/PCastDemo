@@ -197,6 +197,11 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
       permissionsNeeded.add("access the microphone");
     }
 
+    if (!addPermission(permissionsList, Manifest.permission.WRITE_EXTERNAL_STORAGE) ||
+      !addPermission(permissionsList, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+      permissionsNeeded.add("write and read access for logs");
+    }
+
     if (permissionsList.size() > 0) {
       if (permissionsNeeded.size() > 0) {
         String message = "You need to grant access to " + permissionsNeeded.get(0);
@@ -241,13 +246,17 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
         // Initial
         permissionCodes.put(Manifest.permission.CAMERA, PackageManager.PERMISSION_DENIED);
         permissionCodes.put(Manifest.permission.RECORD_AUDIO, PackageManager.PERMISSION_DENIED);
+        permissionCodes.put(Manifest.permission.WRITE_EXTERNAL_STORAGE, PackageManager.PERMISSION_DENIED);
+        permissionCodes.put(Manifest.permission.READ_EXTERNAL_STORAGE, PackageManager.PERMISSION_DENIED);
         // Fill with results
         for (int i = 0; i < permissions.length; i++) {
           permissionCodes.put(permissions[i], grantResults[i]);
         }
         // Check for CAMERA
         if (permissionCodes.get(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
-          && permissionCodes.get(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+          && permissionCodes.get(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
+          && permissionCodes.get(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+          || permissionCodes.get(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
           // All Permissions Granted
           this.commenceSession();
         } else {

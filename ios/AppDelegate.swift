@@ -31,13 +31,13 @@ func timeElapsed() -> String {
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
-
   let isPhenixFirstLaunch = UserDefaults.isPhenixFirstLaunch()
   var window: UIWindow?
   let reachability = Reachability()!
   var isAlertShowing = false
 
   func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions:[UIApplicationLaunchOptionsKey : Any]?) -> Bool {
+    self.logToFile()
     Fabric.with([Crashlytics.self])
     UIApplication.shared.isIdleTimerDisabled = true
 
@@ -48,7 +48,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.reachabilityChanged), name: ReachabilityChangedNotification,object: reachability)
     do {
       try reachability.startNotifier()
-    } catch{
+    } catch {
       print("could not start reachability notifier")
       print(error.localizedDescription)
       abort()
@@ -78,6 +78,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     Phenix.shared.shutdown()
     NotificationCenter.default.removeObserver(self)
     reachability.stopNotifier()
+    self.removeLogFile()
   }
 
   func notifyNetworkNotReachability() {
@@ -103,5 +104,32 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       notifyNetworkNotReachability()
     }
   }
-}
 
+  func logToFile() {
+    var paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)
+    let documentsDirectory = paths[0]
+    let fileName = PhenixNameForLogFile
+    let logFilePath = (documentsDirectory as NSString).appendingPathComponent(fileName)
+
+    // Redirect all the logs from console to file
+    freopen(logFilePath.cString(using: String.Encoding.ascii)!, "a+", stderr)
+    freopen(logFilePath.cString(using: String.Encoding.ascii)!, "a+", stdin)
+    freopen(logFilePath.cString(using: String.Encoding.ascii)!, "a+", stdout)
+  }
+
+  func removeLogFile() {
+    var paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)
+    let documentsDirectory = paths[0]
+    let logFileManager = FileManager.default
+    let fileNameToCheck = PhenixNameForLogFile
+    let filePathToCheck = (documentsDirectory as NSString).appendingPathComponent(fileNameToCheck)
+    if logFileManager.fileExists(atPath: filePathToCheck) == true {
+      do {
+        try logFileManager.removeItem(atPath: filePathToCheck)
+      } catch let error as NSError {
+        print("ERROR deleting logFile: \(error.description)")
+        abort()
+      }
+    }
+  }
+}

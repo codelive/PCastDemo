@@ -41,6 +41,7 @@
   <string name="list_local">Local</string>
   <string name="unable">Unable to connect to server.</string>
   <string name="input_address">Please input a server address</string>
+  <string name="email_log">Email Logs</string>
 
   <string-array name="server_array">
     <item>Manual</item>

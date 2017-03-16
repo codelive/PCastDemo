@@ -15,6 +15,7 @@
  */
 
 import UIKit
+import MessageUI
 import Crashlytics
 
 // todo:use promises, futures
@@ -82,9 +83,8 @@ final class ViewController:
   }
 
   let ThreeTaps = 3
-
   var currentCapability = CapabilitySelection.RealTime
-  var popover = UIViewController()
+  var popover = SecretUrlPopoverViewController()
   var parabolaLayer: CAShapeLayer!
   var publishingAnimation = CAAnimationGroup()
   let NUM_STEPS = 9
@@ -374,19 +374,20 @@ final class ViewController:
   }
 
   func showSecretPopup() {
-    popover = storyboard?.instantiateViewController(withIdentifier: PhenixStoryboardID.SecretUrlPopover) as! SecretUrlPopoverVC
-    popover.modalPresentationStyle = UIModalPresentationStyle.popover
-    popover.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+    self.popover = storyboard?.instantiateViewController(withIdentifier: PhenixStoryboardID.SecretUrlPopover) as! SecretUrlPopoverViewController
+    self.popover.secretPopoverDelegate = self
+    self.popover.modalPresentationStyle = UIModalPresentationStyle.popover
+    self.popover.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
     self.updatePopoverFrame()
     self.present(popover, animated: true, completion: nil)
   }
 
   func updatePopoverFrame() {
-    popover.popoverPresentationController?.delegate = self
-    popover.popoverPresentationController?.sourceView = self.view
-    popover.popoverPresentationController?.sourceRect = self.view.bounds
-    popover.popoverPresentationController?.permittedArrowDirections = UIPopoverArrowDirection(rawValue: 0)
-    popover.preferredContentSize = CGSize(width: self.view.bounds.width, height: 210.0)
+    self.popover.popoverPresentationController?.delegate = self
+    self.popover.popoverPresentationController?.sourceView = self.view
+    self.popover.popoverPresentationController?.sourceRect = self.view.bounds
+    self.popover.popoverPresentationController?.permittedArrowDirections = UIPopoverArrowDirection(rawValue: 0)
+    self.popover.preferredContentSize = CGSize(width: self.view.bounds.width, height: 250.0)
   }
 
   func restartProgress() {
@@ -1015,6 +1016,39 @@ extension ViewController: CapabilityDelegate {
       self.changeCapability(capability: "streaming")
     }
     self.currentCapability = selection
+  }
+}
+
+extension ViewController: SecretUrlPopoverDelegate, MFMailComposeViewControllerDelegate {
+  func startComposingEmail() {
+    var paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)
+    let documentsDirectory = paths[0]
+    let currentDate = Date()
+    let dateFormatter = DateFormatter()
+    dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+    let curruntDateString = dateFormatter.string(from: currentDate)
+    let fileName = PhenixNameForLogFile
+    let logFilePath = (documentsDirectory as NSString).appendingPathComponent(fileName)
+
+    if MFMailComposeViewController.canSendMail() {
+      let mailComposer = MFMailComposeViewController()
+      mailComposer.mailComposeDelegate = self
+      mailComposer.setSubject("Log collected at <\(curruntDateString)>")
+      mailComposer.setMessageBody("Describe the issue you encountered\n", isHTML: false)
+
+      let attachFileName = NSURL(fileURLWithPath: logFilePath).lastPathComponent!
+      if let fileData = NSData(contentsOfFile: logFilePath) {
+        mailComposer.addAttachmentData(fileData as Data, mimeType: "text/plain", fileName: attachFileName)
+      }
+
+      DispatchQueue.main.async {
+        self.present(mailComposer, animated: true, completion: nil)
+      }
+    }
+  }
+
+  func mailComposeController(_ controller: MFMailComposeViewController, didFinishWith result: MFMailComposeResult, error: Error?) {
+    controller.dismiss(animated: true)
   }
 }
 

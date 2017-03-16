@@ -17,6 +17,8 @@
 import Foundation
 import UIKit
 
+let PhenixNameForLogFile = "PCast_Demo_Log.txt"
+
 let PhenixDefaults = UserDefaults.standard
 struct PhenixDefaultsKey {
   static let FirstLaunch = "UserDefaults.Phenix.FirstLaunch"
