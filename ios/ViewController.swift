@@ -403,7 +403,9 @@ final class ViewController:
         self.reportStatus(step:.Login, success:success)
         if success {
           if let authToken = Backend.shared.authToken {
-            Phenix.shared.connectAndAuthenticate(authToken:authToken, authCallback:self.authCallback)
+            DispatchQueue.main.async {
+              Phenix.shared.connectAndAuthenticate(authToken:authToken, authCallback:self.authCallback)
+            }
             return
           }
         }
@@ -437,7 +439,9 @@ final class ViewController:
 
   func publishTokenCallback(publishToken:String?) {
     if let token = publishToken, let stream = Phenix.shared.userMediaStream?.mediaStream {
-      Phenix.shared.getPublishStreamID(publishStreamToken:token, stream:stream, publishStreamIDCallback:publishStreamIDCallback)
+      DispatchQueue.main.async {
+        Phenix.shared.getPublishStreamID(publishStreamToken:token, stream:stream, publishStreamIDCallback:self.publishStreamIDCallback)
+      }
     } else {
       self.isAbleToConnect = false
       self.reportStatus(step:.PublishToken, success:false)
@@ -463,12 +467,12 @@ final class ViewController:
 
   func publisherDataQualityFeedback() {
     if let phenixPublisher = Phenix.shared.publisher {
-      phenixPublisher.setDataQualityChangedCallback({ (publisher, qualityStatus, qualityReason) in
-        DispatchQueue.main.async {
+      DispatchQueue.main.async {
+        phenixPublisher.setDataQualityChangedCallback({ (publisher, qualityStatus, qualityReason) in
           self.imageAudioOnly.isHidden = (qualityStatus == .audioOnly) ? false : true
-        }
-        self.handleFeedback(qualityReason: qualityReason, qualityStatus: qualityStatus, feedbackType: .Publisher)
-      })
+          self.handleFeedback(qualityReason: qualityReason, qualityStatus: qualityStatus, feedbackType: .Publisher)
+        })
+      }
     }
   }
 
@@ -535,20 +539,22 @@ final class ViewController:
       }
     }
     if let auSession = Phenix.shared.authSession {
-      do {
-        let arrCap = ["streaming", "archive"]
-        try Backend.shared.createStreamToken(sessionId:auSession,
-                                             originStreamId:nil,
-                                             capabilities:arrCap,
-                                             done:publishTokenCallback)
-      } catch {
-        self.isAbleToConnect = false
-        self.reportStatus(step:.PublishToken, success:false)
-        print(error.localizedDescription)
-        self.showAlertRetry(title: "Could not create streams token", message: "Try again.")
+      DispatchQueue.main.async {
+        do {
+          let arrCap = ["streaming", "archive"]
+          try Backend.shared.createStreamToken(sessionId:auSession,
+                                               originStreamId:nil,
+                                               capabilities:arrCap,
+                                               done:self.publishTokenCallback)
+        } catch {
+          self.isAbleToConnect = false
+          self.reportStatus(step:.PublishToken, success:false)
+          print(error.localizedDescription)
+          self.showAlertRetry(title: "Could not create stream token", message: "Try again.")
+        }
       }
     } else {
-      // No Authorization Token, re-login to get the token
+      // No authorization token, re-login to get the token
       self.login(name:"demo-user", password:"demo-password")
     }
   }
@@ -622,22 +628,20 @@ final class ViewController:
       self.publishingAnimation = Utilities.publishButtonAnimation()
       DispatchQueue.main.async {
         self.changePublishState.layer.add(self.publishingAnimation, forKey: "pulse")
-      }
-      self.renderer?.setRenderSurfaceReadyCallback({ (renderer, layer) in
-        if let previewLayer = layer {
-          Phenix.shared.userMediaLayer = previewLayer
-          self.updatePreviewLayer()
-          DispatchQueue.main.async {
+        self.renderer?.setRenderSurfaceReadyCallback({ (renderer, layer) in
+          if let previewLayer = layer {
+            Phenix.shared.userMediaLayer = previewLayer
+            self.updatePreviewLayer()
             let bgImage = self.isUsingFrontCamera ? #imageLiteral(resourceName: "icon_camera_front") : #imageLiteral(resourceName: "icon_camera_rear")
             self.buttonSwitch.setBackgroundImage(bgImage, for: .normal)
           }
-        }
-      })
+        })
 
-      // Listen to and display Viewer stream quality
-      self.renderer?.setDataQualityChangedCallback({ (renderer, qualityStatus, qualityReason) in
-        self.handleFeedback(qualityReason: qualityReason, qualityStatus: qualityStatus, feedbackType: .Subscriber)
-      })
+        // Listen to and display Viewer stream quality
+        self.renderer?.setDataQualityChangedCallback({ (renderer, qualityStatus, qualityReason) in
+          self.handleFeedback(qualityReason: qualityReason, qualityStatus: qualityStatus, feedbackType: .Subscriber)
+        })
+      }
 
       let status = self.renderer?.start()
       if status == nil || status == .conflict {
@@ -807,15 +811,17 @@ final class ViewController:
     }
     self.isViewProgressing = true
     if let publishingSession = Phenix.shared.authSession, let streamIdFullString = self.selectedStreamId {
-      do {
-        let capabilities = [capability]
-        try Backend.shared.createStreamToken(sessionId: publishingSession,
-                                             originStreamId: streamIdFullString,
-                                             capabilities: capabilities,
-                                             done: subscribeTokenCallback)
-      } catch {
-        print(error.localizedDescription)
-        self.showAlertRetry(title: "Could not create streams list", message: "Try again.")
+      DispatchQueue.main.async {
+        do {
+          let capabilities = [capability]
+          try Backend.shared.createStreamToken(sessionId: publishingSession,
+                                               originStreamId: streamIdFullString,
+                                               capabilities: capabilities,
+                                               done: self.subscribeTokenCallback)
+        } catch {
+          print(error.localizedDescription)
+          self.showAlertRetry(title: "Could not create streams list", message: "Try again.")
+        }
       }
     } else {
       DispatchQueue.main.async {
@@ -826,9 +832,11 @@ final class ViewController:
 
   func subscribeTokenCallback(subscribeToken:String?) {
     if let sid = self.selectedStreamId, let token = subscribeToken {
-      Phenix.shared.subscribeToStream(streamId:sid,
-                                      subscribeStreamToken:token,
-                                      subscribeCallback:subscribing)
+      DispatchQueue.main.async {
+        Phenix.shared.subscribeToStream(streamId:sid,
+                                        subscribeStreamToken:token,
+                                        subscribeCallback:self.subscribing)
+      }
     } else {
       self.isViewProgressing = false
     }

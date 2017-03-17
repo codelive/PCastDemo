@@ -20,6 +20,7 @@ import android.app.Activity;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
@@ -175,7 +176,7 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
   private boolean isStopPreview = false;
   private boolean isAudio = false;
   private boolean isShare = false;
-  private Handler handler;
+  private Handler mainHandler;
   private MediaStream mediaStream;
   private Handler handlerCall;
   private boolean isStreamEnded = false;
@@ -211,7 +212,7 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
   @Override
   protected void bindEventHandlers(View view) {
     this.handlerCall = new Handler(this);
-
+    this.mainHandler = new Handler(Looper.getMainLooper());
     this.findSubViews(view);
 
     ViewGroup goBack = (RelativeLayout) view.findViewById(R.id.back);
@@ -251,8 +252,7 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
     goBack.setOnClickListener(this);
     animateView(this.buttonStop);
     if (!this.isError) {
-      this.handler = new Handler();
-      this.handler.postDelayed(new Runnable() {
+      this.mainHandler.postDelayed(new Runnable() {
         @Override
         public void run() {
           MainFragment.this.presenter.startRendering();
@@ -337,6 +337,9 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
   }
 
   public void callReload(String currentSessionId, String currentStreamId) {
+    if (this.mainHandler == null) {
+      this.mainHandler = new Handler(Looper.getMainLooper());
+    }
     this.first = false;
     this.isStopPreview = false;
     if (this.previewLocalHolder == null) {
@@ -388,7 +391,7 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
       this.disappearSharing();
     } else {
       this.handlerCall = null;
-      this.handler = null;
+      this.mainHandler = null;
     }
     this.first = true;
 
@@ -438,6 +441,10 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
 
   @Override
   public void onResume() {
+    if (this.mainHandler == null) {
+      this.mainHandler = new Handler(Looper.getMainLooper());
+    }
+
     if (!this.isFullScreen) {
       this.onChangeLayout();
     } else {
@@ -480,15 +487,12 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
 
   private void startPublishing() {
     if (this.isShare) {
-      if (this.handler == null) {
-        this.handler = new Handler();
-        this.handler.postDelayed(new Runnable() {
-          @Override
-          public void run() {
-            MainFragment.this.presenter.startRendering();
-          }
-        }, RENDER_DELAY);
-      }
+      this.mainHandler.postDelayed(new Runnable() {
+        @Override
+        public void run() {
+          MainFragment.this.presenter.startRendering();
+        }
+      }, RENDER_DELAY);
     }
     this.qualityPublisher.setVisibility(View.VISIBLE);
     this.isThisPhone = true;
@@ -540,9 +544,6 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
 
   @Override
   public void onDestroyView() {
-    if (this.handler != null) {
-      this.handler = null;
-    }
     try {
       this.previewLocal.getHolder().getSurface().release();
     } catch (Exception e) {
@@ -568,8 +569,7 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
           this.renderVideo();
         } else {
           this.viewDelay.setVisibility(View.VISIBLE);
-          this.handler = new Handler();
-          this.handler.postDelayed(new Runnable() {
+          this.mainHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
               MainFragment.this.toggleCamera.setVisibility(View.GONE);
@@ -1229,10 +1229,15 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
     mainActivity.getPCast().subscribe(subscribeStreamToken, new PCast.SubscribeCallback() {
       public void onEvent(PCast p, final RequestStatus status, final MediaStream media) {
         if (status == RequestStatus.OK) {
-          MainFragment.this.mediaStream = media;
-          MainFragment.this.mediaStream.setStreamEndedCallback(MainFragment.this);
-          // Prepare the player with the streaming source.
-          viewStream(MainFragment.this.mediaStream.createRenderer());
+          MainFragment.this.mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+              MainFragment.this.mediaStream = media;
+              MainFragment.this.mediaStream.setStreamEndedCallback(MainFragment.this);
+              // Prepare the player with the streaming source.
+              viewStream(MainFragment.this.mediaStream.createRenderer());
+            }
+          });
         } else {
           MainFragment.this.activity.runOnUiThread(new Runnable() {
             @Override

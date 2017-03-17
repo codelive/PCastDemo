@@ -21,6 +21,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.PowerManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -127,9 +129,11 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
   private boolean isVideo = false;
   private boolean isOnlyVideoOrAudio = false;
   private PhenixApplication phenixApplication;
+  private Handler mainHandler;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
+    this.mainHandler = new Handler(Looper.getMainLooper());
     this.phenixApplication = ((PhenixApplication) getApplication());
     getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     super.onCreate(savedInstanceState);
@@ -278,6 +282,7 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
         this.subscriptions.unsubscribe();
         this.subscriptions = null;
       }
+      this.mainHandler = null;
       System.gc();
     }
     super.onPause();
@@ -319,6 +324,9 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
 
   @Override
   protected void onResume() {
+    if (this.mainHandler == null) {
+      this.mainHandler = new Handler(Looper.getMainLooper());
+    }
     this.phenixApplication = ((PhenixApplication) getApplication());
     PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
     this.wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
@@ -473,18 +481,23 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
     }
     this.pcast.initialize(new PCastInitializeOptions(false, true));
     this.pcast.start(authenticationToken, new PCast.AuthenticationCallback() {
-        public void onEvent(PCast var1, RequestStatus status, final String sessionId) {
-          if (status == RequestStatus.OK) {
-            MainActivity.this.phenixApplication.setPCast(MainActivity.this.pcast);
-            MainActivity.this.sessionId = sessionId;
-            if (MainActivity.this.isOnlyVideoOrAudio) {
-              MainActivity.this.onlyVideoOrAudio(MainActivity.this.isVideo);
-            } else {
-              MainActivity.this.getUserMedia();
+        public void onEvent(PCast var1, final RequestStatus status, final String sessionId) {
+          MainActivity.this.mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+              if (status == RequestStatus.OK) {
+                MainActivity.this.phenixApplication.setPCast(MainActivity.this.pcast);
+                MainActivity.this.sessionId = sessionId;
+                if (MainActivity.this.isOnlyVideoOrAudio) {
+                  MainActivity.this.onlyVideoOrAudio(MainActivity.this.isVideo);
+                } else {
+                  MainActivity.this.getUserMedia();
+                }
+              } else {
+                MainActivity.this.onTryAfterError(getResources().getString(R.string.render_error, status.name()));
+              }
             }
-          } else {
-            MainActivity.this.onTryAfterError(getResources().getString(R.string.render_error, status.name()));
-          }
+          });
         }
       },
       new PCast.OnlineCallback() {
@@ -513,17 +526,22 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
     try {
       if (this.pcast != null) {
         this.pcast.getUserMedia(gumOptions, new PCast.UserMediaCallback() {
-          public void onEvent(PCast p, RequestStatus status, UserMediaStream media) {
-            if (status == RequestStatus.OK) {
-              if (media != null) {
-                MainActivity.this.publishMedia = media;
-                MainActivity.this.getPublishToken();
-              } else {
-                MainActivity.this.onTryAfterError(getResources().getString(R.string.media_null));
+          public void onEvent(PCast p, final RequestStatus status, final UserMediaStream media) {
+            MainActivity.this.mainHandler.post(new Runnable() {
+              @Override
+              public void run() {
+                if (status == RequestStatus.OK) {
+                  if (media != null) {
+                    MainActivity.this.publishMedia = media;
+                    MainActivity.this.getPublishToken();
+                  } else {
+                    MainActivity.this.onTryAfterError(getResources().getString(R.string.media_null));
+                  }
+                } else {
+                  MainActivity.this.onTryAfterError(getResources().getString(R.string.render_error, status.name()));
+                }
               }
-            } else {
-              MainActivity.this.onTryAfterError(getResources().getString(R.string.render_error, status.name()));
-            }
+            });
           }
         });
       }
@@ -599,20 +617,25 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
         return;
       }
       this.pcast.publish(publishStreamToken, mediaStream, new PCast.PublishCallback() {
-        public void onEvent(PCast p, final RequestStatus status, Publisher publisher) {
-          if (status == RequestStatus.OK) {
-            didPublishStream(publisher);
-          } else {
-            runOnUiThread(new Runnable() {
-              @Override
-              public void run() {
-                if (MainActivity.this.progressBar != null) {
-                  MainActivity.this.progressBar.setVisibility(View.GONE);
-                }
-                MainActivity.this.onTryAfterError(getResources().getString(R.string.render_error, status.name()));
+        public void onEvent(PCast p, final RequestStatus status, final Publisher publisher) {
+          MainActivity.this.mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+              if (status == RequestStatus.OK) {
+                didPublishStream(publisher);
+              } else {
+                runOnUiThread(new Runnable() {
+                  @Override
+                  public void run() {
+                    if (MainActivity.this.progressBar != null) {
+                      MainActivity.this.progressBar.setVisibility(View.GONE);
+                    }
+                    MainActivity.this.onTryAfterError(getResources().getString(R.string.render_error, status.name()));
+                  }
+                });
               }
-            });
-          }
+            }
+          });
         }
       });
     } else {
@@ -676,13 +699,18 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
     this.pcast.enumerateSourceDevices(
       new PCast.EnumerateSourceDevicesCallback() {
         @Override
-        public void onEvent(PCast pcast, SourceDeviceInfo[] devices) {
-          for (SourceDeviceInfo info : devices) {
-            if (info.deviceType == SourceDeviceType.SYSTEM_OUTPUT) {
-              Log.i("Phenix SDK Example", "Screencasting is available");
-              MainActivity.this.screenCaptureDeviceId = info.id;
+        public void onEvent(PCast pcast, final SourceDeviceInfo[] devices) {
+          MainActivity.this.mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+              for (SourceDeviceInfo info : devices) {
+                if (info.deviceType == SourceDeviceType.SYSTEM_OUTPUT) {
+                  Log.i("Phenix SDK Example", "Screencasting is available");
+                  MainActivity.this.screenCaptureDeviceId = info.id;
+                }
+              }
             }
-          }
+          });
         }
       },
       MediaType.VIDEO);
@@ -858,14 +886,19 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
         @Override
         public void onEvent(
           PCast pcast,
-          RequestStatus status,
-          UserMediaStream userMediaStream) {
+          final RequestStatus status,
+          final UserMediaStream userMediaStream) {
           // Check status and store 'userMediaStream'
-          if (status == RequestStatus.OK) {
-            didGetUserMedia(userMediaStream, isShare);
-          } else {
-            MainActivity.this.onTryAfterError(getResources().getString(R.string.render_error, status.name()));
-          }
+          MainActivity.this.mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+              if (status == RequestStatus.OK) {
+                didGetUserMedia(userMediaStream, isShare);
+              } else {
+                MainActivity.this.onTryAfterError(getResources().getString(R.string.render_error, status.name()));
+              }
+            }
+          });
         }
       });
   }
