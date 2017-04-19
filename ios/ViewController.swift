@@ -651,7 +651,7 @@ final class ViewController:
       if status == .ok {
         print("Renderer start status .ok")
       } else {
-        let statusString = ("\(status)")
+        let statusString = ("\(String(describing: status))")
         let alert = UIAlertController(title: "Renderer failed", message:statusString, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default) {
           _ in
