@@ -118,14 +118,21 @@ final class Phenix {
 
   func stopPublish() {
     self.publisher?.stop("ended")
+    self.publisher = nil
+  }
+
+  func stopUserMedia() {
+    self.userMediaStream = nil
   }
 
   func stopSubscribe() {
     self.subscribeStream?.stop()
+    self.subscribeStream = nil;
   }
 
   func stopRenderVideo() {
     self.renderer?.stop()
+    self.renderer = nil;
   }
 
   func stop() {

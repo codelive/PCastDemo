@@ -735,6 +735,7 @@ final class ViewController:
       self.renderer = nil
       self.updateParabolaPath()
       Phenix.shared.stopPublish()
+      Phenix.shared.stopUserMedia()
       self.updatePreviewLayer()
       Phenix.shared.phenixPublishingOption = .None
       self.enterFullScreen(isFullScreen: self.isFullScreen)
@@ -938,6 +939,8 @@ final class ViewController:
     self.selectedStreamId = nil
     self.subscribeLayer = nil
     self.isSubscribing = false
+    Phenix.shared.stopRenderVideo()
+    Phenix.shared.stopSubscribe()
     self.updateParabolaPath()
   }
 
