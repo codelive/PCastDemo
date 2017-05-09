@@ -71,7 +71,10 @@ final class Phenix {
               offlineCallback)
   }
 
-  func getLocalUserMedia(mediaOption: PublishOption, mediaReady:@escaping MediaReadyCallback) {
+  func getLocalUserMedia(
+      mediaOption: PublishOption,
+      facingMode: PhenixFacingMode,
+      mediaReady:@escaping MediaReadyCallback) {
     let gumOptions = PhenixUserMediaOptions()
     switch mediaOption {
     case .AudioOnly:
@@ -83,7 +86,7 @@ final class Phenix {
       gumOptions.audio.enabled = false
     case .All, .ShareScreen: break
     }
-    gumOptions.video.facingMode = .environment
+    gumOptions.video.facingMode = facingMode
     gumOptions.video.flashMode = .automatic
     self.pcast?.getUserMedia(gumOptions, Phenix.pcastMediaCallback(mediaCallback:mediaReady))
   }
@@ -122,22 +125,25 @@ final class Phenix {
   }
 
   func stopUserMedia() {
+    self.userMediaStream?.mediaStream.stop()
     self.userMediaStream = nil
   }
 
   func stopSubscribe() {
     self.subscribeStream?.stop()
-    self.subscribeStream = nil;
+    self.subscribeStream = nil
   }
 
   func stopRenderVideo() {
     self.renderer?.stop()
-    self.renderer = nil;
+    self.renderer = nil
   }
 
   func stop() {
-    self.publisher?.stop("ended")
-    self.subscribeStream?.stop()
+    stopRenderVideo()
+    stopSubscribe()
+    stopPublish()
+    stopUserMedia()
     self.pcast?.stop()
   }
 

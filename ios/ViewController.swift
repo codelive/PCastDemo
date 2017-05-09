@@ -116,7 +116,7 @@ final class ViewController:
           self.idTableView.isHidden = self.isSubscribing
           self.versionNumber.isHidden = self.isSubscribing
           self.changePreviewSize.isHidden = (!self.isSubscribing && self.isPublishing) ? false : true
-        }, completion: nil);
+        }, completion: nil)
       }
     }
   }
@@ -271,6 +271,7 @@ final class ViewController:
     self.isAbleToConnect = true
     self.restartProgress()
     self.renderer?.stop()
+    self.renderer = nil
     Phenix.shared.authSession = nil
     Phenix.shared.stop()
     self.startPublishing()
@@ -299,7 +300,7 @@ final class ViewController:
   func updateStreamListOnTableView(streamList:Array<String>) {
     self.streamIdList = streamList.sorted()
     if isPublishing {
-      var i = 0;
+      var i = 0
       // swap self-Id to first index
       for streamIdFullString in self.streamIdList {
         if streamIdFullString != nil, streamIdFullString == self.streamIdThisPhone {
@@ -313,7 +314,7 @@ final class ViewController:
     DispatchQueue.main.async {
       UIView.transition(with: self.idTableView, duration: 0.2, options: .transitionCrossDissolve, animations: { () -> Void in
           self.idTableView.reloadData()
-      }, completion: nil);
+      }, completion: nil)
     }
   }
 
@@ -423,7 +424,10 @@ final class ViewController:
     self.reportStatus(step:.Auth, success:sessionId != nil)
     if let authSession = sessionId {
       Phenix.shared.authSession = authSession
-      Phenix.shared.getLocalUserMedia(mediaOption: Phenix.shared.phenixPublishingOption, mediaReady:mediaReady)
+      Phenix.shared.getLocalUserMedia(
+          mediaOption: Phenix.shared.phenixPublishingOption,
+          facingMode: self.isUsingFrontCamera ? .user : .environment,
+          mediaReady:mediaReady)
       self.getStreamList()
     }
   }
@@ -651,8 +655,8 @@ final class ViewController:
       if status == .ok {
         print("Renderer start status .ok")
       } else {
-        let statusString = ("\(String(describing: status))")
-        let alert = UIAlertController(title: "Renderer failed", message:statusString, preferredStyle: .alert)
+        let statusString = ("\(String(describing: status!))")
+        let alert = UIAlertController(title: "Preview renderer failed", message:statusString, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default) {
           _ in
         })
@@ -714,7 +718,10 @@ final class ViewController:
     case 1003: Phenix.shared.phenixPublishingOption = .All
     default: break
     }
-    Phenix.shared.getLocalUserMedia(mediaOption: Phenix.shared.phenixPublishingOption, mediaReady: mediaReady)
+    Phenix.shared.getLocalUserMedia(
+        mediaOption: Phenix.shared.phenixPublishingOption,
+        facingMode: self.isUsingFrontCamera ? .user : .environment,
+        mediaReady: mediaReady)
   }
 
   @IBAction func switchCamera(_ sender: AnyObject) {
@@ -737,7 +744,6 @@ final class ViewController:
       Phenix.shared.stopPublish()
       Phenix.shared.stopUserMedia()
       self.updatePreviewLayer()
-      Phenix.shared.phenixPublishingOption = .None
       self.enterFullScreen(isFullScreen: self.isFullScreen)
       self.changePublishState.layer.removeAllAnimations()
       self.previewVideoView.layer.sublayers?.forEach { $0.removeFromSuperlayer() }
@@ -859,7 +865,7 @@ final class ViewController:
             phenixStreamEndedReason,
             reasonDescription) in
             self.subscribeView.layer.sublayers?.forEach { $0.removeFromSuperlayer() }
-            if self.subscribeLayer != nil, !self.isEndedByEnterBackground {
+            if !self.isEndedByEnterBackground {
               self.showAlertGoBackToMain()
             }
           })
