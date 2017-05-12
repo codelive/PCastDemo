@@ -44,6 +44,11 @@ final class SecretUrlPopoverViewController: UIViewController {
     self.setSubviews()
   }
 
+  override func viewWillAppear(_ animated: Bool) {
+    super.viewWillAppear(animated)
+    self.view.superview?.layer.cornerRadius = 5.0
+  }
+
   override func didReceiveMemoryWarning() {
     super.didReceiveMemoryWarning()
   }

@@ -91,7 +91,7 @@
 
   </RelativeLayout>
 
-  <TextView
+  <com.phenixp2p.demo.ui.CustomTextView
     android:id="@+id/textViewNull"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
@@ -99,7 +99,8 @@
     android:gravity="center"
     android:text="@string/list_null"
     android:visibility="gone"
-    tools:visibility="visible"/>
+    tools:visibility="visible"
+    app:customTypeFace="@string/font_robo_light"/>
 
   <ImageView
     android:id="@+id/imageLoad"
@@ -138,7 +139,6 @@
       android:layout_centerHorizontal="true"
       android:layout_marginBottom="8dp"
       app:color_seek="#585858"
-      app:color_shadow="#858484"
       app:padding="20dp"
       app:process="100"
       app:size_icon="36dp"
@@ -172,13 +172,14 @@
         android:paddingLeft="15dp"
         android:paddingRight="15dp">
 
-        <TextView
+        <com.phenixp2p.demo.ui.CustomTextView
           android:id="@+id/textViewVersion"
           android:layout_width="wrap_content"
           android:layout_height="24dp"
           android:gravity="center"
           android:textColor="@android:color/white"
-          tools:text="TextView"/>
+          tools:text="TextView"
+          app:customTypeFace="@string/font_robo_light"/>
       </RelativeLayout>
 
     </LinearLayout>
@@ -235,6 +236,8 @@
         android:background="@null"
         android:drawableStart="@drawable/ic_full_view"
         android:gravity="center"
+        android:layout_marginRight="-3.8dp"
+        android:layout_marginBottom="-4.8dp"
         android:textOff=""
         android:textOn=""/>
 

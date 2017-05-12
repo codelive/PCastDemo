@@ -93,6 +93,7 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 
 import static android.content.Context.LAYOUT_INFLATER_SERVICE;
+import static com.phenixp2p.demo.Constants.APP_TAG;
 import static com.phenixp2p.demo.Constants.NULL_STREAM_TOKEN;
 import static com.phenixp2p.demo.Constants.NUM_HTTP_RETRIES;
 import static com.phenixp2p.demo.Constants.SESSION_ID;
@@ -191,6 +192,9 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
 
   @Override
   public void onCreate(@Nullable Bundle savedInstanceState) {
+    // NOTE: This line is required so vector drawables work on Android KitKat devices:
+    android.support.v7.app.AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
+
     this.activity = this.getActivity();
     this.phenixApplication = ((PhenixApplication) this.activity.getApplication());
     Bundle bundle = getArguments();
@@ -349,6 +353,7 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
     this.currentStreamId = currentStreamId;
     this.presenter.startRendering();
     if (this.isViewDetail) {
+      Log.i(APP_TAG, "Restarting subscription after reload");
       this.getSubscribeToken(currentSessionId, this.streamIdByList, this.capability.getValue());
     }
     this.isThisPhone = true;
@@ -866,6 +871,7 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
   // Stop render stream, and render preview local
   private void stopRender(boolean isSetVersionApp) {
     if (this.mediaStream != null && !this.mediaStream.isClosed()) {
+      this.mediaStream.setStreamEndedCallback(null);
       this.mediaStream.stop();
       Utilities.close(this.activity, this.mediaStream);
       this.mediaStream = null;
@@ -878,6 +884,7 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
     }
     this.renderHolder = null;
     this.previewLocalHolder = null;
+    this.isViewDetail = false;
     if (isSetVersionApp) {
       this.hideComponents();
     }
@@ -934,7 +941,7 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
     }
     this.isViewDetail = true;
     this.arcImage.setAngle(135);
-    this.texViewVersion.setTextColor(ContextCompat.getColor(getContext(), android.R.color.white));
+    this.texViewVersion.setTextColor(ContextCompat.getColor(getContext(), R.color.blue));
     this.texViewVersion.setText(getStreamId(this.streamIdByList));
     this.viewVersion.setBackground(ContextCompat.getDrawable(activity, R.drawable.shape));
     animateView(this.imageLoad);
@@ -1213,8 +1220,9 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
         @Override
         public void isError(int count) {
           if (MainFragment.this.handlerCall != null && count == NUM_HTTP_RETRIES) {
+            Log.w(APP_TAG, "Failed to obtain subscribe token after [" + count + "] retries");
             ((MainActivity) MainFragment.this.activity).setGoneVersion();
-            Message.obtain(MainFragment.this.handlerCall, STOP_PUBLISHER).sendToTarget();
+            Message.obtain(MainFragment.this.handlerCall, NULL_STREAM_TOKEN).sendToTarget();
           }
         }
       });
@@ -1239,6 +1247,7 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
             }
           });
         } else {
+          Log.w(APP_TAG, "Failed to subscribe to stream with status [" + status + "]");
           MainFragment.this.activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -1274,9 +1283,9 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
   }
 
   // 8. View streamToken.
-  private void viewStream(final Renderer new_renderer) {
+  private void viewStream(final Renderer renderer) {
     this.isStreamEnded = false;
-    this.renderer = new_renderer;
+    this.renderer = renderer;
     if (this.handlerCall != null) {
       Message message = Message.obtain(this.handlerCall, VIEW_STREAM, this.renderer);
       message.sendToTarget();
@@ -1285,8 +1294,9 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
 
   // Call back event for when the video publisher stopped
   @Override
-  public void onEvent(MediaStream mediaStream, StreamEndedReason streamEndedReason, String s) {
+  public void onEvent(MediaStream mediaStream, StreamEndedReason streamEndedReason, String customMessage) {
     if (this.handlerCall != null) {
+      Log.i(APP_TAG, "Subscriber stream has ended with reason [" + streamEndedReason + "] and message [" + customMessage + "]");
       Message message = Message.obtain(this.handlerCall, STOP_PUBLISHER, streamEndedReason);
       message.sendToTarget();
     }
@@ -1356,7 +1366,7 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
     }
 
     if (message.what == NULL_STREAM_TOKEN) {
-      showDialog("Notification", getString(R.string.stop_video_pub, ""), new DialogUtil.ActionDialog() {
+      showDialog("Notification", getString(R.string.stop_video_no_token), new DialogUtil.ActionDialog() {
         @Override
         public AppCompatActivity getContext() {
           return (AppCompatActivity) MainFragment.this.activity;
@@ -1376,6 +1386,8 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
 
   //stop stream when publish stop
   private void onStopStream(Message message) {
+    Log.i(APP_TAG, "Handling stop stream message [" + message + "]");
+    this.isViewDetail = false;
     StreamEndedReason endedReason = ((StreamEndedReason) message.obj);
     if (endedReason == null) {
       this.onEventStopStreamDetail();
@@ -1400,7 +1412,6 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
 
         @Override
         public void buttonYes() {
-          MainFragment.this.isViewDetail = false;
           MainFragment.this.stopRender(true);
         }
 
@@ -1412,7 +1423,6 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
               public void run() {
                 if (getMainActivity() != null && isVisible()) {
                   MainFragment.this.stopRender(true);
-                  MainFragment.this.isViewDetail = false;
                   alertDialog.dismiss();
                 }
               }

@@ -8,8 +8,9 @@
   <string name="mode_live">Live</string>
   <string name="mode_broadcast">Broadcast</string>
   <string name="stop_video_pub">The publisher stopped. %1$s</string>
+  <string name="stop_video_no_token">Unable to obtain stream token. Please try again.</string>
   <string name="this_phone">%1$s (this device)</string>
-  <string name="version">v %1$s</string>
+  <string name="version">v%1$s</string>
   <string name="render_error">Error: %1$s</string>
   <string name="media_null">Could not get user media</string>
   <string name="please_try">Please try again</string>
@@ -42,6 +43,7 @@
   <string name="unable">Unable to connect to server.</string>
   <string name="input_address">Please input a server address</string>
   <string name="email_log">Email Logs</string>
+  <string name="font_robo_light">fonts/roboto_regular.ttf</string>
 
   <string-array name="server_array">
     <item>Manual</item>

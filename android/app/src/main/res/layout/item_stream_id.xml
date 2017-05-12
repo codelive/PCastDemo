@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.v7.widget.CardView
   xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
   xmlns:card_view="http://schemas.android.com/apk/res-auto"
   xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
@@ -11,13 +12,14 @@
   card_view:cardCornerRadius="4dp"
   card_view:cardElevation="4dp">
 
-  <TextView
+  <com.phenixp2p.demo.ui.CustomTextView
     android:id="@+id/textViewId"
     android:layout_width="match_parent"
     android:layout_height="40dp"
+    android:background="@drawable/gradient_color"
     android:gravity="center"
     android:textColor="@android:color/white"
     android:textSize="18sp"
-    android:background="@drawable/gradient_color"
+    app:customTypeFace="@string/font_robo_light"
     tools:text="Demo"/>
 </android.support.v7.widget.CardView>

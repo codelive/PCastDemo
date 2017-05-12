@@ -16,11 +16,13 @@
 package com.phenixp2p.demo;
 
 import android.app.Application;
+import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.media.projection.MediaProjectionManager;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.WindowManager;
 
 import com.crashlytics.android.Crashlytics;
 import com.crashlytics.android.answers.Answers;
@@ -51,7 +53,9 @@ public final class PhenixApplication extends Application {
       e.printStackTrace();
     }
     // Initialize crash analytics by Fabric
-    Fabric.with(this, new Crashlytics(), new Answers());
+    if (!BuildConfig.DEBUG) {
+      Fabric.with(this, new Crashlytics(), new Answers());
+    }
   }
 
   public MediaProjectionManager getProjectionManager() {

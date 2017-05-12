@@ -35,8 +35,8 @@ final class Utilities {
     let path = UIBezierPath()
     let viewWidth = viewToDraw.bounds.size.width
     let viewHeight = viewToDraw.bounds.size.height
-    let startPoint = CGPoint(x: 0, y: viewHeight)
-    let endPoint = CGPoint(x: viewWidth, y: viewHeight)
+    let startPoint = CGPoint(x: 16, y: viewHeight)
+    let endPoint = CGPoint(x: viewWidth - 16, y: viewHeight)
     let controlPoint = CGPoint(x: viewWidth * 0.5, y: viewHeight * -1)
     switch pathType {
     case .All:
@@ -44,9 +44,9 @@ final class Utilities {
       path.addQuadCurve(to: endPoint, controlPoint: controlPoint)
     case .Publish:
       path.move(to: startPoint)
-      path.addQuadCurve(to: CGPoint(x: endPoint.x * 0.5, y: 0), controlPoint: CGPoint(x: viewWidth * 0.3, y: viewHeight * -0.1))
+      path.addQuadCurve(to: CGPoint(x: viewWidth * 0.5, y: 0), controlPoint: CGPoint(x: viewWidth * 0.3, y: viewHeight * -0.1))
     case .Subscribe:
-      path.move(to: CGPoint(x: endPoint.x * 0.5, y: 0))
+      path.move(to: CGPoint(x: viewWidth * 0.5, y: 0))
       path.addQuadCurve(to: endPoint, controlPoint: CGPoint(x: viewWidth - (viewWidth * 0.3), y: viewHeight * -0.1))
     case .None:
       break

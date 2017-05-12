@@ -31,7 +31,6 @@ import com.phenixp2p.demo.R;
 
 public final class ArcImage extends View {
   private int colorSeek;
-  private int colorShadow;
   private int widthSeek;
   private int widthShadow;
   private int padding;
@@ -79,7 +78,6 @@ public final class ArcImage extends View {
   private void inits(Context context, AttributeSet attrs, int defStyleAttr) {
     TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.ArcImage, defStyleAttr, 0);
     this.colorSeek = typedArray.getColor(R.styleable.ArcImage_color_seek, ContextCompat.getColor(context, R.color.blue));
-    this.colorShadow = typedArray.getColor(R.styleable.ArcImage_color_shadow, ContextCompat.getColor(context, R.color.blue));
     this.widthSeek = typedArray.getDimensionPixelSize(R.styleable.ArcImage_width_seek, 10);
     this.widthShadow = typedArray.getDimensionPixelSize(R.styleable.ArcImage_width_shadow, 18);
     this.padding = typedArray.getDimensionPixelSize(R.styleable.ArcImage_padding, 50);
@@ -144,7 +142,6 @@ public final class ArcImage extends View {
   @Override
   protected void onDraw(Canvas canvas) {
     super.onDraw(canvas);
-    this.paint.setColor(this.colorShadow);
     this.paint.setStyle(Paint.Style.STROKE);
     this.paint.setStrokeWidth(this.widthShadow);
     int start, currentEn;

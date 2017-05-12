@@ -35,4 +35,8 @@
       <enum name="four" value="3"/>
     </attr>
   </declare-styleable>
+
+  <declare-styleable name="CustomTextView">
+    <attr name="customTypeFace" format="string" />
+  </declare-styleable>
 </resources>

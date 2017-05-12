@@ -16,6 +16,7 @@
 package com.phenixp2p.demo.ui.activities;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -91,7 +92,6 @@ import static com.phenixp2p.demo.Constants.REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS
 import static com.phenixp2p.demo.Constants.REQUEST_CODE_SECRET_URL;
 import static com.phenixp2p.demo.Constants.SESSION_ID;
 import static com.phenixp2p.demo.Constants.STREAM_ID;
-import static com.phenixp2p.demo.Constants.STREAM_TOKEN;
 import static com.phenixp2p.demo.Constants.TIME_TO_TAP;
 import static com.phenixp2p.demo.Constants.NUMBER_TOUCHES;
 import static com.phenixp2p.demo.utils.Utilities.handleException;
@@ -103,6 +103,9 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
 
   private static final String TAG = MainActivity.class.getSimpleName();
   private static final int ACTION_WIFI = 120;
+
+  private final UserMediaOptions gumOptions = new UserMediaOptions();
+
   private PCast pcast;
   private UserMediaStream publishMedia;
   private PowerManager.WakeLock wakeLock;
@@ -116,12 +119,10 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
   private IMainPresenter presenter;
   private DataQualityReason dataQualityReason;
   private DataQualityStatus dataQualityStatus;
-  private String screenCaptureDeviceId;
   private boolean isShare = false;
 
   private CompositeSubscription subscriptions;
   private boolean isEnableBackPress = false;
-  private UserMediaOptions gumOptions;
   private boolean isError = false;
   private int onError = 0;
   private long startMillis = 0;
@@ -130,11 +131,14 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
   private boolean isOnlyVideoOrAudio = false;
   private PhenixApplication phenixApplication;
   private Handler mainHandler;
+  private Context context;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
+    this.customizeDefaultUserMediaOptions();
     this.mainHandler = new Handler(Looper.getMainLooper());
     this.phenixApplication = ((PhenixApplication) getApplication());
+    this.context = getApplicationContext();
     getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
@@ -155,7 +159,7 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
       Bundle bundle = new Bundle();
       bundle.putString(SESSION_ID, TokenUtil.getSessionIdLocal(this));
       bundle.putString(STREAM_ID, TokenUtil.getStreamIdLocal(this));
-      BaseFragment.openFragment(this, getSupportFragmentManager(), MainFragment.class, null, bundle,
+      BaseFragment.openFragment(this.context, getSupportFragmentManager(), MainFragment.class, null, bundle,
         R.id.content_content, null);
     }
   }
@@ -165,7 +169,7 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
     switch (requestCode) {
       case CREATE_SCREEN_CAPTURE:
         if (resultCode != RESULT_OK) {
-          this.getUserMedia();
+          this.getDefaultUserMedia();
           this.phenixApplication.setProjectionManager(null);
           return;
         }
@@ -443,12 +447,17 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
       runOnUiThread(new Runnable() {
         @Override
         public void run() {
+          if (isCheckActivityDestroyed()) {
+            onPause();
+            onPause();
+            return;
+          }
           MainActivity.this.pulsator.stop();
           MainActivity.this.pulsator.setVisibility(View.GONE);
           MainActivity.this.isStarted = true;
           Bundle bundle = new Bundle();
           bundle.putBoolean(Constants.BUNDLE_ERROR, true);
-          BaseFragment.openFragment(MainActivity.this,
+          BaseFragment.openFragment(MainActivity.this.context,
                   getSupportFragmentManager(),
                   MainFragment.class,
                   null,
@@ -505,7 +514,7 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
                 if (MainActivity.this.isOnlyVideoOrAudio) {
                   MainActivity.this.onlyVideoOrAudio(MainActivity.this.isVideo);
                 } else {
-                  MainActivity.this.getUserMedia();
+                  MainActivity.this.getDefaultUserMedia();
                 }
               } else {
                 MainActivity.this.onTryAfterError(getResources().getString(R.string.render_error, status.name()));
@@ -529,17 +538,9 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
   // 3. Get user publishMedia from SDK.
   private void getUserMedia() {
     Log.d(APP_TAG, "3. Get user publishMedia from SDK");
-    UserMediaOptions gumOptions = new UserMediaOptions();
-    gumOptions.getAudioOptions().setEnabled(true);
-    gumOptions.getVideoOptions().setFacingMode(FacingMode.ENVIRONMENT);
-    gumOptions.getVideoOptions().setFlashMode(FlashMode.AUTOMATIC);
-    onUserMedia(gumOptions);
-  }
-
-  private void onUserMedia(UserMediaOptions gumOptions) {
     try {
       if (this.pcast != null) {
-        this.pcast.getUserMedia(gumOptions, new PCast.UserMediaCallback() {
+        this.pcast.getUserMedia(this.gumOptions, new PCast.UserMediaCallback() {
           public void onEvent(PCast p, final RequestStatus status, final UserMediaStream media) {
             MainActivity.this.mainHandler.post(new Runnable() {
               @Override
@@ -562,6 +563,19 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
     } catch (Exception e) {
       handleException(this, e);
     }
+  }
+
+  private void getDefaultUserMedia() {
+    this.gumOptions.getAudioOptions().setEnabled(true);
+    this.gumOptions.getAudioOptions().setDeviceId(null);
+    this.gumOptions.getVideoOptions().setEnabled(true);
+    this.gumOptions.getVideoOptions().setDeviceId(null);
+    this.getUserMedia();
+  }
+
+  private void customizeDefaultUserMediaOptions() {
+    this.gumOptions.getVideoOptions().setFlashMode(FlashMode.AUTOMATIC);
+    this.gumOptions.getVideoOptions().setFacingMode(FacingMode.ENVIRONMENT);
   }
 
   private void onTryAfterError(final String title) {
@@ -616,6 +630,7 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
         @Override
         public void isError(int count) {
           if (count == NUM_HTTP_RETRIES) {
+            Log.w(APP_TAG, "Failed to obtain publish token after [" + count + "] retries");
             MainActivity.this.setGoneVersion();
           }
         }
@@ -657,77 +672,75 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
     }
   }
 
-  private void didPublishStream(Publisher publisher) {
-    if (publisher.hasEnded() && !publisher.isClosed()) {
-      publisher.stop("close");
-      Utilities.close(this, publisher);
+  private void didPublishStream(final Publisher publisher) {
+    if (this.publisher != null && this.publisher.hasEnded() && !this.publisher.isClosed()) {
+      this.publisher.stop("close");
+      Utilities.close(this, this.publisher);
     }
     this.publisher = publisher;
     this.streamId = publisher.getStreamId();
     this.publisher.setDataQualityChangedCallback(this);
-    this.getSubscribeToken();
-  }
 
-  // 6. Get streamToken token from REST admin API.
-  private void getSubscribeToken() {
-    Log.d(APP_TAG, "6. Get streamToken token from REST admin API");
-    presenter.createStreamToken(this.phenixApplication.getServerAddress(),
-            this.getSessionId(),
-            this.streamId,
-            null,
-            new MainPresenter.IStreamer() {
+    runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+        MainActivity.this.progressBar.setVisibility(View.GONE);
+        MainActivity.this.textViewVersion.setVisibility(View.GONE);
+        MainActivity.this.pulsator.stop();
+        MainActivity.this.pulsator.setVisibility(View.GONE);
 
-        @Override
-        public void hereIsYourStreamToken(final String streamToken) {
-          MainActivity.this.progressBar.setVisibility(View.GONE);
-          MainActivity.this.textViewVersion.setVisibility(View.GONE);
-          if (!MainActivity.this.isStarted) {
-            MainActivity.this.isStarted = true;
-            Bundle bundle = new Bundle();
-            bundle.putString(SESSION_ID, MainActivity.this.sessionId);
-            bundle.putString(STREAM_TOKEN, streamToken);
-            bundle.putString(STREAM_ID, MainActivity.this.streamId);
-            BaseFragment.openFragment(MainActivity.this,
-                    getSupportFragmentManager(),
-                    MainFragment.class,
-                    null,
-                    bundle,
-              R.id.content_content, null);
-          } else {
-            Fragment fragmentMain = getSupportFragmentManager().findFragmentByTag(MainFragment.class.getName());
-            if (fragmentMain != null && fragmentMain.isVisible() && !isError) {
-              ((MainFragment) fragmentMain).callReload(MainActivity.this.sessionId, MainActivity.this.streamId);
-            }
+        if (!MainActivity.this.isStarted) {
+          if (isCheckActivityDestroyed()) {
+            onPause();
+            onResume();
+            return;
+          }
+
+          MainActivity.this.isStarted = true;
+          Bundle bundle = new Bundle();
+          bundle.putString(SESSION_ID, MainActivity.this.sessionId);
+          bundle.putString(STREAM_ID, MainActivity.this.streamId);
+          BaseFragment.openFragment(context,
+                  getSupportFragmentManager(),
+                  MainFragment.class,
+                  null,
+                  bundle,
+                  R.id.content_content, null);
+        } else {
+          Fragment fragmentMain = getSupportFragmentManager().findFragmentByTag(MainFragment.class.getName());
+          if (fragmentMain != null && fragmentMain.isVisible() && !isError) {
+            ((MainFragment) fragmentMain).callReload(MainActivity.this.sessionId, MainActivity.this.streamId);
           }
         }
-
-        @Override
-        public void isError(int count) {}
-      });
+      }
+    });
   }
 
-  private void onShareScreen() {
+  private String getScreenCaptureDeviceId() {
     if (this.pcast == null) {
       this.pcast = this.phenixApplication.getPCast();
     }
+
+    final StringBuffer deviceId = new StringBuffer();
+
+    // NOTE: This works because the callback for enumerateSourceDevices will run on the calling
+    // thread. This pattern needs revisiting if this API's behavior is changed.
     this.pcast.enumerateSourceDevices(
       new PCast.EnumerateSourceDevicesCallback() {
         @Override
         public void onEvent(PCast pcast, final SourceDeviceInfo[] devices) {
-          MainActivity.this.mainHandler.post(new Runnable() {
-            @Override
-            public void run() {
-              for (SourceDeviceInfo info : devices) {
-                if (info.deviceType == SourceDeviceType.SYSTEM_OUTPUT) {
-                  Log.i("Phenix SDK Example", "Screencasting is available");
-                  MainActivity.this.screenCaptureDeviceId = info.id;
-                }
-              }
+          for (SourceDeviceInfo info : devices) {
+            if (info.deviceType == SourceDeviceType.SYSTEM_OUTPUT) {
+              Log.i("Phenix SDK Example", "Screencasting is available");
+              deviceId.append(info.id);
+              break;
             }
-          });
+          }
         }
       },
       MediaType.VIDEO);
+
+    return deviceId.length() > 0 ? deviceId.toString() : null;
   }
 
   private void goneAnimation() {
@@ -777,19 +790,18 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
   public void onlyVideoOrAudio(boolean isVideo) {
     this.isOnlyVideoOrAudio = true;
     this.showProgressBar();
-    UserMediaOptions gumOptions = new UserMediaOptions();
     if (isVideo) {
       this.isVideo = true;
-      gumOptions.getAudioOptions().setEnabled(false);
-      gumOptions.getVideoOptions().setEnabled(true);
-      gumOptions.getVideoOptions().setFacingMode(FacingMode.ENVIRONMENT);
-      gumOptions.getVideoOptions().setFlashMode(FlashMode.AUTOMATIC);
+      this.gumOptions.getAudioOptions().setEnabled(false);
+      this.gumOptions.getVideoOptions().setEnabled(true);
+      this.gumOptions.getVideoOptions().setDeviceId(null);
     } else {
       this.isVideo = false;
-      gumOptions.getAudioOptions().setEnabled(true);
-      gumOptions.getVideoOptions().setEnabled(false);
+      this.gumOptions.getAudioOptions().setEnabled(true);
+      this.gumOptions.getAudioOptions().setDeviceId(null);
+      this.gumOptions.getVideoOptions().setEnabled(false);
     }
-    this.onUserMedia(gumOptions);
+    this.getUserMedia();
   }
 
   @Override
@@ -821,7 +833,7 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
           //restart streamToken with click preview is stop
           if (objectEvent instanceof Events.OnRestartStream) {
             MainActivity.this.showProgressBar();
-            MainActivity.this.getUserMedia();
+            MainActivity.this.getDefaultUserMedia();
           }
 
           if (objectEvent instanceof Events.OnShareScreen) {
@@ -835,67 +847,65 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
   }
 
   private void changeCamera(Object objectEvent) {
-    if (this.gumOptions == null) {
-      this.gumOptions = new UserMediaOptions();
-    }
-    this.gumOptions.getAudioOptions().setEnabled(true);
-    this.gumOptions.getVideoOptions().setFlashMode(FlashMode.AUTOMATIC);
     if (((Events.ChangeCamera) objectEvent).isChange) {
       this.gumOptions.getVideoOptions().setFacingMode(FacingMode.USER);
       if (this.publishMedia != null) {
-        this.publishMedia.applyOptions(gumOptions);
+        this.publishMedia.applyOptions(this.gumOptions);
       }
-      this.onChangeIconCamera(gumOptions);
+      this.onChangeIconCamera();
     } else {
       this.gumOptions.getVideoOptions().setFacingMode(FacingMode.ENVIRONMENT);
       if (this.publishMedia != null) {
-        this.publishMedia.applyOptions(gumOptions);
+        this.publishMedia.applyOptions(this.gumOptions);
       }
-      this.onChangeIconCamera(gumOptions);
+      this.onChangeIconCamera();
     }
   }
 
   public void onEventStopStream() {
-    if (this.publisher != null) {
-      if (!this.publisher.isClosed()) {
-        this.publisher.stop("close");
-        Utilities.close(this, this.publisher);
-      }
+    Log.i(APP_TAG, "Processing stop stream event. Have publisher [" + this.publisher
+            + "] and user media stream [" + this.publishMedia + "]");
+    if (this.publisher != null && !this.publisher.isClosed()) {
+      this.publisher.stop("close");
+      Utilities.close(this, this.publisher);
       this.publisher = null;
     }
 
-    if (this.publishMedia != null) {
-      if (!this.publishMedia.isClosed()) {
-        Utilities.close(this, this.publishMedia);
-      }
+    if (this.publishMedia != null && !this.publishMedia.isClosed()) {
+      this.publishMedia.getMediaStream().stop();
+      Utilities.close(this, this.publishMedia.getMediaStream());
+      Utilities.close(this, this.publishMedia);
       this.publishMedia = null;
     }
 
     if (this.isShare) {
       this.stopService(new Intent(this, PhenixService.class));
-      this.screenCaptureDeviceId = null;
       this.isShare = false;
       this.phenixApplication.setShare(false);
     }
     this.presenter.onDestroy();
   }
 
-  private void onChangeIconCamera(UserMediaOptions gumOptions) {
+  private void onChangeIconCamera() {
     Fragment fragmentMain = getSupportFragmentManager().findFragmentByTag(MainFragment.class.getName());
     if (fragmentMain != null && fragmentMain.isVisible()) {
-      ((MainFragment) fragmentMain).onChangeIconCamera(gumOptions.getVideoOptions().getFacingMode());
+      ((MainFragment) fragmentMain).onChangeIconCamera(this.gumOptions.getVideoOptions().getFacingMode());
     }
   }
 
   private void onGetMediaShareScreen(final boolean isShare) {
-    this.onShareScreen();
-    UserMediaOptions gumOptions = new UserMediaOptions();
-    gumOptions.getVideoOptions().setDeviceId(this.screenCaptureDeviceId);
     if (this.pcast == null) {
       this.pcast = this.phenixApplication.getPCast();
     }
+
+    final String deviceId = this.getScreenCaptureDeviceId();
+    this.gumOptions.getAudioOptions().setEnabled(true);
+    this.gumOptions.getAudioOptions().setDeviceId(null);
+    this.gumOptions.getVideoOptions().setEnabled(true);
+    this.gumOptions.getVideoOptions().setDeviceId(deviceId);
+
     this.pcast.getUserMedia(
-      gumOptions,
+      this.gumOptions,
       new PCast.UserMediaCallback() {
         @Override
         public void onEvent(
@@ -989,5 +999,9 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
 
   public void setGoneVersion() {
     this.textViewVersion.setVisibility(View.GONE);
+  }
+
+  private boolean isCheckActivityDestroyed() {
+    return this.isDestroyed();
   }
 }

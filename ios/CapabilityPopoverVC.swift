@@ -38,15 +38,20 @@ final class CapabilityPopoverVC : UIViewController {
   var currentCapability = CapabilitySelection.RealTime
   var capabilityDelegate : CapabilityDelegate?
 
+  override func viewWillAppear(_ animated: Bool) {
+    super.viewWillAppear(animated)
+    self.view.superview?.layer.cornerRadius = 6.0
+  }
+
   override func viewDidAppear(_ animated: Bool) {
     super.viewDidAppear(animated)
     self.setImageForCurrentCapability(currentCapability: self.currentCapability)
   }
 
   func setImageForCurrentCapability(currentCapability : CapabilitySelection) {
-    self.imageRealtimeSelected.image = nil
-    self.imageBroadcastSelected.image = nil
-    self.imageLiveSelected.image = nil
+    self.imageRealtimeSelected.image = #imageLiteral(resourceName: "icon-circle")
+    self.imageBroadcastSelected.image = #imageLiteral(resourceName: "icon-circle")
+    self.imageLiveSelected.image = #imageLiteral(resourceName: "icon-circle")
     switch currentCapability {
     case .RealTime: self.imageRealtimeSelected.image = self.selectionCircle
     case .Broadcast: self.imageBroadcastSelected.image = self.selectionCircle

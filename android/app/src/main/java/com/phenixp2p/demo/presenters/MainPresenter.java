@@ -15,6 +15,8 @@
 
 package com.phenixp2p.demo.presenters;
 
+import android.util.Log;
+
 import com.phenixp2p.demo.AsyncService;
 import com.phenixp2p.demo.HttpTask;
 import com.phenixp2p.demo.model.AuthenticationRequest;
@@ -33,6 +35,7 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import static com.phenixp2p.demo.Constants.APP_TAG;
 import static com.phenixp2p.demo.Constants.STREAM_LIST_LENGTH;
 import static com.phenixp2p.demo.HttpTask.Method.POST;
 import static com.phenixp2p.demo.HttpTask.Method.PUT;
@@ -41,7 +44,6 @@ public final class MainPresenter implements IMainPresenter {
   private IMainView view;
   private IMainActivityView activityView;
   private Timer timer;
-  private int count = 0;
   private final static int TIMER_DELAY = 5000;
 
   public MainPresenter(IMainView view) {
@@ -92,6 +94,8 @@ public final class MainPresenter implements IMainPresenter {
       request.setCapabilities(listCapabilities);
     }
     HttpTask<StreamTokenRequest, StreamTokenResponse> task = new HttpTask<>(new HttpTask.Callback<StreamTokenResponse>() {
+      private int errorCount = 0;
+
       @Override
       public void onResponse(StreamTokenResponse result) {
         if (result != null) {
@@ -104,13 +108,13 @@ public final class MainPresenter implements IMainPresenter {
             MainPresenter.this.activityView.hideProgress();
           }
         }
-        MainPresenter.this.count = 0;
       }
 
       @Override
       public void onError(Exception e) {
-        MainPresenter.this.count++;
-        streamer.isError(count);
+        Log.w(APP_TAG, "Caught error [" + e + "] while attempting to obtain stream token");
+        this.errorCount++;
+        streamer.isError(this.errorCount);
       }
     }, endpoint.concat("stream"), POST, request, StreamTokenResponse.class);
     task.execute(AsyncService.getInstance().getExecutorService());

@@ -9,5 +9,6 @@ target 'PCast Demo' do
   pod 'Fabric'
   pod 'Crashlytics'
   pod 'ReachabilitySwift', '~> 3'
+  pod 'TPKeyboardAvoiding'
 
 end

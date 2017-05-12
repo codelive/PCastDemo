@@ -15,6 +15,7 @@
     android:minHeight="165dp"
     app:cardCornerRadius="4dp"
     app:cardElevation="4dp"
+    app:cardBackgroundColor="@color/window"
     app:contentPadding="16dp">
 
     <RadioGroup
@@ -29,6 +30,7 @@
         android:layout_height="wrap_content"
         android:checked="true"
         android:minHeight="40dp"
+        android:textSize="13sp"
         android:text="@string/mode_real_time"/>
 
       <RadioButton
@@ -37,6 +39,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="3dp"
         android:minHeight="40dp"
+        android:textSize="13sp"
         android:text="@string/mode_broadcast"/>
 
       <RadioButton
@@ -45,6 +48,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="3dp"
         android:minHeight="40dp"
+        android:textSize="13sp"
         android:text="@string/mode_live"/>
     </RadioGroup>
   </android.support.v7.widget.CardView>

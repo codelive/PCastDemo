@@ -59,13 +59,14 @@
       android:paddingLeft="15dp"
       android:paddingRight="15dp">
 
-      <TextView
+      <com.phenixp2p.demo.ui.CustomTextView
         android:id="@+id/textViewVersion"
         android:layout_width="wrap_content"
         android:layout_height="24dp"
         android:gravity="center"
         android:textColor="@color/blue"
-        tools:text="TextView"/>
+        tools:text="TextView"
+        app:customTypeFace="@string/font_robo_light"/>
     </RelativeLayout>
 
   </LinearLayout>

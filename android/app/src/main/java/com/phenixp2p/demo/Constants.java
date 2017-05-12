@@ -17,7 +17,6 @@
 package com.phenixp2p.demo;
 
 public final class Constants {
-  public final static String STREAM_TOKEN = "stream token";
   public final static String SESSION_ID = "session id";
   public final static String STREAM_ID = "stream id";
   public final static String STREAM_ID_FROM_LIST = "stream id from list";
@@ -30,7 +29,7 @@ public final class Constants {
   public final static int STOP_PUBLISHER = 4;
   public final static int REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS = 124;
   public final static int CREATE_SCREEN_CAPTURE = 1000;
-  public final static int NUM_HTTP_RETRIES = 2;
+  public final static int NUM_HTTP_RETRIES = 3;
   public final static int REQUEST_CODE_SECRET_URL = 126;
   public final static int STREAM_LIST_LENGTH = 100;
   public final static int TIME_TO_TAP = 2000;

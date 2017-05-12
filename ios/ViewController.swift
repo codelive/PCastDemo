@@ -63,8 +63,10 @@ final class ViewController:
   @IBOutlet weak var optionStackHeightConstraint: NSLayoutConstraint!
   @IBOutlet weak var switchButtonToBottomParent: NSLayoutConstraint!
   @IBOutlet weak var stopPublishTrailingToParent: NSLayoutConstraint!
-  @IBOutlet weak var previewProporsionalToParentHeight: NSLayoutConstraint!
-  @IBOutlet weak var previewProporsionalToParentWidth: NSLayoutConstraint!
+  @IBOutlet weak var previewProportionalToParentHeight: NSLayoutConstraint!
+  @IBOutlet weak var previewProportionalToParentWidth: NSLayoutConstraint!
+  @IBOutlet weak var parabolViewProportionalToIdLabelWidth: NSLayoutConstraint!
+
   @IBOutlet weak var animationView: UIView!
   @IBOutlet weak var subscribeView: UIView!
   @IBOutlet weak var imageAudioOnly: UIImageView!
@@ -97,7 +99,7 @@ final class ViewController:
   var isUsingFrontCamera = false
   var isEndedByEnterBackground = false
   var indicator = UIActivityIndicatorView(activityIndicatorStyle:.whiteLarge)
-  var renderer = Phenix.shared.userMediaStream?.mediaStream.createRenderer()
+  var previewRenderer: PhenixRenderer?
   var subscribeLayer: CALayer?
   var parabolaType = PathType.Publish
   var isFullScreen: Bool = false
@@ -115,7 +117,9 @@ final class ViewController:
           self.subscribeStatusStack.isHidden = !self.isSubscribing
           self.idTableView.isHidden = self.isSubscribing
           self.versionNumber.isHidden = self.isSubscribing
-          self.changePreviewSize.isHidden = (!self.isSubscribing && self.isPublishing) ? false : true
+          if self.isPublishing {
+            self.changePreviewSize.isHidden = self.isSubscribing
+          }
         }, completion: nil)
       }
     }
@@ -123,9 +127,18 @@ final class ViewController:
   var isPublishing: Bool = true {
     didSet {
       DispatchQueue.main.async {
-        self.buttonSwitch.isHidden = !self.isPublishing
+        if Phenix.shared.phenixPublishingOption == .AudioOnly {
+          self.buttonSwitch.isHidden = true
+          self.changePreviewSize.isHidden = true
+        } else {
+          self.buttonSwitch.isHidden = !self.isPublishing
+          if self.isSubscribing {
+            self.changePreviewSize.isHidden = true
+          } else {
+            self.changePreviewSize.isHidden = !self.isPublishing
+          }
+        }
         self.publishStatusStack.isHidden = !self.isPublishing
-        self.changePreviewSize.isHidden = (!self.isSubscribing && self.isPublishing) ? false : true
         self.changePublishState.isHidden = !self.isPublishing
         self.publishingOptionView.isHidden = self.isPublishing
       }
@@ -182,6 +195,10 @@ final class ViewController:
     self.pulseTimer.invalidate()
   }
 
+  override var preferredStatusBarStyle: UIStatusBarStyle {
+    return .lightContent
+  }
+
   override func viewDidLoad() {
     super.viewDidLoad()
     self.addNotificationObserver()
@@ -194,7 +211,7 @@ final class ViewController:
   }
 
   override func viewDidLayoutSubviews() {
-    self.drawParabola(path: self.parabolaType)
+    self.updateParabolaPath()
     self.updatePreviewLayer()
   }
 
@@ -232,19 +249,22 @@ final class ViewController:
       _ in
       self.updatePopoverFrame()
       self.updatesubscribeLayer()
-      self.drawParabola(path: self.parabolaType)
       if UIDevice.current.orientation.isLandscape {
         self.optionStack.axis = .horizontal
         self.optionStackHeightConstraint = self.optionStackHeightConstraint.newConstraint(multiplier: 0.5)
+        self.parabolViewProportionalToIdLabelWidth = self.parabolViewProportionalToIdLabelWidth.newConstraint(multiplier: 0.5)
       } else {
         self.optionStack.axis = .vertical
         self.optionStackHeightConstraint = self.optionStackHeightConstraint.newConstraint(multiplier: 0.66)
+        self.parabolViewProportionalToIdLabelWidth = self.parabolViewProportionalToIdLabelWidth.newConstraint(multiplier: 0.8)
       }
       self.indicator.frame = CGRect(x: 0, y: 0, width: 50, height: 50)
       self.indicator.center = self.view.center
       self.view.addSubview(self.indicator)
       self.enterFullScreen(isFullScreen: self.isFullScreen)
       self.idTableView.reloadData()
+      self.view.layoutIfNeeded()
+      self.updateParabolaPath()
     })
   }
 
@@ -270,10 +290,10 @@ final class ViewController:
   func serverInfoChanged() {
     self.isAbleToConnect = true
     self.restartProgress()
-    self.renderer?.stop()
-    self.renderer = nil
+    self.previewRenderer?.stop()
+    self.previewRenderer = nil
     Phenix.shared.authSession = nil
-    Phenix.shared.stop()
+    Phenix.shared.stopAll()
     self.startPublishing()
   }
 
@@ -331,12 +351,13 @@ final class ViewController:
   }
 
   func setupSubviews() {
+    self.streamIdLabel.layer.cornerRadius = self.streamIdLabel.frame.height / 2
+    self.streamIdLabel.layer.masksToBounds = true
     var versionString = ""
     for buttonTag in 101...102 {
       if let menuButton = self.view.viewWithTag(buttonTag) {
-        menuButton.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.25)
-        menuButton.layer.borderColor = UIColor.lightGray.cgColor
-        menuButton.layer.cornerRadius = 36/2
+        menuButton.layer.borderColor = UIColor.rgb(red: 200, green: 200, blue: 200, alpha: 1.0).cgColor
+        menuButton.layer.cornerRadius = 38/2
         menuButton.layer.borderWidth = 1.0
       }
     }
@@ -346,7 +367,7 @@ final class ViewController:
     }
 
     if let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String {
-      versionString += "(\(build))"
+      versionString += " (\(build))"
     }
 
     self.versionNumber.text = versionString
@@ -356,7 +377,7 @@ final class ViewController:
     self.previewVideoView.layer.borderWidth = 2.0
     self.previewVideoView.layer.cornerRadius = 5.0
     self.previewVideoView.layer.masksToBounds = true
-    self.previewVideoView.layer.borderColor = UIColor.gray.cgColor
+    self.previewVideoView.layer.borderColor = UIColor.rgb(red: 200, green: 200, blue: 200, alpha: 1.0).cgColor
     self.selectStreamHomeView.isHidden = true
 
     // Triple Tap
@@ -388,7 +409,7 @@ final class ViewController:
     self.popover.popoverPresentationController?.sourceView = self.view
     self.popover.popoverPresentationController?.sourceRect = self.view.bounds
     self.popover.popoverPresentationController?.permittedArrowDirections = UIPopoverArrowDirection(rawValue: 0)
-    self.popover.preferredContentSize = CGSize(width: self.view.bounds.width, height: 250.0)
+    self.popover.preferredContentSize = CGSize(width: self.view.bounds.width, height: 350.0)
   }
 
   func restartProgress() {
@@ -435,7 +456,8 @@ final class ViewController:
   func mediaReady(success:Bool) {
     self.reportStatus(step:.Media, success:success)
     if success {
-      self.renderer = Phenix.shared.userMediaStream?.mediaStream.createRenderer()
+      self.previewRenderer = nil
+      self.previewRenderer = Phenix.shared.userMediaStream?.mediaStream.createRenderer()
       if Phenix.shared.phenixPublishingOption != .none {
         self.startPublishing()
       }
@@ -575,9 +597,9 @@ final class ViewController:
   }
 
   func handleAppEnterBackground(notification: Notification) {
-    self.renderer?.stop()
+    self.previewRenderer?.stop()
     Phenix.shared.authSession = nil
-    Phenix.shared.stop()
+    Phenix.shared.stopAll()
   }
 
   func handleAppEnterForeground(notification: Notification) {
@@ -600,40 +622,39 @@ final class ViewController:
   func enterFullScreen(isFullScreen : Bool) {
     var f = CGRect()
     if isFullScreen {
-      self.previewProporsionalToParentWidth = self.previewProporsionalToParentWidth.newConstraint(multiplier: 1.0)
-      self.previewProporsionalToParentHeight = self.previewProporsionalToParentHeight.newConstraint(multiplier: 1.0)
+      self.previewProportionalToParentWidth = self.previewProportionalToParentWidth.newConstraint(multiplier: 1.0)
+      self.previewProportionalToParentHeight = self.previewProportionalToParentHeight.newConstraint(multiplier: 1.0)
       f = self.selectStreamHomeView.bounds
       self.changePreviewSize.setBackgroundImage(UIImage(named: "icon-full-screen-exit"), for: .normal)
       DispatchQueue.main.async {
         self.previewVideoView.layer.borderWidth = 0
         self.previewVideoView.layer.cornerRadius = 0
       }
-      self.switchButtonToBottomParent.constant = f.size.height - 102
+      self.switchButtonToBottomParent.constant = f.size.height - 50
       self.stopPublishTrailingToParent.constant = f.size.width - 27
     } else {
       f = self.previewVideoViewSmall.frame
       self.changePreviewSize.setBackgroundImage(UIImage(named: "icon-full-screen-enter"), for: .normal)
       DispatchQueue.main.async {
         UIView.animate(withDuration: 0.3, animations: {
-          self.previewProporsionalToParentWidth = self.previewProporsionalToParentWidth.newConstraint(multiplier: 0.25)
-          self.previewProporsionalToParentHeight = self.previewProporsionalToParentHeight.newConstraint(multiplier: 0.25)
+          self.previewProportionalToParentWidth = self.previewProportionalToParentWidth.newConstraint(multiplier: 0.25)
+          self.previewProportionalToParentHeight = self.previewProportionalToParentHeight.newConstraint(multiplier: 0.25)
           self.previewVideoView.layer.borderWidth = 2.0
           self.previewVideoView.layer.cornerRadius = 5.0
           self.previewVideoView.layer.borderColor = PhenixColor.Gray.cgColor
         })
       }
       self.switchButtonToBottomParent.constant = f.size.height - 27
-      self.stopPublishTrailingToParent.constant = f.size.width - 25
+      self.stopPublishTrailingToParent.constant = f.size.width - 23
     }
   }
 
   func handlePreview() {
-    self.renderer = Phenix.shared.userMediaStream?.mediaStream.createRenderer()
-    if Phenix.shared.phenixPublishingOption != .none {
+    if Phenix.shared.phenixPublishingOption != .none, let renderer = self.previewRenderer {
       self.publishingAnimation = Utilities.publishButtonAnimation()
       DispatchQueue.main.async {
         self.changePublishState.layer.add(self.publishingAnimation, forKey: "pulse")
-        self.renderer?.setRenderSurfaceReadyCallback({ (renderer, layer) in
+        renderer.setRenderSurfaceReadyCallback({ (renderer, layer) in
           if let previewLayer = layer {
             Phenix.shared.userMediaLayer = previewLayer
             self.updatePreviewLayer()
@@ -643,19 +664,16 @@ final class ViewController:
         })
 
         // Listen to and display Viewer stream quality
-        self.renderer?.setDataQualityChangedCallback({ (renderer, qualityStatus, qualityReason) in
+        renderer.setDataQualityChangedCallback({ (renderer, qualityStatus, qualityReason) in
           self.handleFeedback(qualityReason: qualityReason, qualityStatus: qualityStatus, feedbackType: .Subscriber)
         })
       }
 
-      let status = self.renderer?.start()
-      if status == nil || status == .conflict {
-        return
-      }
+      let status = renderer.start()
       if status == .ok {
         print("Renderer start status .ok")
       } else {
-        let statusString = ("\(String(describing: status!))")
+        let statusString = ("\(String(describing: status))")
         let alert = UIAlertController(title: "Preview renderer failed", message:statusString, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default) {
           _ in
@@ -738,8 +756,8 @@ final class ViewController:
     if self.isPublishing {
       self.isPublishing = false
       self.isFullScreen = false
-      self.renderer?.stop()
-      self.renderer = nil
+      self.previewRenderer?.stop()
+      self.previewRenderer = nil
       self.updateParabolaPath()
       Phenix.shared.stopPublish()
       Phenix.shared.stopUserMedia()
@@ -802,10 +820,11 @@ final class ViewController:
 
   // MARK: UITableViewDelegate
   func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-    if let streamIdFullString = self.streamIdList[indexPath.row] {
-      self.selectedStreamId = streamIdFullString
-      let cell = tableView.cellForRow(at: indexPath) as! StreamIdTableViewCell
-      self.streamIdLabel.text = cell.idLabel.text
+    if self.streamIdList.count > indexPath.row {
+      if let streamIdFullString = self.streamIdList[indexPath.row] {
+        self.selectedStreamId = streamIdFullString
+        self.streamIdLabel.text = self.shortenStreamId(streamId: streamIdFullString)
+      }
     } else {
       self.streamIdLabel.text = "Unavailable"
     }
@@ -921,7 +940,6 @@ final class ViewController:
   func showAlertGoBackToMain() {
     let alert = UIAlertController(title: "The publisher stopped", message:"", preferredStyle: .alert)
     var isDismissed = false
-    self.renderer?.stop()
     self.streamIdLabel.text = ""
     alert.addAction(UIAlertAction(title: "OK", style: .default) {
       _ in
@@ -969,11 +987,10 @@ final class ViewController:
 
     // set up the popover presentation controller
     popController.popoverPresentationController?.delegate = self
-    popController.popoverPresentationController?.permittedArrowDirections = UIPopoverArrowDirection.up
+    popController.popoverPresentationController?.permittedArrowDirections = UIPopoverArrowDirection(rawValue: 0)
     popController.popoverPresentationController?.sourceView = self.buttonSubscribeOption
-    popController.popoverPresentationController?.sourceRect = self.buttonSubscribeOption.bounds
-    popController.popoverPresentationController?.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.5)
-    popController.preferredContentSize = CGSize(width: 200, height: 120)
+    popController.popoverPresentationController?.sourceRect = CGRect.init(x: 0, y: 10, width: 130, height: 200)
+    popController.preferredContentSize = CGSize(width: 120, height: 170)
 
     // present the popover
     self.present(popController, animated: true)
@@ -990,7 +1007,7 @@ final class ViewController:
     parabolaLayer.path = publishPath.cgPath
     parabolaLayer.fillColor = UIColor.clear.cgColor
     parabolaLayer.strokeColor = PhenixColor.Gray.cgColor
-    parabolaLayer.lineWidth = 5.0
+    parabolaLayer.lineWidth = 6.0
     parabolaLayer.strokeEnd = 0.0
     DispatchQueue.main.async {
       self.animationView.layer.addSublayer(self.parabolaLayer)

@@ -170,7 +170,10 @@ public final class UriMenu {
     dialog.show();
   }
 
-  private void addTextChangedListen(final List<ServerLocation> urlList, final AppCompatSpinner spinner, EditText editServerAddress, EditText editPcastAddress) {
+  private void addTextChangedListen(final List<ServerLocation> urlList,
+                                    final AppCompatSpinner spinner,
+                                    EditText editServerAddress,
+                                    EditText editPcastAddress) {
     editServerAddress.addTextChangedListener(new TextWatcher() {
       @Override
       public void beforeTextChanged(CharSequence charSequence, int start, int count, int after) {}

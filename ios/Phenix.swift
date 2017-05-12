@@ -120,41 +120,49 @@ final class Phenix {
   }
 
   func stopPublish() {
-    self.publisher?.stop("ended")
-    self.publisher = nil
+    if self.publisher != nil {
+      self.publisher?.stop("ended")
+      self.publisher = nil
+    }
   }
 
   func stopUserMedia() {
-    self.userMediaStream?.mediaStream.stop()
-    self.userMediaStream = nil
+    if self.userMediaStream != nil {
+      self.userMediaStream?.mediaStream.stop()
+      self.userMediaStream = nil
+      self.userMediaLayer = nil
+    }
   }
 
   func stopSubscribe() {
-    self.subscribeStream?.stop()
-    self.subscribeStream = nil
+    if self.subscribeStream != nil {
+      self.subscribeStream?.stop()
+      self.subscribeStream = nil
+    }
   }
 
   func stopRenderVideo() {
-    self.renderer?.stop()
-    self.renderer = nil
+    if self.renderer != nil {
+      self.renderer?.stop()
+      self.renderer = nil
+    }
   }
 
-  func stop() {
-    stopRenderVideo()
-    stopSubscribe()
-    stopPublish()
-    stopUserMedia()
+  func stopAll() {
+    self.stopRenderVideo()
+    self.stopSubscribe()
+    self.stopPublish()
+    self.stopUserMedia()
     self.pcast?.stop()
   }
 
   func shutdown() {
-    self.stop()
+    self.stopAll()
     self.pcast?.shutdown()
     self.pcast = nil
   }
 
   // callbacks
-
   static func pcastAuthCallback(authCallback:@escaping AuthCallback) -> ((_ pcast:PhenixPCast?, _ status:PhenixRequestStatus, _ sessionId:String?) -> ()) {
     return { pcast, status, sessionId in
       if status == PhenixRequestStatus.ok {

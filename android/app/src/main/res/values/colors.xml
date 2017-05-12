@@ -4,9 +4,10 @@
   <color name="colorPrimaryDark">#303F9F</color>
   <color name="colorAccent">#FF4081</color>
   <color name="black">#000000</color>
-  <color name="window">#757476</color>
-  <color name="blue">#639fd6</color>
+  <color name="window">#555555</color>
+  <color name="blue">#6699cc</color>
   <color name="red">#c42f31</color>
   <color name="orange">#de9839</color>
-  <color name="gray">#59757476</color>
+  <color name="gray">#40585858</color>
+  <color name="grayPhenix">#888888</color>
 </resources>

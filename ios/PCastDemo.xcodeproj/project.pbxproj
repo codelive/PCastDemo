@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		6613E197112C6E5C323222A0 /* Pods_PCast_Demo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8E13BA171867A3AFC663F0F4 /* Pods_PCast_Demo.framework */; };
 		8554BA251D98E5A2004B3640 /* libPhenixApi.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8554BA241D98E5A2004B3640 /* libPhenixApi.a */; };
+		BD1FB94A1E8E78830065AB7B /* roboto_regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BD1FB9491E8E78830065AB7B /* roboto_regular.ttf */; };
 		BD5788611E2487BA00176A17 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5788601E2487BA00176A17 /* Utilities.swift */; };
 		BD5788651E2497CE00176A17 /* UIColorExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5788641E2497CE00176A17 /* UIColorExtension.swift */; };
 		BD57886B1E24A2D900176A17 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD57886A1E24A2D900176A17 /* Constants.swift */; };
@@ -36,6 +37,7 @@
 		8554BA241D98E5A2004B3640 /* libPhenixApi.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libPhenixApi.a; path = IOSSDK/lib/libPhenixApi.a; sourceTree = "<group>"; };
 		8E13BA171867A3AFC663F0F4 /* Pods_PCast_Demo.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PCast_Demo.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A94AAD6FDBDC7970A81115AB /* Pods-PCast Demo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PCast Demo.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PCast Demo/Pods-PCast Demo.debug.xcconfig"; sourceTree = "<group>"; };
+		BD1FB9491E8E78830065AB7B /* roboto_regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = roboto_regular.ttf; sourceTree = SOURCE_ROOT; };
 		BD5788601E2487BA00176A17 /* Utilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = SOURCE_ROOT; };
 		BD5788641E2497CE00176A17 /* UIColorExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIColorExtension.swift; sourceTree = "<group>"; };
 		BD57886A1E24A2D900176A17 /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; name = Constants.swift; path = Extension/Constants.swift; sourceTree = SOURCE_ROOT; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
@@ -83,6 +85,14 @@
 				6FD9D5B9F3F52C29F44415D0 /* Pods-PCast Demo.release.xcconfig */,
 			);
 			name = Pods;
+			sourceTree = "<group>";
+		};
+		BD444F371E8E09E6001D8482 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				BD1FB9491E8E78830065AB7B /* roboto_regular.ttf */,
+			);
+			name = Resources;
 			sourceTree = "<group>";
 		};
 		BD5788631E2497B500176A17 /* Extension */ = {
@@ -144,6 +154,7 @@
 		EDB9E92F1D5FBC11000837B9 /* PCastDemo */ = {
 			isa = PBXGroup;
 			children = (
+				BD444F371E8E09E6001D8482 /* Resources */,
 				BDA6F5611E5D6C3000EAFE48 /* Common */,
 				BDAE4B601E4C5FB90069DB4C /* Model */,
 				BD5788631E2497B500176A17 /* Extension */,
@@ -230,6 +241,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BD1FB94A1E8E78830065AB7B /* roboto_regular.ttf in Resources */,
 				ED5052101D60F5D50072D7F2 /* Main.storyboard in Resources */,
 				ED5052121D60F5E80072D7F2 /* Assets.xcassets in Resources */,
 				ED50520F1D60F5D50072D7F2 /* LaunchScreen.storyboard in Resources */,

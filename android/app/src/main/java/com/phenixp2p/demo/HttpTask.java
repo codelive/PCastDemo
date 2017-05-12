@@ -48,6 +48,8 @@ public final class HttpTask<TRequest, TResponse> {
     void onError(Exception e);
   }
 
+  private static final int MILLISECONDS_TO_WAIT_BEFORE_RETRY = 500;
+
   private final Callback<TResponse> callback;
   private final String path;
   private final Method method;
@@ -95,6 +97,7 @@ public final class HttpTask<TRequest, TResponse> {
       while (countRetry < NUM_HTTP_RETRIES) {
         try {
           Log.d(APP_TAG, "HTTP [" + HttpTask.this.method +"] ["+ HttpTask.this.path +"]");
+          Thread.sleep(MILLISECONDS_TO_WAIT_BEFORE_RETRY * countRetry);
           URL url = new URL(HttpTask.this.path);
           urlConnection = (HttpURLConnection) url.openConnection();
           urlConnection.setRequestMethod(HttpTask.this.method.toString());
