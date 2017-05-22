@@ -31,6 +31,7 @@
   <string name="list_anycast">Anycast (Closest Data Center)</string>
   <string name="list_apac_east">APAC East</string>
   <string name="list_apac_northeast">APAC Northeast</string>
+  <string name="list_apac_southeast">APAC Southeast</string>
   <string name="list_us_west">US West</string>
   <string name="list_us_central">US Central</string>
   <string name="list_us_east">US East</string>

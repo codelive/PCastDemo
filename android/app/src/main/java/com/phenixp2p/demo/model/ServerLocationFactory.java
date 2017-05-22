@@ -41,6 +41,7 @@ public class ServerLocationFactory {
     this.addLocation(context, R.string.list_anycast, productionEndpoint, "http://pcast.phenixp2p.com");
     this.addLocation(context, R.string.list_apac_east, productionEndpoint, "wss://pcast-asia-east.phenixp2p.com");
     this.addLocation(context, R.string.list_apac_northeast, productionEndpoint, "wss://pcast-asia-northeast.phenixp2p.com");
+    this.addLocation(context, R.string.list_apac_southeast, productionEndpoint, "wss://pcast-asia-southeast.phenixp2p.com");
     this.addLocation(context, R.string.list_us_west, productionEndpoint, "wss://pcast-us-west.phenixp2p.com");
     this.addLocation(context, R.string.list_us_central, productionEndpoint, "wss://pcast-us-central.phenixp2p.com");
     this.addLocation(context, R.string.list_us_east, productionEndpoint, "wss://pcast-us-east.phenixp2p.com");

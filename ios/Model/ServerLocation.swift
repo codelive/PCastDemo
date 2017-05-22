@@ -39,6 +39,7 @@ let PhenixServerList: [[String : String]] = [
   ["name":"Anycast (Closest Data Center)", "uri":"http://pcast.phenixp2p.com", "http":EndpointType.Production.rawValue],
   ["name":"APAC East", "uri":"wss://pcast-asia-east.phenixp2p.com", "http":EndpointType.Production.rawValue],
   ["name":"APAC Northeast", "uri":"wss://pcast-asia-northeast.phenixp2p.com", "http":EndpointType.Production.rawValue],
+  ["name":"APAC Southeast", "uri":"wss://pcast-asia-southeast.phenixp2p.com", "http":EndpointType.Production.rawValue],
   ["name":"US West", "uri":"wss://pcast-us-west.phenixp2p.com", "http":EndpointType.Production.rawValue],
   ["name":"US Central", "uri":"wss://pcast-us-central.phenixp2p.com", "http":EndpointType.Production.rawValue],
   ["name":"US East", "uri":"wss://pcast-us-east.phenixp2p.com", "http":EndpointType.Production.rawValue],
