@@ -568,7 +568,7 @@ final class ViewController:
     if let auSession = Phenix.shared.authSession {
       DispatchQueue.main.async {
         do {
-          let arrCap = ["streaming", "archive"]
+          let arrCap = ["streaming"]
           try Backend.shared.createStreamToken(sessionId:auSession,
                                                originStreamId:nil,
                                                capabilities:arrCap,

@@ -616,7 +616,7 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
     presenter.createStreamToken(this.phenixApplication.getServerAddress(),
             this.getSessionId(),
             null,
-            new String[]{Capabilities.ARCHIVE.getValue(), Capabilities.STREAMING.getValue()},
+            new String[]{Capabilities.STREAMING.getValue()},
             new MainPresenter.IStreamer() {
         @Override
         public void hereIsYourStreamToken(String streamToken) {
@@ -632,6 +632,8 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
           if (count == NUM_HTTP_RETRIES) {
             Log.w(APP_TAG, "Failed to obtain publish token after [" + count + "] retries");
             MainActivity.this.setGoneVersion();
+            // TODO(NL): This should be refactored to display the error in MainFragment instead
+            MainActivity.this.onTryAfterError("Failed to obtain publish token");
           }
         }
       });
@@ -998,7 +1000,12 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
   }
 
   public void setGoneVersion() {
-    this.textViewVersion.setVisibility(View.GONE);
+    runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+        MainActivity.this.textViewVersion.setVisibility(View.GONE);
+      }
+    });
   }
 
   private boolean isCheckActivityDestroyed() {
