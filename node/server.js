@@ -38,7 +38,7 @@ app.use(bodyParser.json());
 var adminURI = 'http://pcast.phenixp2p.com/pcast/';
 var validCredentials = {'demo-user': 'demo-password'};
 
-// to test from the command line: curl --data "name=demo-username&password=demo-password" 127.0.0.1:8081/login
+// to test from the command line: curl --data "name=demo-user&password=demo-password" 127.0.0.1:8081/login
 app.post('/login', function (req, res) {
     console.log('POST login');
     var name = req.body.name;
@@ -115,8 +115,9 @@ function adminStream(req, res) {
     }, makeHandler(res));
 }
 
-app.get('/streams', function (req, res) {
-    res.send(JSON.stringify(Array.from(activeStreams)));
+app.put('/streams', function (req, res) {
+    var streams = Array.from(activeStreams).map(function(streamId){return {streamId: streamId}});
+    return res.send(JSON.stringify({status:'ok', streams:streams}));
 });
 
 function listenForStreams(port) {
