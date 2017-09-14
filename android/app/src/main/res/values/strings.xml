@@ -29,13 +29,19 @@
   <string name="list_server">Server List: </string>
   <string name="list_manual">Manual</string>
   <string name="list_anycast">Anycast (Closest Data Center)</string>
+  <string name="list_au_southeast">AU Southeast</string>
   <string name="list_apac_east">APAC East</string>
   <string name="list_apac_northeast">APAC Northeast</string>
   <string name="list_apac_southeast">APAC Southeast</string>
-  <string name="list_us_west">US West</string>
-  <string name="list_us_central">US Central</string>
-  <string name="list_us_east">US East</string>
+  <string name="list_eu_central">EU Central</string>
   <string name="list_eu_west">EU West</string>
+  <string name="list_uk_southeast">UK Southeast</string>
+  <string name="list_sa_east">SA East</string>
+  <string name="list_us_northeast">US Northeast</string>
+  <string name="list_us_east">US East</string>
+  <string name="list_us_central">US Central</string>
+  <string name="list_us_west">US West</string>
+
   <string name="list_anycast_staging">Anycast - Staging</string>
   <string name="list_us_central_staging">US Central - Staging</string>
   <string name="list_eu_west_staging">EU West - Staging</string>
@@ -49,11 +55,18 @@
   <string-array name="server_array">
     <item>Manual</item>
     <item>Anycast (Closest Data Center)</item>
-    <item>APAC West</item>
-    <item>US West</item>
-    <item>US Central</item>
-    <item>US East</item>
+    <item>AU Southeast</item>
+    <item>APAC East</item>
+    <item>APAC Northeast</item>
+    <item>APAC Southeast</item>
+    <item>EU Central</item>
     <item>EU West</item>
+    <item>UK Southeast</item>
+    <item>SA East</item>
+    <item>US Northeast</item>
+    <item>US East</item>
+    <item>US Central</item>
+    <item>US West</item>
     <item>Anycast - Staging</item>
     <item>US Central - Staging</item>
     <item>EU West - Staging</item>

@@ -308,18 +308,7 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
 
   public void onClear() {
     // Stop pcast when we exit the app.
-    if (this.publisher != null) {
-      this.publisher.stop("exit-app");
-      if (!this.publisher.isClosed()) {
-        Utilities.close(this, this.publisher);
-        this.publisher = null;
-      }
-    }
-
-    if (this.publishMedia != null) {
-      //not call close(), because when reopen will error
-      this.publishMedia = null;
-    }
+    this.ensurePublisherAndLocalUserMediaAreCleanedUp("exit-app");
 
     if (this.pcast != null) {
       this.pcast.stop();
@@ -865,20 +854,7 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
   }
 
   public void onEventStopStream() {
-    Log.i(APP_TAG, "Processing stop stream event. Have publisher [" + this.publisher
-            + "] and user media stream [" + this.publishMedia + "]");
-    if (this.publisher != null && !this.publisher.isClosed()) {
-      this.publisher.stop("close");
-      Utilities.close(this, this.publisher);
-      this.publisher = null;
-    }
-
-    if (this.publishMedia != null && !this.publishMedia.isClosed()) {
-      this.publishMedia.getMediaStream().stop();
-      Utilities.close(this, this.publishMedia.getMediaStream());
-      Utilities.close(this, this.publishMedia);
-      this.publishMedia = null;
-    }
+    this.ensurePublisherAndLocalUserMediaAreCleanedUp("close");
 
     if (this.isShare) {
       this.stopService(new Intent(this, PhenixService.class));
@@ -1010,5 +986,22 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
 
   private boolean isCheckActivityDestroyed() {
     return this.isDestroyed();
+  }
+
+  private final void ensurePublisherAndLocalUserMediaAreCleanedUp(final String stopReason) {
+    Log.i(APP_TAG, "Cleaning up publisher and local user media. Have publisher [" + this.publisher
+        + "] and user media stream [" + this.publishMedia + "]");
+    if (this.publisher != null && !this.publisher.isClosed()) {
+      this.publisher.stop(stopReason);
+      Utilities.close(this, this.publisher);
+      this.publisher = null;
+    }
+
+    if (this.publishMedia != null && !this.publishMedia.isClosed()) {
+      this.publishMedia.getMediaStream().stop();
+      Utilities.close(this, this.publishMedia.getMediaStream());
+      Utilities.close(this, this.publishMedia);
+      this.publishMedia = null;
+    }
   }
 }

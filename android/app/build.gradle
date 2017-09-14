@@ -20,14 +20,14 @@ android {
         customers {
             applicationId 'com.phenixp2p.demo'
             versionCode 1
-            versionName '2017.3.1'
+            versionName '2017.3.2'
             resValue "string", "app_name", "PCast Demo"
             buildConfigField "boolean", "CUSTOMER_VERSION", "true"
         }
         local {
             applicationId 'com.phenixp2p.internal'
             versionCode 1
-            versionName '2017.3.1'
+            versionName '2017.3.2'
             resValue "string", "app_name", "PCast Demo"
             buildConfigField "boolean", "CUSTOMER_VERSION", "false"
         }
