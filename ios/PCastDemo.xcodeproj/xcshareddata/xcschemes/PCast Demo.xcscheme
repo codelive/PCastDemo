@@ -61,6 +61,13 @@
             ReferencedContainer = "container:PCastDemo.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <EnvironmentVariables>
+         <EnvironmentVariable
+            key = "PHENIX_LOGGING_CONSOLE_LOG_LEVEL"
+            value = "Debug"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+      </EnvironmentVariables>
       <AdditionalOptions>
       </AdditionalOptions>
    </LaunchAction>
