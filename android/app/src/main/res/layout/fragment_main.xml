@@ -46,7 +46,7 @@
     android:background="@drawable/bg_comment_button"
     android:padding="2dp">
 
-    <com.phenixp2p.demo.ui.RoundedRectSurfaceView
+    <com.phenixrts.demo.ui.RoundedRectSurfaceView
       android:id="@+id/previewLocal"
       android:layout_width="match_parent"
       android:layout_height="match_parent"/>
@@ -104,7 +104,7 @@
         android:textOff=""
         android:textOn=""/>
 
-      <com.phenixp2p.demo.ui.QualityStatusView
+      <com.phenixrts.demo.ui.QualityStatusView
         android:id="@+id/qualityPublisher"
         android:layout_width="24dp"
         android:layout_height="24dp"
@@ -247,7 +247,7 @@
 
   </RelativeLayout>
 
-  <com.phenixp2p.demo.ui.CustomTextView
+  <com.phenixrts.demo.ui.CustomTextView
     android:id="@+id/textViewNull"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
@@ -286,7 +286,7 @@
     android:layout_toLeftOf="@+id/viewLocal"
     android:gravity="center_horizontal">
 
-    <com.phenixp2p.demo.ui.ArcImage
+    <com.phenixrts.demo.ui.ArcImage
       android:id="@+id/arc"
       android:layout_width="@dimen/with_parabol"
       android:layout_height="wrap_content"
@@ -300,7 +300,7 @@
       app:size_icon="36dp"
       app:start_angle="22"/>
 
-    <com.phenixp2p.demo.ui.QualityStatusView
+    <com.phenixrts.demo.ui.QualityStatusView
       android:id="@+id/qualityRenderer"
       android:layout_width="24dp"
       android:layout_height="24dp"
@@ -328,7 +328,7 @@
         android:paddingLeft="15dp"
         android:paddingRight="15dp">
 
-        <com.phenixp2p.demo.ui.CustomTextView
+        <com.phenixrts.demo.ui.CustomTextView
           android:id="@+id/textViewVersion"
           android:layout_width="wrap_content"
           android:layout_height="24dp"
