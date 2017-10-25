@@ -86,8 +86,9 @@ final class Phenix {
       gumOptions.audio.enabled = false
     case .All, .ShareScreen: break
     }
-    gumOptions.video.facingMode = facingMode
-    gumOptions.video.flashMode = .automatic
+    gumOptions.video.capabilityConstraints[PhenixDeviceCapability.facingMode.rawValue] = [PhenixDeviceConstraint.initWith(facingMode)]
+    gumOptions.video.capabilityConstraints[PhenixDeviceCapability.flashMode.rawValue] = [PhenixDeviceConstraint.initWith(PhenixFlashMode.automatic)]
+
     self.pcast?.getUserMedia(gumOptions, Phenix.pcastMediaCallback(mediaCallback:mediaReady))
   }
 

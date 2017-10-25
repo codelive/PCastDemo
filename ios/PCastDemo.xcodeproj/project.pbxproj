@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		244C1E1E1FA132F800E65B94 /* VideoToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 244C1E1D1FA132F800E65B94 /* VideoToolbox.framework */; };
 		6613E197112C6E5C323222A0 /* Pods_PCast_Demo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8E13BA171867A3AFC663F0F4 /* Pods_PCast_Demo.framework */; };
 		8554BA251D98E5A2004B3640 /* libPhenixApi.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8554BA241D98E5A2004B3640 /* libPhenixApi.a */; };
 		BD1FB94A1E8E78830065AB7B /* roboto_regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BD1FB9491E8E78830065AB7B /* roboto_regular.ttf */; };
@@ -33,6 +34,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		244C1E1D1FA132F800E65B94 /* VideoToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = VideoToolbox.framework; path = System/Library/Frameworks/VideoToolbox.framework; sourceTree = SDKROOT; };
 		6FD9D5B9F3F52C29F44415D0 /* Pods-PCast Demo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PCast Demo.release.xcconfig"; path = "Pods/Target Support Files/Pods-PCast Demo/Pods-PCast Demo.release.xcconfig"; sourceTree = "<group>"; };
 		8554BA241D98E5A2004B3640 /* libPhenixApi.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libPhenixApi.a; path = IOSSDK/lib/libPhenixApi.a; sourceTree = "<group>"; };
 		8E13BA171867A3AFC663F0F4 /* Pods_PCast_Demo.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PCast_Demo.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -68,6 +70,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				244C1E1E1FA132F800E65B94 /* VideoToolbox.framework in Frameworks */,
 				8554BA251D98E5A2004B3640 /* libPhenixApi.a in Frameworks */,
 				ED3CF3951D6413D700CE9E48 /* CoreTelephony.framework in Frameworks */,
 				ED3CF3931D6413D000CE9E48 /* SystemConfiguration.framework in Frameworks */,
@@ -125,6 +128,7 @@
 		ED3CF38F1D64128200CE9E48 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				244C1E1D1FA132F800E65B94 /* VideoToolbox.framework */,
 				8554BA241D98E5A2004B3640 /* libPhenixApi.a */,
 				ED3CF3941D6413D700CE9E48 /* CoreTelephony.framework */,
 				ED3CF3921D6413D000CE9E48 /* SystemConfiguration.framework */,
@@ -474,11 +478,10 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/iOSSDK/lib",
-					"$(PROJECT_DIR)/IOSSDK/lib",
 				);
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "$(inherited)";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.phenixp2p.PCast-Demo-App";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.phenixrts.PCast-Demo-App";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -507,10 +510,9 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/iOSSDK/lib",
-					"$(PROJECT_DIR)/IOSSDK/lib",
 				);
 				OTHER_LDFLAGS = "$(inherited)";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.phenixp2p.PCast-Demo-App";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.phenixrts.PCast-Demo-App";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";

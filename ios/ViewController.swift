@@ -709,7 +709,7 @@ final class ViewController:
     let gumOptions = PhenixUserMediaOptions()
     let bgImage = isFront ? #imageLiteral(resourceName: "icon_camera_front") : #imageLiteral(resourceName: "icon_camera_rear")
     self.buttonSwitch.setBackgroundImage(bgImage, for: .normal)
-    gumOptions.video.facingMode = isFront ? .user : .environment
+    gumOptions.video.capabilityConstraints[PhenixDeviceCapability.facingMode.rawValue] = [PhenixDeviceConstraint.initWith(isFront ? .user : .environment)]
     Phenix.shared.userMediaStream?.apply(gumOptions)
   }
 
