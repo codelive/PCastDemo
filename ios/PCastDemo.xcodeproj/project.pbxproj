@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		17628BAF1FA27D06004CA886 /* UIDeviceExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17628BAE1FA27D06004CA886 /* UIDeviceExtension.swift */; };
 		244C1E1E1FA132F800E65B94 /* VideoToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 244C1E1D1FA132F800E65B94 /* VideoToolbox.framework */; };
 		6613E197112C6E5C323222A0 /* Pods_PCast_Demo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8E13BA171867A3AFC663F0F4 /* Pods_PCast_Demo.framework */; };
 		8554BA251D98E5A2004B3640 /* libPhenixApi.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8554BA241D98E5A2004B3640 /* libPhenixApi.a */; };
@@ -34,6 +35,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		17628BAE1FA27D06004CA886 /* UIDeviceExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIDeviceExtension.swift; sourceTree = "<group>"; };
 		244C1E1D1FA132F800E65B94 /* VideoToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = VideoToolbox.framework; path = System/Library/Frameworks/VideoToolbox.framework; sourceTree = SDKROOT; };
 		6FD9D5B9F3F52C29F44415D0 /* Pods-PCast Demo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PCast Demo.release.xcconfig"; path = "Pods/Target Support Files/Pods-PCast Demo/Pods-PCast Demo.release.xcconfig"; sourceTree = "<group>"; };
 		8554BA241D98E5A2004B3640 /* libPhenixApi.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libPhenixApi.a; path = IOSSDK/lib/libPhenixApi.a; sourceTree = "<group>"; };
@@ -104,6 +106,7 @@
 				BD5788641E2497CE00176A17 /* UIColorExtension.swift */,
 				BD738DD91E35458A0057AACF /* UIViewExtension.swift */,
 				BDCB42A01E4DAAA00024B6D8 /* UserDefaultsExtension.swift */,
+				17628BAE1FA27D06004CA886 /* UIDeviceExtension.swift */,
 			);
 			path = Extension;
 			sourceTree = SOURCE_ROOT;
@@ -217,8 +220,7 @@
 				TargetAttributes = {
 					EDB9E92C1D5FBC11000837B9 = {
 						CreatedOnToolsVersion = 8.0;
-						DevelopmentTeam = LU4S6LX25U;
-						ProvisioningStyle = Automatic;
+						ProvisioningStyle = Manual;
 					};
 				};
 			};
@@ -333,6 +335,7 @@
 				BD5788651E2497CE00176A17 /* UIColorExtension.swift in Sources */,
 				BDA6F5641E5D76BF00EAFE48 /* PhenixAssert.swift in Sources */,
 				ED5052001D60F4E30072D7F2 /* Rest.swift in Sources */,
+				17628BAF1FA27D06004CA886 /* UIDeviceExtension.swift in Sources */,
 				BDF201B01E69355F0017A34E /* PulsingAnimation.swift in Sources */,
 				BD5EBE221E485F5000689E09 /* SecretUrlPopoverViewController.swift in Sources */,
 			);
@@ -468,7 +471,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = LU4S6LX25U;
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				"HEADER_SEARCH_PATHS[arch=*]" = "$(PROJECT_DIR)/iOSSDK/objc/include/**";
@@ -500,7 +504,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = LU4S6LX25U;
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/iOSSDK/objc/include/**";

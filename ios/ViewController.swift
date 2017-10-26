@@ -476,16 +476,16 @@ final class ViewController:
   }
 
   func publishStreamIDCallback(success:Bool) {
-    self.reportStatus(step:.PublishStream, success:success)
-    if success {
-      if let publishingStreamId = Phenix.shared.streamId {
-        self.streamIdThisPhone = publishingStreamId
-      }
-      self.isPublishing = true
-      self.isViewProgressing = false
-      self.handlePreview()
-      self.updateParabolaPath()
-      DispatchQueue.main.async {
+    DispatchQueue.main.async {
+      self.reportStatus(step:.PublishStream, success:success)
+      if success {
+        if let publishingStreamId = Phenix.shared.streamId {
+          self.streamIdThisPhone = publishingStreamId
+        }
+        self.isPublishing = true
+        self.isViewProgressing = false
+        self.handlePreview()
+        self.updateParabolaPath()
         self.showSplashAnimation = false
         self.idTableView.reloadData()
       }
@@ -568,10 +568,15 @@ final class ViewController:
     if let auSession = Phenix.shared.authSession {
       DispatchQueue.main.async {
         do {
-          let arrCap = ["streaming"]
+          var capabilities: [String] = []
+          if UIDevice.current.supportsH264Encode {
+            capabilities = ["streaming", "fhd", "prefer-h264"]
+          } else {
+            capabilities = ["streaming"]
+          }
           try Backend.shared.createStreamToken(sessionId:auSession,
                                                originStreamId:nil,
-                                               capabilities:arrCap,
+                                               capabilities:capabilities,
                                                done:self.publishTokenCallback)
         } catch {
           self.isAbleToConnect = false
@@ -667,18 +672,18 @@ final class ViewController:
         renderer.setDataQualityChangedCallback({ (renderer, qualityStatus, qualityReason) in
           self.handleFeedback(qualityReason: qualityReason, qualityStatus: qualityStatus, feedbackType: .Subscriber)
         })
-      }
 
-      let status = renderer.start()
-      if status == .ok {
-        print("Renderer start status .ok")
-      } else {
-        let statusString = ("\(String(describing: status))")
-        let alert = UIAlertController(title: "Preview renderer failed", message:statusString, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default) {
-          _ in
-        })
-        self.present(alert, animated: true)
+        let status = renderer.start()
+        if status == .ok {
+          print("Renderer start status .ok")
+        } else {
+          let statusString = ("\(String(describing: status))")
+          let alert = UIAlertController(title: "Preview renderer failed", message:statusString, preferredStyle: .alert)
+          alert.addAction(UIAlertAction(title: "OK", style: .default) {
+            _ in
+          })
+          self.present(alert, animated: true)
+        }
       }
     } else {
       self.isPublishing = false
@@ -883,9 +888,11 @@ final class ViewController:
           subscribingStream.setStreamEndedCallback({ (mediaStream,
             phenixStreamEndedReason,
             reasonDescription) in
-            self.subscribeView.layer.sublayers?.forEach { $0.removeFromSuperlayer() }
-            if !self.isEndedByEnterBackground {
-              self.showAlertGoBackToMain()
+            DispatchQueue.main.async {
+              self.subscribeView.layer.sublayers?.forEach { $0.removeFromSuperlayer() }
+              if !self.isEndedByEnterBackground {
+                self.showAlertGoBackToMain()
+              }
             }
           })
         }

@@ -89,6 +89,11 @@ final class Phenix {
     gumOptions.video.capabilityConstraints[PhenixDeviceCapability.facingMode.rawValue] = [PhenixDeviceConstraint.initWith(facingMode)]
     gumOptions.video.capabilityConstraints[PhenixDeviceCapability.flashMode.rawValue] = [PhenixDeviceConstraint.initWith(PhenixFlashMode.automatic)]
 
+    if UIDevice.current.supportsH264Encode {
+      gumOptions.video.capabilityConstraints[PhenixDeviceCapability.height.rawValue] = [PhenixDeviceConstraint.initWith(720)]
+      gumOptions.video.capabilityConstraints[PhenixDeviceCapability.width.rawValue] = [PhenixDeviceConstraint.initWith(1280)]
+    }
+
     self.pcast?.getUserMedia(gumOptions, Phenix.pcastMediaCallback(mediaCallback:mediaReady))
   }
 
