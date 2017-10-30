@@ -24,6 +24,7 @@ import android.util.Log;
 
 import com.crashlytics.android.Crashlytics;
 import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.ndk.CrashlyticsNdk;
 import com.phenixp2p.pcast.PCast;
 
 import io.fabric.sdk.android.Fabric;
@@ -51,9 +52,7 @@ public final class PhenixApplication extends Application {
       e.printStackTrace();
     }
     // Initialize crash analytics by Fabric
-    if (!BuildConfig.DEBUG) {
-      Fabric.with(this, new Crashlytics(), new Answers());
-    }
+    Fabric.with(this, new Crashlytics(), new Answers(), new CrashlyticsNdk());
   }
 
   public MediaProjectionManager getProjectionManager() {
