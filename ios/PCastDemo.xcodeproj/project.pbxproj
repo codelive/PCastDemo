@@ -10,7 +10,8 @@
 		173F606A1FFF2FA700270223 /* PhenixSdk.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 173F60691FFF2FA700270223 /* PhenixSdk.framework */; };
 		173F606B1FFF2FA700270223 /* PhenixSdk.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 173F60691FFF2FA700270223 /* PhenixSdk.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		17628BAF1FA27D06004CA886 /* UIDeviceExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17628BAE1FA27D06004CA886 /* UIDeviceExtension.swift */; };
-		244C1E1E1FA132F800E65B94 /* VideoToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 244C1E1D1FA132F800E65B94 /* VideoToolbox.framework */; };
+		17C0B25B1FB11A2900D8AA17 /* PhenixSdk.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 17C0B25A1FB11A2900D8AA17 /* PhenixSdk.framework */; };
+		17C0B25C1FB11A2900D8AA17 /* PhenixSdk.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 17C0B25A1FB11A2900D8AA17 /* PhenixSdk.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		6613E197112C6E5C323222A0 /* Pods_PCast_Demo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8E13BA171867A3AFC663F0F4 /* Pods_PCast_Demo.framework */; };
 		BD1FB94A1E8E78830065AB7B /* roboto_regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BD1FB9491E8E78830065AB7B /* roboto_regular.ttf */; };
 		BD5788611E2487BA00176A17 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD5788601E2487BA00176A17 /* Utilities.swift */; };
@@ -24,8 +25,6 @@
 		BDCB42A11E4DAAA00024B6D8 /* UserDefaultsExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDCB42A01E4DAAA00024B6D8 /* UserDefaultsExtension.swift */; };
 		BDF201B01E69355F0017A34E /* PulsingAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDF201AF1E69355F0017A34E /* PulsingAnimation.swift */; };
 		ED3CF38E1D640A1900CE9E48 /* Phenix.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED3CF38D1D640A1900CE9E48 /* Phenix.swift */; };
-		ED3CF3931D6413D000CE9E48 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ED3CF3921D6413D000CE9E48 /* SystemConfiguration.framework */; };
-		ED3CF3951D6413D700CE9E48 /* CoreTelephony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ED3CF3941D6413D700CE9E48 /* CoreTelephony.framework */; };
 		ED5051FF1D60F4E30072D7F2 /* Backend.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED5051FD1D60F4E30072D7F2 /* Backend.swift */; };
 		ED5052001D60F4E30072D7F2 /* Rest.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED5051FE1D60F4E30072D7F2 /* Rest.swift */; };
 		ED5052091D60F5860072D7F2 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED5052071D60F5860072D7F2 /* AppDelegate.swift */; };
@@ -52,9 +51,8 @@
 /* Begin PBXFileReference section */
 		173F60691FFF2FA700270223 /* PhenixSdk.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PhenixSdk.framework; path = iOSSDK/lib/iPhoneOS/PhenixSdk.framework; sourceTree = "<group>"; };
 		17628BAE1FA27D06004CA886 /* UIDeviceExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIDeviceExtension.swift; sourceTree = "<group>"; };
-		244C1E1D1FA132F800E65B94 /* VideoToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = VideoToolbox.framework; path = System/Library/Frameworks/VideoToolbox.framework; sourceTree = SDKROOT; };
+		17C0B25A1FB11A2900D8AA17 /* PhenixSdk.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PhenixSdk.framework; path = iOSSDK/lib/PhenixSdk.framework; sourceTree = "<group>"; };
 		6FD9D5B9F3F52C29F44415D0 /* Pods-PCast Demo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PCast Demo.release.xcconfig"; path = "Pods/Target Support Files/Pods-PCast Demo/Pods-PCast Demo.release.xcconfig"; sourceTree = "<group>"; };
-		8554BA241D98E5A2004B3640 /* libPhenixApi.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libPhenixApi.a; path = IOSSDK/lib/libPhenixApi.a; sourceTree = "<group>"; };
 		8E13BA171867A3AFC663F0F4 /* Pods_PCast_Demo.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PCast_Demo.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A94AAD6FDBDC7970A81115AB /* Pods-PCast Demo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PCast Demo.debug.xcconfig"; path = "Pods/Target Support Files/Pods-PCast Demo/Pods-PCast Demo.debug.xcconfig"; sourceTree = "<group>"; };
 		BD1FB9491E8E78830065AB7B /* roboto_regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = roboto_regular.ttf; sourceTree = SOURCE_ROOT; };
@@ -70,8 +68,6 @@
 		BDF201AF1E69355F0017A34E /* PulsingAnimation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PulsingAnimation.swift; sourceTree = SOURCE_ROOT; };
 		ED3CF38C1D64089F00CE9E48 /* Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = SOURCE_ROOT; };
 		ED3CF38D1D640A1900CE9E48 /* Phenix.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Phenix.swift; sourceTree = SOURCE_ROOT; };
-		ED3CF3921D6413D000CE9E48 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
-		ED3CF3941D6413D700CE9E48 /* CoreTelephony.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreTelephony.framework; path = System/Library/Frameworks/CoreTelephony.framework; sourceTree = SDKROOT; };
 		ED5051FD1D60F4E30072D7F2 /* Backend.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Backend.swift; sourceTree = SOURCE_ROOT; };
 		ED5051FE1D60F4E30072D7F2 /* Rest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Rest.swift; sourceTree = SOURCE_ROOT; };
 		ED5052071D60F5860072D7F2 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = SOURCE_ROOT; };
@@ -88,11 +84,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				244C1E1E1FA132F800E65B94 /* VideoToolbox.framework in Frameworks */,
-				173F606A1FFF2FA700270223 /* PhenixSdk.framework in Frameworks */,
-				ED3CF3951D6413D700CE9E48 /* CoreTelephony.framework in Frameworks */,
-				ED3CF3931D6413D000CE9E48 /* SystemConfiguration.framework in Frameworks */,
 				6613E197112C6E5C323222A0 /* Pods_PCast_Demo.framework in Frameworks */,
+				17C0B25B1FB11A2900D8AA17 /* PhenixSdk.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -147,10 +140,6 @@
 		ED3CF38F1D64128200CE9E48 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				244C1E1D1FA132F800E65B94 /* VideoToolbox.framework */,
-				8554BA241D98E5A2004B3640 /* libPhenixApi.a */,
-				ED3CF3941D6413D700CE9E48 /* CoreTelephony.framework */,
-				ED3CF3921D6413D000CE9E48 /* SystemConfiguration.framework */,
 				8E13BA171867A3AFC663F0F4 /* Pods_PCast_Demo.framework */,
 			);
 			name = Frameworks;
@@ -493,7 +482,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = A94AAD6FDBDC7970A81115AB /* Pods-PCast Demo.debug.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
@@ -502,9 +490,12 @@
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/iOSSDK/lib/iPhoneOS",
+					"$(PROJECT_DIR)/iOSSDK/lib",
 				);
-				"HEADER_SEARCH_PATHS[arch=*]" = "$(PROJECT_DIR)/iOSSDK/lib/iPhoneOS/PhenixSdk.framework/Headers/**";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/iOSSDK/lib/PhenixSdk.framework/Headers/**",
+				);
 				INFOPLIST_FILE = "$(SRCROOT)/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -526,7 +517,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 6FD9D5B9F3F52C29F44415D0 /* Pods-PCast Demo.release.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
@@ -535,9 +525,12 @@
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/iOSSDK/lib/iPhoneOS",
+					"$(PROJECT_DIR)/iOSSDK/lib",
 				);
-				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/iOSSDK/lib/iPhoneOS/PhenixSdk.framework/Headers/**";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/iOSSDK/lib/PhenixSdk.framework/Headers/**",
+				);
 				INFOPLIST_FILE = "$(SRCROOT)/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";

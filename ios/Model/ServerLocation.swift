@@ -30,29 +30,29 @@ final class ServerLocation {
 
 //Server Location Strings
 enum EndpointType: String {
-  case Production = "https://demo.phenixp2p.com/demoApp/"
-  case Staging = "https://stg.phenixp2p.com/demoApp/"
+  case Production = "https://demo.phenixrts.com/demoApp/"
+  case Staging = "https://stg.phenixrts.com/demoApp/"
   case Local = "http://192.168.2.111:8080/demoApp/"
 }
 
 let PhenixServerList: [[String : String]] = [
-  ["name":"Anycast (Closest Data Center)", "uri":"https://pcast.phenixp2p.com", "http":EndpointType.Production.rawValue],
-  ["name":"AU Southeast", "uri":"wss://pcast-australia-southeast.phenixp2p.com", "http":EndpointType.Production.rawValue],
-  ["name":"APAC East", "uri":"wss://pcast-asia-east.phenixp2p.com", "http":EndpointType.Production.rawValue],
-  ["name":"APAC Northeast", "uri":"wss://pcast-asia-northeast.phenixp2p.com", "http":EndpointType.Production.rawValue],
-  ["name":"APAC Southeast", "uri":"wss://pcast-asia-southeast.phenixp2p.com", "http":EndpointType.Production.rawValue],
-  ["name":"EU Central", "uri":"wss://pcast-europe-central.phenixp2p.com", "http":EndpointType.Production.rawValue],
-  ["name":"EU West", "uri":"wss://pcast-europe-west.phenixp2p.com", "http":EndpointType.Production.rawValue],
-  ["name":"UK Southeast", "uri":"wss://pcast-uk-southeast.phenixp2p.com", "http":EndpointType.Production.rawValue],
-  ["name":"SA East", "uri":"wss://pcast-southamerica-east.phenixp2p.com", "http":EndpointType.Production.rawValue],
-  ["name":"US Northeast", "uri":"wss://pcast-us-northeast.phenixp2p.com", "http":EndpointType.Production.rawValue],
-  ["name":"US East", "uri":"wss://pcast-us-east.phenixp2p.com", "http":EndpointType.Production.rawValue],
-  ["name":"US Central", "uri":"wss://pcast-us-central.phenixp2p.com", "http":EndpointType.Production.rawValue],
-  ["name":"US West", "uri":"wss://pcast-us-west.phenixp2p.com", "http":EndpointType.Production.rawValue],
+  ["name":"Anycast (Closest Data Center)", "uri":"https://pcast.phenixrts.com", "http":EndpointType.Production.rawValue],
+  ["name":"AU Southeast", "uri":"wss://pcast-australia-southeast.phenixrts.com", "http":EndpointType.Production.rawValue],
+  ["name":"APAC East", "uri":"wss://pcast-asia-east.phenixrts.com", "http":EndpointType.Production.rawValue],
+  ["name":"APAC Northeast", "uri":"wss://pcast-asia-northeast.phenixrts.com", "http":EndpointType.Production.rawValue],
+  ["name":"APAC Southeast", "uri":"wss://pcast-asia-southeast.phenixrts.com", "http":EndpointType.Production.rawValue],
+  ["name":"EU Central", "uri":"wss://pcast-europe-central.phenixrts.com", "http":EndpointType.Production.rawValue],
+  ["name":"EU West", "uri":"wss://pcast-europe-west.phenixrts.com", "http":EndpointType.Production.rawValue],
+  ["name":"UK Southeast", "uri":"wss://pcast-uk-southeast.phenixrts.com", "http":EndpointType.Production.rawValue],
+  ["name":"SA East", "uri":"wss://pcast-southamerica-east.phenixrts.com", "http":EndpointType.Production.rawValue],
+  ["name":"US Northeast", "uri":"wss://pcast-us-northeast.phenixrts.com", "http":EndpointType.Production.rawValue],
+  ["name":"US East", "uri":"wss://pcast-us-east.phenixrts.com", "http":EndpointType.Production.rawValue],
+  ["name":"US Central", "uri":"wss://pcast-us-central.phenixrts.com", "http":EndpointType.Production.rawValue],
+  ["name":"US West", "uri":"wss://pcast-us-west.phenixrts.com", "http":EndpointType.Production.rawValue],
 
-  ["name":"Anycast - Staging", "uri":"https://pcast-stg.phenixp2p.com", "http":EndpointType.Staging.rawValue],
-  ["name":"US Central - Staging", "uri":"wss://pcast-stg-us-central.phenixp2p.com", "http":EndpointType.Staging.rawValue],
-  ["name":"EU West - Staging", "uri":"wss://pcast-stg-europe-west.phenixp2p.com", "http":EndpointType.Staging.rawValue],
+  ["name":"Anycast - Staging", "uri":"https://pcast-stg.phenixrts.com", "http":EndpointType.Staging.rawValue],
+  ["name":"US Central - Staging", "uri":"wss://pcast-stg-us-central.phenixrts.com", "http":EndpointType.Staging.rawValue],
+  ["name":"EU West - Staging", "uri":"wss://pcast-stg-europe-west.phenixrts.com", "http":EndpointType.Staging.rawValue],
   ["name":"Anycast - Local", "uri":"http://192.168.2.111:8080", "http":EndpointType.Local.rawValue],
   ["name":"Local", "uri":"wss://192.168.2.111:8443", "http":EndpointType.Local.rawValue]
 ]

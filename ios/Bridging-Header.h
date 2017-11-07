@@ -17,8 +17,6 @@
 #ifndef Bridging_Header_h
 #define Bridging_Header_h
 
-#import "PhenixPCast.h"
-#import "PhenixPCastFactory.h"
-#import "PhenixMediaStream.h"
+#import "PCast/PhenixPCastFactory.h"
 
 #endif /* Bridging_Header_h */
