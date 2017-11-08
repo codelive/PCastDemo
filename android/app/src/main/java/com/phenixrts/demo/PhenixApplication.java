@@ -25,7 +25,7 @@ import android.util.Log;
 import com.crashlytics.android.Crashlytics;
 import com.crashlytics.android.answers.Answers;
 import com.crashlytics.android.ndk.CrashlyticsNdk;
-import com.phenixp2p.pcast.PCast;
+import com.phenixrts.pcast.PCast;
 
 import io.fabric.sdk.android.Fabric;
 

@@ -71,16 +71,16 @@ import com.phenixrts.demo.ui.view.IMainView;
 import com.phenixrts.demo.utils.DialogUtil;
 import com.phenixrts.demo.utils.TokenUtil;
 import com.phenixrts.demo.utils.Utilities;
-import com.phenixp2p.pcast.DataQualityReason;
-import com.phenixp2p.pcast.DataQualityStatus;
-import com.phenixp2p.pcast.FacingMode;
-import com.phenixp2p.pcast.MediaStream;
-import com.phenixp2p.pcast.PCast;
-import com.phenixp2p.pcast.Renderer;
-import com.phenixp2p.pcast.RendererStartStatus;
-import com.phenixp2p.pcast.RequestStatus;
-import com.phenixp2p.pcast.StreamEndedReason;
-import com.phenixp2p.pcast.android.AndroidVideoRenderSurface;
+import com.phenixrts.pcast.DataQualityReason;
+import com.phenixrts.pcast.DataQualityStatus;
+import com.phenixrts.pcast.FacingMode;
+import com.phenixrts.pcast.MediaStream;
+import com.phenixrts.pcast.PCast;
+import com.phenixrts.pcast.Renderer;
+import com.phenixrts.pcast.RendererStartStatus;
+import com.phenixrts.pcast.RequestStatus;
+import com.phenixrts.pcast.StreamEndedReason;
+import com.phenixrts.pcast.android.AndroidVideoRenderSurface;
 
 import com.phenixrts.demo.utils.LayoutUtil;
 import java.util.ArrayList;
@@ -109,11 +109,11 @@ import static com.phenixrts.demo.StatusQualityValues.AUDIO_ONLY_NONE;
 import static com.phenixrts.demo.StatusQualityValues.NO_DATA;
 import static com.phenixrts.demo.utils.DialogUtil.showDialog;
 import static com.phenixrts.demo.utils.TokenUtil.getStreamId;
-import static com.phenixp2p.pcast.DataQualityReason.DOWNLOAD_LIMITED;
-import static com.phenixp2p.pcast.DataQualityReason.NETWORK_LIMITED;
-import static com.phenixp2p.pcast.DataQualityReason.NONE;
-import static com.phenixp2p.pcast.DataQualityReason.PUBLISHER_LIMITED;
-import static com.phenixp2p.pcast.DataQualityReason.UPLOAD_LIMITED;
+import static com.phenixrts.pcast.DataQualityReason.DOWNLOAD_LIMITED;
+import static com.phenixrts.pcast.DataQualityReason.NETWORK_LIMITED;
+import static com.phenixrts.pcast.DataQualityReason.NONE;
+import static com.phenixrts.pcast.DataQualityReason.PUBLISHER_LIMITED;
+import static com.phenixrts.pcast.DataQualityReason.UPLOAD_LIMITED;
 
 public final class MainFragment extends BaseFragment implements View.OnClickListener, IMainView, StreamIdAdapter.OnItemClickListener, CompoundButton.OnCheckedChangeListener,
   SwipeRefreshLayout.OnRefreshListener, ValueAnimator.AnimatorUpdateListener, MediaStream.StreamEndedCallback,

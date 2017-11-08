@@ -15,8 +15,8 @@
 
 package com.phenixrts.demo.events;
 
-import com.phenixp2p.pcast.DataQualityReason;
-import com.phenixp2p.pcast.DataQualityStatus;
+import com.phenixrts.pcast.DataQualityReason;
+import com.phenixrts.pcast.DataQualityStatus;
 
 public final class Events {
   public static class ChangeCamera {

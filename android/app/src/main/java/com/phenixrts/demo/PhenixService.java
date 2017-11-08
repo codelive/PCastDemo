@@ -32,7 +32,7 @@ import android.util.Log;
 import com.crashlytics.android.Crashlytics;
 import com.phenixrts.demo.events.Events;
 import com.phenixrts.demo.ui.activities.MainActivity;
-import com.phenixp2p.pcast.android.AndroidPCastFactory;
+import com.phenixrts.pcast.android.AndroidPCastFactory;
 
 import io.fabric.sdk.android.Fabric;
 
