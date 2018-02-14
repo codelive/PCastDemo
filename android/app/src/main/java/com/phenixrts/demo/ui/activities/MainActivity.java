@@ -15,6 +15,18 @@
 
 package com.phenixrts.demo.ui.activities;
 
+import static com.phenixrts.demo.Constants.APP_TAG;
+import static com.phenixrts.demo.Constants.CREATE_SCREEN_CAPTURE;
+import static com.phenixrts.demo.Constants.NUMBER_TOUCHES;
+import static com.phenixrts.demo.Constants.NUM_HTTP_RETRIES;
+import static com.phenixrts.demo.Constants.REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS;
+import static com.phenixrts.demo.Constants.REQUEST_CODE_SECRET_URL;
+import static com.phenixrts.demo.Constants.SESSION_ID;
+import static com.phenixrts.demo.Constants.STREAM_ID;
+import static com.phenixrts.demo.Constants.TIME_TO_TAP;
+import static com.phenixrts.demo.utils.Utilities.handleException;
+import static com.phenixrts.demo.utils.Utilities.hasInternet;
+
 import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -39,25 +51,7 @@ import android.view.WindowManager;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.phenixrts.environment.android.AndroidContext;
-import com.phenixrts.pcast.DataQualityReason;
-import com.phenixrts.pcast.DataQualityStatus;
-import com.phenixrts.pcast.DeviceCapability;
-import com.phenixrts.pcast.DeviceConstraint;
-import com.phenixrts.pcast.FacingMode;
-import com.phenixrts.pcast.FlashMode;
-import com.phenixrts.pcast.MediaStream;
-import com.phenixrts.pcast.MediaType;
-import com.phenixrts.pcast.PCast;
-import com.phenixrts.pcast.PCastFactory;
-import com.phenixrts.pcast.PCastInitializeOptions;
-import com.phenixrts.pcast.Publisher;
-import com.phenixrts.pcast.RequestStatus;
-import com.phenixrts.pcast.SourceDeviceInfo;
-import com.phenixrts.pcast.SourceDeviceType;
-import com.phenixrts.pcast.UserMediaOptions;
-import com.phenixrts.pcast.UserMediaStream;
-import com.phenixrts.pcast.android.AndroidPCastFactory;
+import com.phenixrts.common.RequestStatus;
 import com.phenixrts.demo.BuildConfig;
 import com.phenixrts.demo.Capabilities;
 import com.phenixrts.demo.CaptureHelper;
@@ -76,6 +70,24 @@ import com.phenixrts.demo.ui.view.IMainActivityView;
 import com.phenixrts.demo.utils.DialogUtil;
 import com.phenixrts.demo.utils.TokenUtil;
 import com.phenixrts.demo.utils.Utilities;
+import com.phenixrts.environment.android.AndroidContext;
+import com.phenixrts.pcast.DataQualityReason;
+import com.phenixrts.pcast.DataQualityStatus;
+import com.phenixrts.pcast.DeviceCapability;
+import com.phenixrts.pcast.DeviceConstraint;
+import com.phenixrts.pcast.FacingMode;
+import com.phenixrts.pcast.FlashMode;
+import com.phenixrts.pcast.MediaStream;
+import com.phenixrts.pcast.MediaType;
+import com.phenixrts.pcast.PCast;
+import com.phenixrts.pcast.PCastFactory;
+import com.phenixrts.pcast.PCastInitializeOptions;
+import com.phenixrts.pcast.Publisher;
+import com.phenixrts.pcast.SourceDeviceInfo;
+import com.phenixrts.pcast.SourceDeviceType;
+import com.phenixrts.pcast.UserMediaOptions;
+import com.phenixrts.pcast.UserMediaStream;
+import com.phenixrts.pcast.android.AndroidPCastFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -86,21 +98,9 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.subscriptions.CompositeSubscription;
 
-import static com.phenixrts.demo.Constants.APP_TAG;
-import static com.phenixrts.demo.Constants.CREATE_SCREEN_CAPTURE;
-import static com.phenixrts.demo.Constants.NUMBER_TOUCHES;
-import static com.phenixrts.demo.Constants.NUM_HTTP_RETRIES;
-import static com.phenixrts.demo.Constants.REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS;
-import static com.phenixrts.demo.Constants.REQUEST_CODE_SECRET_URL;
-import static com.phenixrts.demo.Constants.SESSION_ID;
-import static com.phenixrts.demo.Constants.STREAM_ID;
-import static com.phenixrts.demo.Constants.TIME_TO_TAP;
-import static com.phenixrts.demo.utils.Utilities.handleException;
-import static com.phenixrts.demo.utils.Utilities.hasInternet;
-
 public final class MainActivity extends AppCompatActivity implements IMainActivityView,
-        Publisher.DataQualityChangedCallback,
-        View.OnTouchListener {
+    Publisher.DataQualityChangedCallback,
+    View.OnTouchListener {
 
   private static final String TAG = MainActivity.class.getSimpleName();
   private static final int ACTION_WIFI = 120;
@@ -147,8 +147,10 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
     this.pulsator = (PulsatorLayout) findViewById(com.phenixrts.demo.R.id.pulsator);
     this.progressBar = (ProgressBar) findViewById(com.phenixrts.demo.R.id.prog);
     this.textViewVersion = (TextView) findViewById(com.phenixrts.demo.R.id.textViewVersion);
-    String version = BuildConfig.VERSION_NAME.concat(" (" + String.valueOf(BuildConfig.VERSION_CODE) + ")");
-    this.textViewVersion.setText(getResources().getString(com.phenixrts.demo.R.string.version, version));
+    String version = BuildConfig.VERSION_NAME
+        .concat(" (" + String.valueOf(BuildConfig.VERSION_CODE) + ")");
+    this.textViewVersion
+        .setText(getResources().getString(com.phenixrts.demo.R.string.version, version));
     this.textViewVersion.setOnTouchListener(this);
     this.presenter = new MainPresenter(this);
     if (!PhenixService.isReady()) {
@@ -161,8 +163,9 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
       Bundle bundle = new Bundle();
       bundle.putString(SESSION_ID, TokenUtil.getSessionIdLocal(this));
       bundle.putString(STREAM_ID, TokenUtil.getStreamIdLocal(this));
-      BaseFragment.openFragment(this.context, getSupportFragmentManager(), MainFragment.class, null, bundle,
-        com.phenixrts.demo.R.id.content_content, null);
+      BaseFragment
+          .openFragment(this.context, getSupportFragmentManager(), MainFragment.class, null, bundle,
+              com.phenixrts.demo.R.id.content_content, null);
     }
   }
 
@@ -204,7 +207,7 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
     }
 
     if (!addPermission(permissionsList, Manifest.permission.WRITE_EXTERNAL_STORAGE) ||
-      !addPermission(permissionsList, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+        !addPermission(permissionsList, Manifest.permission.READ_EXTERNAL_STORAGE)) {
       permissionsNeeded.add("write and read access for logs");
     }
 
@@ -218,15 +221,15 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
           @Override
           public void onClick(DialogInterface dialog, int which) {
             ActivityCompat.requestPermissions(MainActivity.this,
-                    permissionsList.toArray(new String[permissionsList.size()]),
-                    REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS);
+                permissionsList.toArray(new String[permissionsList.size()]),
+                REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS);
           }
         });
         return;
       }
       ActivityCompat.requestPermissions(this,
-              permissionsList.toArray(new String[permissionsList.size()]),
-              REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS);
+          permissionsList.toArray(new String[permissionsList.size()]),
+          REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS);
       return;
     }
     this.commenceSession();
@@ -234,40 +237,46 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
 
   private void showMessageOKCancel(String message, DialogInterface.OnClickListener okListener) {
     new AlertDialog.Builder(this)
-      .setMessage(message)
-      .setPositiveButton("OK", okListener)
-      .setNegativeButton("Cancel", null)
-      .setCancelable(false)
-      .create()
-      .show();
+        .setMessage(message)
+        .setPositiveButton("OK", okListener)
+        .setNegativeButton("Cancel", null)
+        .setCancelable(false)
+        .create()
+        .show();
   }
 
   @Override
   public void onRequestPermissionsResult(int requestCode,
-                                         @NonNull String[] permissions,
-                                         @NonNull int[] grantResults) {
+      @NonNull String[] permissions,
+      @NonNull int[] grantResults) {
     switch (requestCode) {
       case Constants.REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS: {
         Map<String, Integer> permissionCodes = new ArrayMap<>();
         // Initial
         permissionCodes.put(Manifest.permission.CAMERA, PackageManager.PERMISSION_DENIED);
         permissionCodes.put(Manifest.permission.RECORD_AUDIO, PackageManager.PERMISSION_DENIED);
-        permissionCodes.put(Manifest.permission.WRITE_EXTERNAL_STORAGE, PackageManager.PERMISSION_DENIED);
-        permissionCodes.put(Manifest.permission.READ_EXTERNAL_STORAGE, PackageManager.PERMISSION_DENIED);
+        permissionCodes
+            .put(Manifest.permission.WRITE_EXTERNAL_STORAGE, PackageManager.PERMISSION_DENIED);
+        permissionCodes
+            .put(Manifest.permission.READ_EXTERNAL_STORAGE, PackageManager.PERMISSION_DENIED);
         // Fill with results
         for (int i = 0; i < permissions.length; i++) {
           permissionCodes.put(permissions[i], grantResults[i]);
         }
         // Check for CAMERA
         if (permissionCodes.get(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
-          && permissionCodes.get(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
-          && permissionCodes.get(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-          || permissionCodes.get(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            && permissionCodes.get(Manifest.permission.RECORD_AUDIO)
+            == PackageManager.PERMISSION_GRANTED
+            && permissionCodes.get(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            == PackageManager.PERMISSION_GRANTED
+            || permissionCodes.get(Manifest.permission.READ_EXTERNAL_STORAGE)
+            == PackageManager.PERMISSION_GRANTED) {
           // All Permissions Granted
           this.commenceSession();
         } else {
           // Permission Denied
-          Toast.makeText(this, getResources().getString(R.string.permissions_denied), Toast.LENGTH_SHORT).show();
+          Toast.makeText(this, getResources().getString(R.string.permissions_denied),
+              Toast.LENGTH_SHORT).show();
         }
       }
       break;
@@ -354,7 +363,8 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
       onBackPressed();
     } else {
       if (this.isShare && this.phenixApplication.isBackground()) {
-        Fragment fragmentMain = getSupportFragmentManager().findFragmentByTag(MainFragment.class.getName());
+        Fragment fragmentMain = getSupportFragmentManager()
+            .findFragmentByTag(MainFragment.class.getName());
         if (fragmentMain != null && fragmentMain.isVisible()) {
           ((MainFragment) fragmentMain).callReload(this.sessionId, this.streamId);
         }
@@ -366,7 +376,8 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
 
   @Override
   public void onBackPressed() {
-    Fragment fragmentMain = getSupportFragmentManager().findFragmentByTag(MainFragment.class.getName());
+    Fragment fragmentMain = getSupportFragmentManager()
+        .findFragmentByTag(MainFragment.class.getName());
     if (fragmentMain != null && fragmentMain.isVisible()) {
       ((MainFragment) fragmentMain).onBackButtonPressed();
     }
@@ -402,23 +413,25 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
     // Check the connection to the internet.
     if (hasInternet(this)) {
       Log.d(APP_TAG, "1. REST API: authenticate");
-      this.presenter.login("com.phenixrts.demo-user", "com.phenixrts.demo-password", this.phenixApplication.getServerAddress());
+      this.presenter.login("com.phenixrts.demo-user", "com.phenixrts.demo-password",
+          this.phenixApplication.getServerAddress());
     } else {
       runOnUiThread(new Runnable() {
         @Override
         public void run() {
           new AlertDialog.Builder(MainActivity.this).setTitle("No internet")
-            .setMessage("Please connect to the internet")
-            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                  Intent intent = new Intent(Intent.ACTION_MAIN);
-                  intent.setClassName("com.android.settings", "com.android.settings.wifi.WifiSettings");
-                  startActivityForResult(intent, ACTION_WIFI);
-                  dialogInterface.dismiss();
-                }
-              }
-            ).show();
+              .setMessage("Please connect to the internet")
+              .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                      Intent intent = new Intent(Intent.ACTION_MAIN);
+                      intent.setClassName("com.android.settings",
+                          "com.android.settings.wifi.WifiSettings");
+                      startActivityForResult(intent, ACTION_WIFI);
+                      dialogInterface.dismiss();
+                    }
+                  }
+              ).show();
         }
       });
     }
@@ -449,12 +462,12 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
           Bundle bundle = new Bundle();
           bundle.putBoolean(Constants.BUNDLE_ERROR, true);
           BaseFragment.openFragment(MainActivity.this.context,
-                  getSupportFragmentManager(),
-                  MainFragment.class,
-                  null,
-                  bundle,
-                  R.id.content_content,
-                  null);
+              getSupportFragmentManager(),
+              MainFragment.class,
+              null,
+              bundle,
+              R.id.content_content,
+              null);
         }
       });
       this.onError = 0;
@@ -495,35 +508,36 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
     }
     this.pcast.initialize(new PCastInitializeOptions(false, true));
     this.pcast.start(authenticationToken, new PCast.AuthenticationCallback() {
-        public void onEvent(PCast var1, final RequestStatus status, final String sessionId) {
-          MainActivity.this.mainHandler.post(new Runnable() {
-            @Override
-            public void run() {
-              if (status == RequestStatus.OK) {
-                MainActivity.this.phenixApplication.setPCast(MainActivity.this.pcast);
-                MainActivity.this.sessionId = sessionId;
-                if (MainActivity.this.isOnlyVideoOrAudio) {
-                  MainActivity.this.onlyVideoOrAudio(MainActivity.this.isVideo);
+          public void onEvent(PCast var1, final RequestStatus status, final String sessionId) {
+            MainActivity.this.mainHandler.post(new Runnable() {
+              @Override
+              public void run() {
+                if (status == RequestStatus.OK) {
+                  MainActivity.this.phenixApplication.setPCast(MainActivity.this.pcast);
+                  MainActivity.this.sessionId = sessionId;
+                  if (MainActivity.this.isOnlyVideoOrAudio) {
+                    MainActivity.this.onlyVideoOrAudio(MainActivity.this.isVideo);
+                  } else {
+                    MainActivity.this.getDefaultUserMedia();
+                  }
                 } else {
-                  MainActivity.this.getDefaultUserMedia();
+                  MainActivity.this
+                      .onTryAfterError(getResources().getString(R.string.render_error, status.name()));
                 }
-              } else {
-                MainActivity.this.onTryAfterError(getResources().getString(R.string.render_error, status.name()));
               }
-            }
-          });
-        }
-      },
-      new PCast.OnlineCallback() {
-        public void onEvent(PCast var1) {
-          Log.d(APP_TAG, "SDK online");
-        }
-      },
-      new PCast.OfflineCallback() {
-        public void onEvent(PCast var1) {
-          Log.d(APP_TAG, "SDK offline");
-        }
-      });
+            });
+          }
+        },
+        new PCast.OnlineCallback() {
+          public void onEvent(PCast var1) {
+            Log.d(APP_TAG, "SDK online");
+          }
+        },
+        new PCast.OfflineCallback() {
+          public void onEvent(PCast var1) {
+            Log.d(APP_TAG, "SDK offline");
+          }
+        });
   }
 
   // 3. Get user publishMedia from SDK.
@@ -541,10 +555,12 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
                     MainActivity.this.publishMedia = media;
                     MainActivity.this.getPublishToken();
                   } else {
-                    MainActivity.this.onTryAfterError(getResources().getString(R.string.media_null));
+                    MainActivity.this
+                        .onTryAfterError(getResources().getString(R.string.media_null));
                   }
                 } else {
-                  MainActivity.this.onTryAfterError(getResources().getString(R.string.render_error, status.name()));
+                  MainActivity.this.onTryAfterError(
+                      getResources().getString(R.string.render_error, status.name()));
                 }
               }
             });
@@ -596,7 +612,8 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
           }
 
           @Override
-          public void autoDismiss(AlertDialog alertDialog) {}
+          public void autoDismiss(AlertDialog alertDialog) {
+          }
         });
       }
     });
@@ -610,34 +627,34 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
   private void getPublishToken() {
     Log.d(APP_TAG, "4. Get publish token from REST admin API");
     presenter.createStreamToken(this.phenixApplication.getServerAddress(),
-            this.getSessionId(),
-            null,
-            new String[]{Capabilities.STREAMING.getValue()},
-            new MainPresenter.IStreamer() {
-        @Override
-        public void hereIsYourStreamToken(String streamToken) {
-          if (streamToken != null) {
-            MainActivity.this.publishStream(streamToken);
-          } else {
-            MainActivity.this.getPublishToken();
+        this.getSessionId(),
+        null,
+        new String[]{Capabilities.STREAMING.getValue()},
+        new MainPresenter.IStreamer() {
+          @Override
+          public void hereIsYourStreamToken(String streamToken) {
+            if (streamToken != null) {
+              MainActivity.this.publishStream(streamToken);
+            } else {
+              MainActivity.this.getPublishToken();
+            }
           }
-        }
 
-        @Override
-        public void isError(int count) {
-          if (count == NUM_HTTP_RETRIES) {
-            Log.w(APP_TAG, "Failed to obtain publish token after [" + count + "] retries");
-            MainActivity.this.setGoneVersion();
-            // TODO(NL): This should be refactored to display the error in MainFragment instead
-            MainActivity.this.onTryAfterError("Failed to obtain publish token");
+          @Override
+          public void isError(int count) {
+            if (count == NUM_HTTP_RETRIES) {
+              Log.w(APP_TAG, "Failed to obtain publish token after [" + count + "] retries");
+              MainActivity.this.setGoneVersion();
+              // TODO(NL): This should be refactored to display the error in MainFragment instead
+              MainActivity.this.onTryAfterError("Failed to obtain publish token");
+            }
           }
-        }
-      });
+        });
   }
 
   // 5. Publish streamToken with SDK.
   private void publishStream(String publishStreamToken) {
-    if (this.pcast != null && this.publishMedia != null ) {
+    if (this.pcast != null && this.publishMedia != null) {
       Log.d(APP_TAG, "5. Publish streamToken with SDK");
       MediaStream mediaStream = this.publishMedia.getMediaStream();
       if (mediaStream == null) {
@@ -657,7 +674,8 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
                     if (MainActivity.this.progressBar != null) {
                       MainActivity.this.progressBar.setVisibility(View.GONE);
                     }
-                    MainActivity.this.onTryAfterError(getResources().getString(R.string.render_error, status.name()));
+                    MainActivity.this.onTryAfterError(
+                        getResources().getString(R.string.render_error, status.name()));
                   }
                 });
               }
@@ -699,46 +717,43 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
           bundle.putString(SESSION_ID, MainActivity.this.sessionId);
           bundle.putString(STREAM_ID, MainActivity.this.streamId);
           BaseFragment.openFragment(context,
-                  getSupportFragmentManager(),
-                  MainFragment.class,
-                  null,
-                  bundle,
-                  R.id.content_content, null);
+              getSupportFragmentManager(),
+              MainFragment.class,
+              null,
+              bundle,
+              R.id.content_content, null);
         } else {
-          Fragment fragmentMain = getSupportFragmentManager().findFragmentByTag(MainFragment.class.getName());
+          Fragment fragmentMain = getSupportFragmentManager()
+              .findFragmentByTag(MainFragment.class.getName());
           if (fragmentMain != null && fragmentMain.isVisible() && !isError) {
-            ((MainFragment) fragmentMain).callReload(MainActivity.this.sessionId, MainActivity.this.streamId);
+            ((MainFragment) fragmentMain)
+                .callReload(MainActivity.this.sessionId, MainActivity.this.streamId);
           }
         }
       }
     });
   }
 
-  private String getScreenCaptureDeviceId() {
+  private void getScreenCaptureDevice(final SourceDeviceInfoConsumer consumer) {
     if (this.pcast == null) {
       this.pcast = this.phenixApplication.getPCast();
     }
 
-    final StringBuffer deviceId = new StringBuffer();
-
-    // NOTE: This works because the callback for enumerateSourceDevices will run on the calling
-    // thread. This pattern needs revisiting if this API's behavior is changed.
     this.pcast.enumerateSourceDevices(
-      new PCast.EnumerateSourceDevicesCallback() {
-        @Override
-        public void onEvent(PCast pcast, final SourceDeviceInfo[] devices) {
-          for (SourceDeviceInfo info : devices) {
-            if (info.deviceType == SourceDeviceType.SYSTEM_OUTPUT) {
-              Log.i("Phenix SDK Example", "Screencasting is available");
-              deviceId.append(info.id);
-              break;
+        new PCast.EnumerateSourceDevicesCallback() {
+          @Override
+          public void onEvent(PCast pcast, final SourceDeviceInfo[] devices) {
+            for (SourceDeviceInfo info : devices) {
+              if (info.deviceType == SourceDeviceType.SYSTEM_OUTPUT) {
+                Log.i("Phenix SDK Example", "Screencasting is available");
+                consumer.accept(info);
+                return;
+              }
             }
+            consumer.accept(null);
           }
-        }
-      },
-      MediaType.VIDEO);
-
-    return deviceId.length() > 0 ? deviceId.toString() : null;
+        },
+        MediaType.VIDEO);
   }
 
   private void goneAnimation() {
@@ -773,11 +788,12 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
   //Data Quality Status For Publishers
   @Override
   public void onEvent(Publisher publisher,
-                      DataQualityStatus dataQualityStatus,
-                      DataQualityReason dataQualityReason) {
+      DataQualityStatus dataQualityStatus,
+      DataQualityReason dataQualityReason) {
     this.dataQualityReason = dataQualityReason;
     this.dataQualityStatus = dataQualityStatus;
-    RxBus.getInstance().post(new Events.OnStateDataQuality(false, dataQualityStatus, dataQualityReason));
+    RxBus.getInstance()
+        .post(new Events.OnStateDataQuality(false, dataQualityStatus, dataQualityReason));
   }
 
   public void onStartShareScreen() {
@@ -817,31 +833,31 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
 
   protected Subscription subscribeEvents() {
     return RxBus.getInstance().toObservable()
-      .observeOn(AndroidSchedulers.mainThread())
-      .doOnNext(new Action1<Object>() {
-        @Override
-        public void call(Object objectEvent) {
-          if (objectEvent instanceof Events.ChangeCamera) {
-            MainActivity.this.changeCamera(objectEvent);
-          }
-          // stop streamToken with click preview
-          if (objectEvent instanceof Events.OnStopStream) {
-            MainActivity.this.onEventStopStream();
-          }
-          //restart streamToken with click preview is stop
-          if (objectEvent instanceof Events.OnRestartStream) {
-            MainActivity.this.showProgressBar();
-            MainActivity.this.getDefaultUserMedia();
-          }
+        .observeOn(AndroidSchedulers.mainThread())
+        .doOnNext(new Action1<Object>() {
+          @Override
+          public void call(Object objectEvent) {
+            if (objectEvent instanceof Events.ChangeCamera) {
+              MainActivity.this.changeCamera(objectEvent);
+            }
+            // stop streamToken with click preview
+            if (objectEvent instanceof Events.OnStopStream) {
+              MainActivity.this.onEventStopStream();
+            }
+            //restart streamToken with click preview is stop
+            if (objectEvent instanceof Events.OnRestartStream) {
+              MainActivity.this.showProgressBar();
+              MainActivity.this.getDefaultUserMedia();
+            }
 
-          if (objectEvent instanceof Events.OnShareScreen) {
-            if (((Events.OnShareScreen) objectEvent).isStart) {
-              MainActivity.this.onGetMediaShareScreen(true);
-              MainActivity.this.phenixApplication.setShare(true);
+            if (objectEvent instanceof Events.OnShareScreen) {
+              if (((Events.OnShareScreen) objectEvent).isStart) {
+                MainActivity.this.onGetMediaShareScreen(true);
+                MainActivity.this.phenixApplication.setShare(true);
+              }
             }
           }
-        }
-      }).subscribe(RxBus.defaultSubscriber());
+        }).subscribe(RxBus.defaultSubscriber());
   }
 
   private void changeCamera(Object objectEvent) {
@@ -871,7 +887,8 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
   }
 
   private void onChangeIconCamera() {
-    Fragment fragmentMain = getSupportFragmentManager().findFragmentByTag(MainFragment.class.getName());
+    Fragment fragmentMain = getSupportFragmentManager()
+        .findFragmentByTag(MainFragment.class.getName());
     if (fragmentMain != null && fragmentMain.isVisible()) {
       ((MainFragment) fragmentMain).onChangeIconCamera(this.facingMode);
     }
@@ -882,34 +899,48 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
       this.pcast = this.phenixApplication.getPCast();
     }
 
-    final String deviceId = this.getScreenCaptureDeviceId();
-    this.gumOptions.getAudioOptions().enabled = true;
-    this.gumOptions.getAudioOptions().capabilityConstraints.remove(DeviceCapability.DEVICE_ID);
-    this.gumOptions.getVideoOptions().enabled = true;
-    this.gumOptions.getVideoOptions().capabilityConstraints.put(DeviceCapability.DEVICE_ID,
-        Arrays.asList(new DeviceConstraint(deviceId)));
-
-    this.pcast.getUserMedia(
-      this.gumOptions,
-      new PCast.UserMediaCallback() {
-        @Override
-        public void onEvent(
-          PCast pcast,
-          final RequestStatus status,
-          final UserMediaStream userMediaStream) {
-          // Check status and store 'userMediaStream'
-          MainActivity.this.mainHandler.post(new Runnable() {
-            @Override
-            public void run() {
-              if (status == RequestStatus.OK) {
-                didGetUserMedia(userMediaStream, isShare);
-              } else {
-                MainActivity.this.onTryAfterError(getResources().getString(R.string.render_error, status.name()));
-              }
-            }
-          });
+    this.getScreenCaptureDevice(new SourceDeviceInfoConsumer() {
+      @Override
+      public void accept(SourceDeviceInfo sourceDeviceInfo) {
+        if (sourceDeviceInfo == null) {
+          MainActivity.this
+              .onTryAfterError(getResources().getString(R.string.no_screen_capture_device));
+          return;
         }
-      });
+
+        final String deviceId = sourceDeviceInfo.id;
+        MainActivity.this.gumOptions.getAudioOptions().enabled = true;
+        MainActivity.this.gumOptions.getAudioOptions().capabilityConstraints
+            .remove(DeviceCapability.DEVICE_ID);
+        MainActivity.this.gumOptions.getVideoOptions().enabled = true;
+        MainActivity.this.gumOptions.getVideoOptions().capabilityConstraints
+            .put(DeviceCapability.DEVICE_ID,
+                Arrays.asList(new DeviceConstraint(deviceId)));
+
+        MainActivity.this.pcast.getUserMedia(
+            MainActivity.this.gumOptions,
+            new PCast.UserMediaCallback() {
+              @Override
+              public void onEvent(
+                  PCast pcast,
+                  final RequestStatus status,
+                  final UserMediaStream userMediaStream) {
+                // Check status and store 'userMediaStream'
+                MainActivity.this.mainHandler.post(new Runnable() {
+                  @Override
+                  public void run() {
+                    if (status == RequestStatus.OK) {
+                      didGetUserMedia(userMediaStream, isShare);
+                    } else {
+                      MainActivity.this.onTryAfterError(
+                          getResources().getString(R.string.render_error, status.name()));
+                    }
+                  }
+                });
+              }
+            });
+      }
+    });
   }
 
   private void didGetUserMedia(UserMediaStream userMediaStream, boolean isShare) {
@@ -930,7 +961,9 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
   }
 
   protected void addSubscription(Subscription subscription) {
-    if (subscription == null) return;
+    if (subscription == null) {
+      return;
+    }
     if (this.subscriptions == null) {
       this.subscriptions = new CompositeSubscription();
       this.subscriptions.add(subscription);
@@ -1010,5 +1043,10 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
       Utilities.close(this, this.publishMedia);
       this.publishMedia = null;
     }
+  }
+
+  private interface SourceDeviceInfoConsumer {
+
+    void accept(SourceDeviceInfo deviceInfo);
   }
 }

@@ -22,7 +22,6 @@ final class Phenix {
 
   static let shared = Phenix()
   var serverOption = 1
-  var userMediaLayer: CALayer?
   var publisher: PhenixPublisher?
   var pcast: PhenixPCast?
   var renderer: PhenixRenderer?
@@ -109,12 +108,15 @@ final class Phenix {
     self.pcast?.subscribe(subscribeStreamToken, Phenix.pcastSubscribeCallback(subscribeCallback:subscribeCallback))
   }
 
-  func viewStream(stream:PhenixMediaStream, renderReady:@escaping RenderReadyCallback, qualityChanged:@escaping QualityChangedCallback, renderStatus:@escaping RenderStatusCallback) {
+  func viewStream(
+      stream:PhenixMediaStream,
+      renderLayer:CALayer,
+      qualityChanged:@escaping QualityChangedCallback,
+      renderStatus:@escaping RenderStatusCallback) {
     if let r = stream.createRenderer() {
       self.renderer = r
       r.setDataQualityChangedCallback(Phenix.pcastQualityChangedCallback(qualityChanged:qualityChanged))
-      r.setRenderSurfaceReadyCallback(Phenix.pcastRenderReadyCallback(renderReadyCallback:renderReady))
-      let status = r.start()
+      let status = r.start(renderLayer)
       if status != .ok {
         print("Renderer start status = \(status)")
         let statusString = "\(status)"
@@ -136,7 +138,6 @@ final class Phenix {
     if self.userMediaStream != nil {
       self.userMediaStream?.mediaStream.stop()
       self.userMediaStream = nil
-      self.userMediaLayer = nil
     }
   }
 

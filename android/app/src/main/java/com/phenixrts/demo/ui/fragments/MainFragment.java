@@ -52,6 +52,7 @@ import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.crashlytics.android.Crashlytics;
+import com.phenixrts.common.RequestStatus;
 import com.phenixrts.demo.BuildConfig;
 import com.phenixrts.demo.Capabilities;
 import com.phenixrts.demo.CaptureHelper;
@@ -69,6 +70,7 @@ import com.phenixrts.demo.ui.activities.MainActivity;
 import com.phenixrts.demo.ui.adapter.StreamIdAdapter;
 import com.phenixrts.demo.ui.view.IMainView;
 import com.phenixrts.demo.utils.DialogUtil;
+import com.phenixrts.demo.utils.LayoutUtil;
 import com.phenixrts.demo.utils.TokenUtil;
 import com.phenixrts.demo.utils.Utilities;
 import com.phenixrts.pcast.DataQualityReason;
@@ -78,11 +80,9 @@ import com.phenixrts.pcast.MediaStream;
 import com.phenixrts.pcast.PCast;
 import com.phenixrts.pcast.Renderer;
 import com.phenixrts.pcast.RendererStartStatus;
-import com.phenixrts.pcast.RequestStatus;
 import com.phenixrts.pcast.StreamEndedReason;
 import com.phenixrts.pcast.android.AndroidVideoRenderSurface;
 
-import com.phenixrts.demo.utils.LayoutUtil;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;

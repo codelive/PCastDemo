@@ -15,6 +15,7 @@
   <string name="media_null">Could not get user media</string>
   <string name="please_try">Please try again</string>
   <string name="list_null">List streams return null</string>
+  <string name="no_screen_capture_device">Screen capture device not found</string>
   <string name="quality_pubs">Data quality status for publishing:</string>
   <string name="quality_views">Data quality status for viewing:</string>
   <string name="none">None</string>

@@ -100,7 +100,6 @@ final class ViewController:
   var isEndedByEnterBackground = false
   var indicator = UIActivityIndicatorView(activityIndicatorStyle:.whiteLarge)
   var previewRenderer: PhenixRenderer?
-  var subscribeLayer: CALayer?
   var parabolaType = PathType.Publish
   var isFullScreen: Bool = false
   var isSubscribing: Bool = false {
@@ -212,7 +211,6 @@ final class ViewController:
 
   override func viewDidLayoutSubviews() {
     self.updateParabolaPath()
-    self.updatePreviewLayer()
   }
 
   override func viewWillAppear(_ animated:Bool) {
@@ -239,7 +237,6 @@ final class ViewController:
 
   override func viewWillDisappear(_ animated: Bool) {
     super.viewWillDisappear(animated)
-    self.previewVideoView.layer.sublayers?.forEach { $0.removeFromSuperlayer() }
     self.updateStreamListTimer.invalidate()
   }
 
@@ -248,7 +245,6 @@ final class ViewController:
     coordinator.animate(alongsideTransition: nil, completion: {
       _ in
       self.updatePopoverFrame()
-      self.updatesubscribeLayer()
       if UIDevice.current.orientation.isLandscape {
         self.optionStack.axis = .horizontal
         self.optionStackHeightConstraint = self.optionStackHeightConstraint.newConstraint(multiplier: 0.5)
@@ -659,23 +655,18 @@ final class ViewController:
       self.publishingAnimation = Utilities.publishButtonAnimation()
       DispatchQueue.main.async {
         self.changePublishState.layer.add(self.publishingAnimation, forKey: "pulse")
-        renderer.setRenderSurfaceReadyCallback({ (renderer, layer) in
-          if let previewLayer = layer {
-            Phenix.shared.userMediaLayer = previewLayer
-            self.updatePreviewLayer()
-            let bgImage = self.isUsingFrontCamera ? #imageLiteral(resourceName: "icon_camera_front") : #imageLiteral(resourceName: "icon_camera_rear")
-            self.buttonSwitch.setBackgroundImage(bgImage, for: .normal)
-          }
-        })
 
         // Listen to and display Viewer stream quality
         renderer.setDataQualityChangedCallback({ (renderer, qualityStatus, qualityReason) in
           self.handleFeedback(qualityReason: qualityReason, qualityStatus: qualityStatus, feedbackType: .Subscriber)
         })
 
-        let status = renderer.start()
+        let status = renderer.start(self.previewVideoView.layer)
         if status == .ok {
           print("Renderer start status .ok")
+          self.previewVideoView.isHidden = false
+          let bgImage = self.isUsingFrontCamera ? #imageLiteral(resourceName: "icon_camera_front") : #imageLiteral(resourceName: "icon_camera_rear")
+          self.buttonSwitch.setBackgroundImage(bgImage, for: .normal)
         } else {
           let statusString = ("\(String(describing: status))")
           let alert = UIAlertController(title: "Preview renderer failed", message:statusString, preferredStyle: .alert)
@@ -689,24 +680,7 @@ final class ViewController:
       self.isPublishing = false
       self.isFullScreen = false
       self.changePublishState.layer.removeAllAnimations()
-      self.previewVideoView.layer.sublayers?.forEach { $0.removeFromSuperlayer() }
-    }
-  }
-
-  func updatePreviewLayer() {
-    self.previewVideoView.layer.sublayers?.forEach { $0.removeFromSuperlayer() }
-    if !isPublishing {
-      return
-    }
-    if let previewLayer = Phenix.shared.userMediaLayer {
-      if isFullScreen {
-        previewLayer.frame = self.selectStreamHomeView.bounds
-      } else {
-        previewLayer.frame = self.previewVideoViewSmall.bounds
-      }
-      DispatchQueue.main.async {
-        self.previewVideoView.layer.addSublayer(previewLayer)
-      }
+      self.previewVideoView.isHidden = true
     }
   }
 
@@ -766,10 +740,9 @@ final class ViewController:
       self.updateParabolaPath()
       Phenix.shared.stopPublish()
       Phenix.shared.stopUserMedia()
-      self.updatePreviewLayer()
       self.enterFullScreen(isFullScreen: self.isFullScreen)
       self.changePublishState.layer.removeAllAnimations()
-      self.previewVideoView.layer.sublayers?.forEach { $0.removeFromSuperlayer() }
+      self.previewVideoView.isHidden = true
 
       // Remove own device's ID immediately to advoid clicking on while publishing stopped
       if let idThisPhone = self.streamIdThisPhone, self.streamIdList.count > 0 ,idThisPhone == self.streamIdList[0] {
@@ -839,7 +812,6 @@ final class ViewController:
   func changeCapability(capability:String) {
     DispatchQueue.main.async {
       self.showSplashAnimation = false
-      self.subscribeView.layer.sublayers?.forEach { $0.removeFromSuperlayer() }
     }
     self.isViewProgressing = true
     if let publishingSession = Phenix.shared.authSession, let streamIdFullString = self.selectedStreamId {
@@ -878,18 +850,18 @@ final class ViewController:
     self.isViewProgressing = false
     DispatchQueue.main.async {
       if success {
+        Phenix.shared.stopRenderVideo()
         self.isSubscribing = true
         self.updateParabolaPath()
         if let subscribingStream = Phenix.shared.subscribeStream, Phenix.shared.authSession != nil {
           Phenix.shared.viewStream(stream: subscribingStream,
-                                   renderReady: self.viewable,
+                                   renderLayer: self.subscribeView.layer,
                                    qualityChanged: self.rendering,
                                    renderStatus: self.renderStatus)
           subscribingStream.setStreamEndedCallback({ (mediaStream,
             phenixStreamEndedReason,
             reasonDescription) in
             DispatchQueue.main.async {
-              self.subscribeView.layer.sublayers?.forEach { $0.removeFromSuperlayer() }
               if !self.isEndedByEnterBackground {
                 self.showAlertGoBackToMain()
               }
@@ -916,23 +888,6 @@ final class ViewController:
         Phenix.shared.renderer?.stop()
       })
       self.present(alert, animated: true)
-    }
-  }
-
-  func viewable(layer: CALayer?) {
-    if let videoSublayer = layer {
-      self.subscribeLayer = videoSublayer
-      self.updatesubscribeLayer()
-    }
-  }
-
-  func updatesubscribeLayer() {
-    guard let f = self.view?.frame else { return }
-    if let videoSublayer = self.subscribeLayer {
-      videoSublayer.frame = CGRect(x:0,y:0, width:f.width, height:f.height)
-      DispatchQueue.main.async {
-        self.subscribeView.layer.addSublayer(videoSublayer)
-      }
     }
   }
 
@@ -966,9 +921,7 @@ final class ViewController:
   }
 
   func goBackToMain() {
-    self.subscribeView.layer.sublayers?.forEach { $0.removeFromSuperlayer() }
     self.selectedStreamId = nil
-    self.subscribeLayer = nil
     self.isSubscribing = false
     Phenix.shared.stopRenderVideo()
     Phenix.shared.stopSubscribe()
