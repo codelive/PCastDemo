@@ -62,6 +62,7 @@ import com.phenixrts.demo.R;
 import com.phenixrts.demo.RxBus;
 import com.phenixrts.demo.UriMenu;
 import com.phenixrts.demo.events.Events;
+import com.phenixrts.demo.events.Events.OnMultiBitrateSwitch;
 import com.phenixrts.demo.presenters.MainPresenter;
 import com.phenixrts.demo.presenters.inter.IMainPresenter;
 import com.phenixrts.demo.ui.fragments.BaseFragment;
@@ -134,6 +135,7 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
   private Handler mainHandler;
   private Context context;
   private FacingMode facingMode = FacingMode.ENVIRONMENT;
+  private boolean isMultiBitrate = true;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -626,19 +628,26 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
   // 4. Get publish token from REST admin API.
   private void getPublishToken() {
     Log.d(APP_TAG, "4. Get publish token from REST admin API");
+
+    final String[] capabilities = isMultiBitrate
+        ? new String[]{Capabilities.STREAMING.getValue(), Capabilities.MULTI_BITRATE.getValue()}
+        : new String[]{Capabilities.STREAMING.getValue()};
+
+    Log.d(TAG, "Request publish token with capabilities: [" + Arrays.toString(capabilities) + "]");
+
     presenter.createStreamToken(this.phenixApplication.getServerAddress(),
-        this.getSessionId(),
-        null,
-        new String[]{Capabilities.STREAMING.getValue()},
-        new MainPresenter.IStreamer() {
-          @Override
-          public void hereIsYourStreamToken(String streamToken) {
-            if (streamToken != null) {
-              MainActivity.this.publishStream(streamToken);
-            } else {
-              MainActivity.this.getPublishToken();
-            }
+            this.getSessionId(),
+            null,
+        capabilities,
+            new MainPresenter.IStreamer() {
+        @Override
+        public void hereIsYourStreamToken(String streamToken) {
+          if (streamToken != null) {
+            MainActivity.this.publishStream(streamToken);
+          } else {
+            MainActivity.this.getPublishToken();
           }
+        }
 
           @Override
           public void isError(int count) {
@@ -849,6 +858,12 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
               MainActivity.this.showProgressBar();
               MainActivity.this.getDefaultUserMedia();
             }
+            //restart streamToken with/without mbr feature
+            if (objectEvent instanceof OnMultiBitrateSwitch) {
+              MainActivity.this.showProgressBar();
+              MainActivity.this.onEventStopStream();
+              MainActivity.this.getDefaultUserMedia();
+            }
 
             if (objectEvent instanceof Events.OnShareScreen) {
               if (((Events.OnShareScreen) objectEvent).isStart) {
@@ -1044,6 +1059,19 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
       this.publishMedia = null;
     }
   }
+
+  public boolean isPublishWithMultiBitrate() {
+    return isMultiBitrate;
+  }
+
+  public void setMbrPublishMode(boolean enabled) {
+    Log.i(TAG, "MBR publish mode: " + (enabled ? "enabled" : "disabled"));
+    if (isMultiBitrate != enabled) {
+      isMultiBitrate = enabled;
+      RxBus.getInstance().post(new OnMultiBitrateSwitch());
+    }
+  }
+
 
   private interface SourceDeviceInfoConsumer {
 

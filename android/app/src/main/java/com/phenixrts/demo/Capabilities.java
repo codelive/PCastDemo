@@ -20,7 +20,8 @@ public enum Capabilities {
   STREAMING("streaming"),
   REAL_TIME("real-time"),
   BROADCAST("broadcast"),
-  ARCHIVE("archive");
+  ARCHIVE("archive"),
+  MULTI_BITRATE("multi-bitrate");
 
   private String value;
 

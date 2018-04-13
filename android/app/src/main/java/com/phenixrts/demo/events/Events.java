@@ -35,6 +35,10 @@ public final class Events {
     public OnRestartStream() {}
   }
 
+  public static class OnMultiBitrateSwitch {
+    public OnMultiBitrateSwitch() {}
+  }
+
   public static class OnStateDataQuality {
     public final DataQualityStatus dataQualityStatus;
     public final DataQualityReason dataQualityReason;

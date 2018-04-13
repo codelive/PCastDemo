@@ -15,84 +15,6 @@
 
 package com.phenixrts.demo.ui.fragments;
 
-import android.animation.ValueAnimator;
-import android.app.Activity;
-import android.content.res.Configuration;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
-import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.CardView;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.MotionEvent;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.widget.CompoundButton;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.PopupWindow;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.ToggleButton;
-
-import com.crashlytics.android.Crashlytics;
-import com.phenixrts.common.RequestStatus;
-import com.phenixrts.demo.BuildConfig;
-import com.phenixrts.demo.Capabilities;
-import com.phenixrts.demo.CaptureHelper;
-import com.phenixrts.demo.Constants;
-import com.phenixrts.demo.PhenixApplication;
-import com.phenixrts.demo.R;
-import com.phenixrts.demo.RxBus;
-import com.phenixrts.demo.events.Events;
-import com.phenixrts.demo.model.ListStreamResponse;
-import com.phenixrts.demo.presenters.MainPresenter;
-import com.phenixrts.demo.presenters.inter.IMainPresenter;
-import com.phenixrts.demo.ui.ArcImage;
-import com.phenixrts.demo.ui.QualityStatusView;
-import com.phenixrts.demo.ui.activities.MainActivity;
-import com.phenixrts.demo.ui.adapter.StreamIdAdapter;
-import com.phenixrts.demo.ui.view.IMainView;
-import com.phenixrts.demo.utils.DialogUtil;
-import com.phenixrts.demo.utils.LayoutUtil;
-import com.phenixrts.demo.utils.TokenUtil;
-import com.phenixrts.demo.utils.Utilities;
-import com.phenixrts.pcast.DataQualityReason;
-import com.phenixrts.pcast.DataQualityStatus;
-import com.phenixrts.pcast.FacingMode;
-import com.phenixrts.pcast.MediaStream;
-import com.phenixrts.pcast.PCast;
-import com.phenixrts.pcast.Renderer;
-import com.phenixrts.pcast.RendererStartStatus;
-import com.phenixrts.pcast.StreamEndedReason;
-import com.phenixrts.pcast.android.AndroidVideoRenderSurface;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
-import io.fabric.sdk.android.Fabric;
-import rx.Subscription;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
-
 import static android.content.Context.LAYOUT_INFLATER_SERVICE;
 import static com.phenixrts.demo.Constants.APP_TAG;
 import static com.phenixrts.demo.Constants.NULL_STREAM_TOKEN;
@@ -115,6 +37,86 @@ import static com.phenixrts.pcast.DataQualityReason.NONE;
 import static com.phenixrts.pcast.DataQualityReason.PUBLISHER_LIMITED;
 import static com.phenixrts.pcast.DataQualityReason.UPLOAD_LIMITED;
 
+import android.animation.ValueAnimator;
+import android.app.Activity;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
+import android.content.res.Configuration;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
+import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AlertDialog.Builder;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.CheckedTextView;
+import android.widget.CompoundButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+import android.widget.ToggleButton;
+import com.crashlytics.android.Crashlytics;
+import com.phenixrts.common.RequestStatus;
+import com.phenixrts.demo.BuildConfig;
+import com.phenixrts.demo.Capabilities;
+import com.phenixrts.demo.CaptureHelper;
+import com.phenixrts.demo.Constants;
+import com.phenixrts.demo.PhenixApplication;
+import com.phenixrts.demo.R;
+import com.phenixrts.demo.RxBus;
+import com.phenixrts.demo.events.Events;
+import com.phenixrts.demo.events.Events.OnMultiBitrateSwitch;
+import com.phenixrts.demo.model.ListStreamResponse;
+import com.phenixrts.demo.presenters.MainPresenter;
+import com.phenixrts.demo.presenters.inter.IMainPresenter;
+import com.phenixrts.demo.ui.ArcImage;
+import com.phenixrts.demo.ui.QualityStatusView;
+import com.phenixrts.demo.ui.activities.MainActivity;
+import com.phenixrts.demo.ui.adapter.StreamIdAdapter;
+import com.phenixrts.demo.ui.view.IMainView;
+import com.phenixrts.demo.utils.DialogUtil;
+import com.phenixrts.demo.utils.LayoutUtil;
+import com.phenixrts.demo.utils.TokenUtil;
+import com.phenixrts.demo.utils.Utilities;
+import com.phenixrts.pcast.DataQualityReason;
+import com.phenixrts.pcast.DataQualityStatus;
+import com.phenixrts.pcast.FacingMode;
+import com.phenixrts.pcast.MediaStream;
+import com.phenixrts.pcast.PCast;
+import com.phenixrts.pcast.Renderer;
+import com.phenixrts.pcast.RendererStartStatus;
+import com.phenixrts.pcast.StreamEndedReason;
+import com.phenixrts.pcast.android.AndroidVideoRenderSurface;
+import io.fabric.sdk.android.Fabric;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
+
 public final class MainFragment extends BaseFragment implements View.OnClickListener, IMainView, StreamIdAdapter.OnItemClickListener, CompoundButton.OnCheckedChangeListener,
   SwipeRefreshLayout.OnRefreshListener, ValueAnimator.AnimatorUpdateListener, MediaStream.StreamEndedCallback,
   Renderer.DataQualityChangedCallback, Handler.Callback, RadioGroup.OnCheckedChangeListener, View.OnTouchListener {
@@ -131,6 +133,7 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
   private ImageView buttonAudio;
   private ImageView buttonVideo;
   private ImageView buttonShareScreen;
+  private CheckedTextView buttonMbr;
   private ImageView imageAudio;
   private ImageView imageVideo;
   private ImageView imageLoad;
@@ -237,6 +240,7 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
     this.buttonShareScreen.setOnClickListener(this);
     this.buttonVideo.setOnClickListener(this);
     this.buttonAudio.setOnClickListener(this);
+    this.buttonMbr.setOnClickListener(this);
     this.menu.setOnClickListener(this);
     this.renderSurface.setOnClickListener(this);
     this.adapter = new StreamIdAdapter(this);
@@ -277,6 +281,8 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
     this.buttonShareScreen = (ImageView) view.findViewById(R.id.share);
     this.imageAudio = (ImageView) view.findViewById(R.id.imageAudio);
     this.imageVideo = (ImageView) view.findViewById(R.id.imageVideo);
+    this.buttonMbr = (CheckedTextView) view.findViewById(R.id.mbr);
+    this.buttonMbr.setChecked(getMainActivity().isPublishWithMultiBitrate());
     this.viewDelay = view.findViewById(R.id.viewStop);
     this.viewFull = (ToggleButton) view.findViewById(R.id.imageFull);
     this.toggleCamera = (ToggleButton) view.findViewById(R.id.toggleCamera);
@@ -754,6 +760,7 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
       this.viewFull.setChecked(false);
     this.buttonVideoAudio.setVisibility(View.VISIBLE);
     this.buttonStop.setVisibility(View.GONE);
+    this.buttonMbr.setVisibility(View.GONE);
     this.viewDelay.setVisibility(View.VISIBLE);
     this.isStopPreview = true;
     this.viewFull.setVisibility(View.GONE);
@@ -859,7 +866,37 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
           this.popupWindow.dismiss();
         }
         break;
+      case R.id.mbr:
+        showMbrDialog();
+        break;
     }
+  }
+
+  private void showMbrDialog() {
+    AlertDialog dialog = new Builder(getContext())
+        .setTitle(R.string.mbr_dialog_title)
+        .setMessage(R.string.mbr_dialog_message)
+        .setPositiveButton(R.string.enable, new OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialogInterface, int i) {
+            getMainActivity().setMbrPublishMode(true);
+            buttonMbr.setChecked(true);
+          }
+        })
+        .setNegativeButton(R.string.disable, new OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialogInterface, int i) {
+            getMainActivity().setMbrPublishMode(false);
+            buttonMbr.setChecked(false);
+          }
+        })
+        .setNeutralButton(android.R.string.cancel, null)
+        .create();
+    dialog.show();
+
+    boolean mbrEnabled = getMainActivity().isPublishWithMultiBitrate();
+    dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(!mbrEnabled);
+    dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setEnabled(mbrEnabled);
   }
 
   // Stop render stream, and render preview local
@@ -918,6 +955,7 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
     this.isStopPreview = false;
     this.viewFull.setVisibility(View.VISIBLE);
     this.buttonStop.setVisibility(View.VISIBLE);
+    this.buttonMbr.setVisibility(View.VISIBLE);
     this.buttonVideoAudio.setVisibility(View.GONE);
     this.buttonAudio.setVisibility(View.GONE);
     this.buttonVideo.setVisibility(View.GONE);
@@ -1121,6 +1159,12 @@ public final class MainFragment extends BaseFragment implements View.OnClickList
               ((Events.OnStateDataQuality) objectEvent).dataQualityStatus,
               ((Events.OnStateDataQuality) objectEvent).dataQualityReason);
           }
+
+          if (objectEvent instanceof OnMultiBitrateSwitch) {
+            streamIdList.clear();
+            adapter.notifyDataSetChanged();
+          }
+
         }
       }).subscribe(RxBus.defaultSubscriber());
   }

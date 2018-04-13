@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--~
+  ~ Copyright 2018 PhenixP2P Inc. Confidential and Proprietary. All rights reserved.
+  -->
+
+<RelativeLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:background="@drawable/bg_comment_button"
+  tools:showIn="@layout/fragment_main">
+
+  <View
+    android:id="@+id/viewStop"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black"
+    android:visibility="gone"/>
+
+  <android.support.v7.widget.AppCompatImageView
+    android:id="@+id/record"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="2dp"
+    android:layout_marginLeft="2dp"
+    android:layout_alignParentStart="true"
+    android:layout_alignParentTop="true"
+    android:padding="4dp"
+    android:scaleType="fitXY"
+    android:visibility="gone"
+    app:srcCompat="@drawable/ic_fiber_manual_record_24dp"
+    tools:visibility="visible"/>
+
+  <ToggleButton
+    android:id="@+id/imageFull"
+    android:layout_width="36dp"
+    android:layout_height="36dp"
+    android:layout_marginBottom="-4.8dp"
+    android:layout_marginRight="-3.8dp"
+    android:layout_alignParentBottom="true"
+    android:layout_alignParentEnd="true"
+    android:background="@null"
+    android:drawableStart="@drawable/ic_full_view"
+    android:gravity="center"
+    android:textOff=""
+    android:textOn=""/>
+
+  <ToggleButton
+    android:id="@+id/toggleCamera"
+    android:layout_width="24dp"
+    android:layout_height="24dp"
+    android:layout_marginTop="4dp"
+    android:layout_alignParentEnd="true"
+    android:layout_alignParentTop="true"
+    android:background="@null"
+    android:drawableStart="@drawable/ic_select_camera"
+    android:gravity="center"
+    android:textOff=""
+    android:textOn=""/>
+
+  <com.phenixrts.demo.ui.QualityStatusView
+    android:id="@+id/qualityPublisher"
+    android:layout_width="24dp"
+    android:layout_height="24dp"
+    android:layout_marginTop="2.5dp"
+    android:layout_centerHorizontal="true"
+    android:layout_alignParentTop="true"
+    app:padding_column="2.5dp"
+    app:status_show="one"/>
+
+  <!-- MBR -->
+  <android.support.v7.widget.AppCompatCheckedTextView
+    android:id="@+id/mbr"
+    android:textStyle="bold"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_margin="5dp"
+    android:layout_alignParentBottom="true"
+    android:layout_alignParentLeft="true"
+    android:padding="3dp"
+    android:text="@string/mbr_abbreviation"
+    android:textColor="@drawable/checkable_text_color"
+    android:textSize="16sp"/>
+
+  <RelativeLayout
+    android:id="@+id/viewAc"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_below="@+id/record"
+    android:layout_centerInParent="true"
+    android:gravity="center">
+
+    <android.support.v7.widget.AppCompatImageView
+      android:id="@+id/audio"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginBottom="8dp"
+      android:layout_centerHorizontal="true"
+      android:visibility="gone"
+      app:srcCompat="@drawable/ic_audio"
+      tools:visibility="visible"/>
+
+    <android.support.v7.widget.AppCompatImageView
+      android:id="@+id/video"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginBottom="8dp"
+      android:layout_below="@+id/audio"
+      android:layout_centerHorizontal="true"
+      android:visibility="gone"
+      app:srcCompat="@drawable/ic_video"
+      tools:visibility="visible"/>
+
+    <LinearLayout
+      android:id="@+id/play"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginBottom="8dp"
+      android:layout_below="@+id/video"
+      android:layout_centerHorizontal="true"
+      android:gravity="center"
+      android:orientation="horizontal"
+      android:visibility="gone"
+      tools:visibility="visible">
+
+      <android.support.v7.widget.AppCompatImageView
+        android:id="@+id/imageAudio"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srcCompat="@drawable/ic_audio"/>
+
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="-5.5dp"
+        android:layout_marginRight="-4dp"
+        android:text="+"
+        android:textColor="#B91B64"/>
+
+      <android.support.v7.widget.AppCompatImageView
+        android:id="@+id/imageVideo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srcCompat="@drawable/ic_video"/>
+    </LinearLayout>
+
+    <android.support.v7.widget.AppCompatImageView
+      android:id="@+id/share"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_below="@+id/play"
+      android:layout_centerHorizontal="true"
+      android:visibility="gone"
+      app:srcCompat="@drawable/ic_share_src"
+      tools:visibility="visible"/>
+
+  </RelativeLayout>
+
+</RelativeLayout>

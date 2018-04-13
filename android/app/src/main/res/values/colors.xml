@@ -10,4 +10,5 @@
   <color name="orange">#de9839</color>
   <color name="gray">#40585858</color>
   <color name="grayPhenix">#888888</color>
+  <color name="text_disabled">#808080</color>
 </resources>

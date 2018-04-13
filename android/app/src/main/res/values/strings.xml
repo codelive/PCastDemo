@@ -53,6 +53,13 @@
   <string name="email_log">Email Logs</string>
   <string name="font_robo_light">fonts/roboto_regular.ttf</string>
 
+  <!-- MULTI_BITRATE -->
+  <string name="mbr_dialog_title">Multi-bitrate support</string>
+  <string name="mbr_dialog_message">With multi-bitrate support each subscriber receives a stream at the best possible bitrate and resolution.</string>
+  <string name="mbr_abbreviation">MBR</string>
+  <string name="enable">Enable</string>
+  <string name="disable">Disable</string>
+
   <string-array name="server_array">
     <item>Manual</item>
     <item>Anycast (Closest Data Center)</item>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--~
+  ~ Copyright 2018 PhenixP2P Inc. Confidential and Proprietary. All rights reserved.
+  -->
+
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+  <item android:color="#B91B64" android:state_checked="true"/>
+  <item android:color="@color/text_disabled" android:state_checked="false"/>
+</selector>
