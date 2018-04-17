@@ -1006,35 +1006,16 @@ extension ViewController: CapabilityDelegate {
 }
 
 extension ViewController: SecretUrlPopoverDelegate, MFMailComposeViewControllerDelegate {
-  func startComposingEmail() {
+  func shareLogFile() {
     var paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)
     let documentsDirectory = paths[0]
-    let currentDate = Date()
-    let dateFormatter = DateFormatter()
-    dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-    let curruntDateString = dateFormatter.string(from: currentDate)
     let fileName = PhenixNameForLogFile
     let logFilePath = (documentsDirectory as NSString).appendingPathComponent(fileName)
 
-    if MFMailComposeViewController.canSendMail() {
-      let mailComposer = MFMailComposeViewController()
-      mailComposer.mailComposeDelegate = self
-      mailComposer.setSubject("Log collected at <\(curruntDateString)>")
-      mailComposer.setMessageBody("Describe the issue you encountered\n", isHTML: false)
+    let logFileUrl = NSURL(fileURLWithPath: logFilePath);
+    let activityViewController = UIActivityViewController(activityItems: [logFileUrl], applicationActivities: nil);
 
-      let attachFileName = NSURL(fileURLWithPath: logFilePath).lastPathComponent!
-      if let fileData = NSData(contentsOfFile: logFilePath) {
-        mailComposer.addAttachmentData(fileData as Data, mimeType: "text/plain", fileName: attachFileName)
-      }
-
-      DispatchQueue.main.async {
-        self.present(mailComposer, animated: true, completion: nil)
-      }
-    }
-  }
-
-  func mailComposeController(_ controller: MFMailComposeViewController, didFinishWith result: MFMailComposeResult, error: Error?) {
-    controller.dismiss(animated: true)
+    self.present(activityViewController, animated: true, completion: nil);
   }
 }
 

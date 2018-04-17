@@ -17,17 +17,16 @@
 import UIKit
 
 protocol SecretUrlPopoverDelegate {
-  func startComposingEmail()
+  func shareLogFile()
 }
 
 final class SecretUrlPopoverViewController: UIViewController {
-  @IBOutlet weak var scrollPopover: UIScrollView!
   @IBOutlet weak var serverList: UITextField!
   @IBOutlet weak var addressServer: UITextField!
   @IBOutlet weak var addressPCast: UITextField!
   @IBOutlet weak var buttonOk: UIButton!
   @IBOutlet weak var buttonCancel: UIButton!
-  @IBOutlet weak var buttonEmail: UIButton!
+  @IBOutlet weak var buttonShare: UIButton!
 
   var serverPicker = UIPickerView()
   var arrayListServer = Array<ServerLocation>()
@@ -55,16 +54,13 @@ final class SecretUrlPopoverViewController: UIViewController {
 
   func setSubviews() {
     self.enterManualSetting()
-    self.scrollPopover.contentSize = CGSize.init(width: self.view.frame.size.width, height: self.view.frame.size.height * 0.4)
-    self.self.scrollPopover.autoresizingMask = .flexibleHeight
-    self.scrollPopover.isScrollEnabled = false
-    self.scrollPopover.isScrollEnabled = true
+
     self.buttonOk.layer.cornerRadius = 5.0
     self.buttonOk.layer.masksToBounds = true
     self.buttonCancel.layer.cornerRadius = 5.0
     self.buttonCancel.layer.masksToBounds = true
-    self.buttonEmail.layer.cornerRadius = 3.0
-    self.buttonEmail.layer.masksToBounds = true
+    self.buttonShare.layer.cornerRadius = 3.0
+    self.buttonShare.layer.masksToBounds = true
     let iconDown = UIImageView.init(frame: CGRect.init(x: 0, y: 0, width: 30, height: 30))
     iconDown.image = #imageLiteral(resourceName: "icon-menu-down")
     self.serverList.rightView = iconDown
@@ -139,15 +135,14 @@ final class SecretUrlPopoverViewController: UIViewController {
   }
 
   @IBAction func buttonCancelClicked(_ sender: Any) {
-    self.view.endEditing(true)
     self.dismiss(animated: true, completion: nil)
   }
 
-  @IBAction func buttonEmailLogClicked(_ sender: Any) {
+  @IBAction func buttonShareLogClicked(_ sender: Any) {
     self.view.endEditing(true)
     self.dismiss(animated: true, completion: nil)
     if let delegate = secretPopoverDelegate {
-      delegate.startComposingEmail()
+      delegate.shareLogFile()
     }
   }
 }

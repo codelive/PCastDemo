@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="hVJ-II-wOH">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14109" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="hVJ-II-wOH">
     <device id="retina4_0" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13527"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14088"/>
         <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
         <capability name="Constraints with non-1.0 multipliers" minToolsVersion="5.1"/>
@@ -193,6 +193,47 @@
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="0MX-XL-ZvA" userLabel="Animation Container">
                                         <rect key="frame" x="10" y="422" width="223" height="109"/>
                                         <subviews>
+                                            <view contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="HOC-bX-2Rv" userLabel="Animation Container">
+                                                <rect key="frame" x="0.0" y="0.0" width="223" height="109"/>
+                                                <subviews>
+                                                    <view contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="yDg-MP-tIt">
+                                                        <rect key="frame" x="55" y="12" width="120" height="89"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                                    </view>
+                                                    <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" preservesSuperviewLayoutMargins="YES" image="image_user" translatesAutoresizingMaskIntoConstraints="NO" id="CeQ-hK-F0Z">
+                                                        <rect key="frame" x="52" y="74" width="30" height="30"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="height" constant="30" id="9Ej-G0-IH3"/>
+                                                            <constraint firstAttribute="width" secondItem="CeQ-hK-F0Z" secondAttribute="height" multiplier="1:1" id="gK7-kf-Dwa"/>
+                                                        </constraints>
+                                                    </imageView>
+                                                    <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" image="image_cloud" translatesAutoresizingMaskIntoConstraints="NO" id="ulX-D6-Uob">
+                                                        <rect key="frame" x="94" y="-5" width="42" height="30"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="height" constant="30" id="Ffu-Qe-At5"/>
+                                                        </constraints>
+                                                    </imageView>
+                                                    <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" image="image_user" translatesAutoresizingMaskIntoConstraints="NO" id="R4A-nH-FB4">
+                                                        <rect key="frame" x="148" y="74" width="30" height="30"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="width" secondItem="R4A-nH-FB4" secondAttribute="height" multiplier="1:1" id="lba-dO-i8p"/>
+                                                            <constraint firstAttribute="height" constant="30" id="qBb-Ze-DUR"/>
+                                                        </constraints>
+                                                    </imageView>
+                                                </subviews>
+                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                                <color key="tintColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                                <constraints>
+                                                    <constraint firstItem="ulX-D6-Uob" firstAttribute="centerX" secondItem="yDg-MP-tIt" secondAttribute="centerX" id="SoR-Ft-QFU"/>
+                                                    <constraint firstAttribute="bottom" secondItem="yDg-MP-tIt" secondAttribute="bottom" constant="8" id="XH1-QD-J1X"/>
+                                                    <constraint firstItem="R4A-nH-FB4" firstAttribute="trailing" secondItem="yDg-MP-tIt" secondAttribute="trailing" constant="3" id="ZEC-R8-0lh"/>
+                                                    <constraint firstItem="ulX-D6-Uob" firstAttribute="top" secondItem="HOC-bX-2Rv" secondAttribute="top" constant="-5" id="ZIl-Yy-LkX"/>
+                                                    <constraint firstItem="R4A-nH-FB4" firstAttribute="bottom" secondItem="yDg-MP-tIt" secondAttribute="bottom" constant="3" id="ftY-FB-4I2"/>
+                                                    <constraint firstItem="yDg-MP-tIt" firstAttribute="top" secondItem="HOC-bX-2Rv" secondAttribute="top" constant="12" id="gFX-nA-BkT"/>
+                                                    <constraint firstItem="CeQ-hK-F0Z" firstAttribute="leading" secondItem="yDg-MP-tIt" secondAttribute="leading" constant="-3" id="pWU-0Q-vB6"/>
+                                                    <constraint firstItem="CeQ-hK-F0Z" firstAttribute="bottom" secondItem="yDg-MP-tIt" secondAttribute="bottom" constant="3" id="xKy-ek-sjX"/>
+                                                </constraints>
+                                            </view>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="nhF-d1-37D">
                                                 <rect key="frame" x="55" y="12" width="120" height="89"/>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
@@ -811,109 +852,118 @@
                         <viewControllerLayoutGuide type="top" id="TPQ-Qc-Ebb"/>
                         <viewControllerLayoutGuide type="bottom" id="eq4-Ef-hoN"/>
                     </layoutGuides>
-                    <view key="view" contentMode="scaleToFill" id="sOH-Zz-1Pk">
+                    <view key="view" contentMode="scaleToFill" layoutMarginsFollowReadableWidth="YES" id="sOH-Zz-1Pk">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <scrollView multipleTouchEnabled="YES" contentMode="scaleToFill" showsHorizontalScrollIndicator="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3aD-mA-v2c" customClass="TPKeyboardAvoidingScrollView">
-                                <rect key="frame" x="0.0" y="20" width="320" height="548"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" layoutMarginsFollowReadableWidth="YES" axis="vertical" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="fTt-xc-mOv">
+                                <rect key="frame" x="34.5" y="125" width="250" height="318"/>
                                 <subviews>
-                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="th9-oh-yp7">
-                                        <rect key="frame" x="0.0" y="0.0" width="320" height="548"/>
+                                    <stackView opaque="NO" contentMode="center" distribution="fillProportionally" alignment="center" spacing="15" translatesAutoresizingMaskIntoConstraints="NO" id="3Ty-qa-Eub">
+                                        <rect key="frame" x="0.0" y="0.0" width="250" height="48"/>
                                         <subviews>
                                             <button contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="OCA-Vm-7RJ">
-                                                <rect key="frame" x="15" y="15" width="290" height="48"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="250" height="48"/>
                                                 <color key="backgroundColor" red="0.45882352941176469" green="0.45882352941176469" blue="0.45882352941176469" alpha="1" colorSpace="calibratedRGB"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="48" id="7vf-E3-jsP"/>
                                                 </constraints>
                                                 <fontDescription key="fontDescription" name="Roboto-Regular" family="Roboto" pointSize="17"/>
                                                 <size key="titleShadowOffset" width="5" height="5"/>
-                                                <state key="normal" title="EMAIL LOGS">
+                                                <state key="normal" title="SHARE LOGS">
                                                     <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                 </state>
                                                 <connections>
-                                                    <action selector="buttonEmailLogClicked:" destination="x5p-UX-ccU" eventType="touchUpInside" id="cuh-Cr-Eox"/>
+                                                    <action selector="buttonShareLogClicked:" destination="x5p-UX-ccU" eventType="touchUpInside" id="MxN-Q6-AaL"/>
                                                 </connections>
                                             </button>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Server List:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VXz-ia-0dt">
-                                                <rect key="frame" x="10" y="83" width="300" height="21"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="height" constant="21" id="3nz-Tz-ddc"/>
-                                                </constraints>
-                                                <fontDescription key="fontDescription" name="Roboto-Regular" family="Roboto" pointSize="13"/>
-                                                <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                                <nil key="highlightedColor"/>
-                                            </label>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Server address" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="f4M-Wl-N2D">
-                                                <rect key="frame" x="10" y="156" width="300" height="18"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="height" constant="18" id="noC-Yy-fDZ"/>
-                                                </constraints>
-                                                <fontDescription key="fontDescription" name="Roboto-Regular" family="Roboto" pointSize="13"/>
-                                                <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                                <nil key="highlightedColor"/>
-                                            </label>
                                         </subviews>
-                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                                        <constraints>
-                                            <constraint firstItem="VXz-ia-0dt" firstAttribute="leading" secondItem="th9-oh-yp7" secondAttribute="leading" constant="10" id="E0c-Nn-sm0"/>
-                                            <constraint firstItem="OCA-Vm-7RJ" firstAttribute="leading" secondItem="th9-oh-yp7" secondAttribute="leading" constant="15" id="L4X-tI-OIw"/>
-                                            <constraint firstItem="VXz-ia-0dt" firstAttribute="top" secondItem="OCA-Vm-7RJ" secondAttribute="bottom" constant="20" id="bWu-ib-CDW"/>
-                                            <constraint firstItem="OCA-Vm-7RJ" firstAttribute="top" secondItem="th9-oh-yp7" secondAttribute="top" constant="15" id="nuc-tT-zYt"/>
-                                            <constraint firstAttribute="trailing" secondItem="VXz-ia-0dt" secondAttribute="trailing" constant="10" id="oKN-FM-JoU"/>
-                                            <constraint firstAttribute="trailing" secondItem="OCA-Vm-7RJ" secondAttribute="trailing" constant="15" id="ohl-Fx-d8g"/>
-                                            <constraint firstAttribute="trailing" secondItem="f4M-Wl-N2D" secondAttribute="trailing" constant="10" id="pqL-pm-j7F"/>
-                                            <constraint firstItem="f4M-Wl-N2D" firstAttribute="leading" secondItem="th9-oh-yp7" secondAttribute="leading" constant="10" id="ydY-e0-5Vr"/>
-                                        </constraints>
-                                    </view>
-                                    <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="Anycast (Closest Data Center)" minimumFontSize="9" translatesAutoresizingMaskIntoConstraints="NO" id="DkK-5W-mkA">
-                                        <rect key="frame" x="15" y="115" width="290" height="30"/>
-                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                                        <color key="tintColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="30" id="zhs-HF-0vo"/>
-                                        </constraints>
-                                        <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                        <fontDescription key="fontDescription" name="Roboto-Regular" family="Roboto" pointSize="13"/>
-                                        <textInputTraits key="textInputTraits"/>
-                                    </textField>
-                                    <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="https://demo.phenixrts.com/demoApp/" borderStyle="roundedRect" minimumFontSize="9" translatesAutoresizingMaskIntoConstraints="NO" id="PiF-hn-318">
-                                        <rect key="frame" x="15" y="179" width="290" height="30"/>
-                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                                        <color key="tintColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="30" id="pvC-HN-dA1"/>
-                                        </constraints>
-                                        <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                        <fontDescription key="fontDescription" name="Roboto-Regular" family="Roboto" pointSize="13"/>
-                                        <textInputTraits key="textInputTraits"/>
-                                    </textField>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="PCast address" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="fcN-T8-vdq">
-                                        <rect key="frame" x="10" y="220" width="300" height="18"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="18" id="syr-G4-ToR"/>
-                                        </constraints>
-                                        <fontDescription key="fontDescription" name="Roboto-Regular" family="Roboto" pointSize="13"/>
-                                        <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
-                                    <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="https://pcast.phenixrts.com" borderStyle="roundedRect" minimumFontSize="9" translatesAutoresizingMaskIntoConstraints="NO" id="3vD-4F-BRo" userLabel="Address PCast">
-                                        <rect key="frame" x="15" y="243" width="290" height="30"/>
-                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                                        <color key="tintColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="30" id="9Tl-LE-Ika"/>
-                                        </constraints>
-                                        <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                        <fontDescription key="fontDescription" name="Roboto-Regular" family="Roboto" pointSize="13"/>
-                                        <textInputTraits key="textInputTraits"/>
-                                    </textField>
-                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="ELP-fU-JzC">
-                                        <rect key="frame" x="15" y="288" width="290" height="48"/>
+                                    </stackView>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="am0-0x-HRS">
+                                        <rect key="frame" x="0.0" y="68" width="250" height="182"/>
+                                        <subviews>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="k6C-fJ-sXN">
+                                                <rect key="frame" x="0.0" y="0.0" width="250" height="53"/>
+                                                <subviews>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Server address" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="f4M-Wl-N2D">
+                                                        <rect key="frame" x="0.0" y="0.0" width="250" height="18"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="height" constant="18" id="noC-Yy-fDZ"/>
+                                                        </constraints>
+                                                        <fontDescription key="fontDescription" name="Roboto-Regular" family="Roboto" pointSize="13"/>
+                                                        <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                    <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="https://demo.phenixrts.com/demoApp/" borderStyle="roundedRect" minimumFontSize="9" translatesAutoresizingMaskIntoConstraints="NO" id="PiF-hn-318">
+                                                        <rect key="frame" x="0.0" y="23" width="250" height="30"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                                        <color key="tintColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="height" constant="30" id="pvC-HN-dA1"/>
+                                                        </constraints>
+                                                        <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                        <fontDescription key="fontDescription" name="Roboto-Regular" family="Roboto" pointSize="13"/>
+                                                        <textInputTraits key="textInputTraits"/>
+                                                    </textField>
+                                                </subviews>
+                                            </stackView>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="12k-J8-E8O">
+                                                <rect key="frame" x="0.0" y="63" width="250" height="53"/>
+                                                <subviews>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="PCast address" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="fcN-T8-vdq">
+                                                        <rect key="frame" x="0.0" y="0.0" width="250" height="18"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="height" constant="18" id="syr-G4-ToR"/>
+                                                        </constraints>
+                                                        <fontDescription key="fontDescription" name="Roboto-Regular" family="Roboto" pointSize="13"/>
+                                                        <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                    <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="https://pcast.phenixrts.com" borderStyle="roundedRect" minimumFontSize="9" translatesAutoresizingMaskIntoConstraints="NO" id="3vD-4F-BRo" userLabel="Address PCast">
+                                                        <rect key="frame" x="0.0" y="23" width="250" height="30"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                                        <color key="tintColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="height" constant="30" id="9Tl-LE-Ika"/>
+                                                        </constraints>
+                                                        <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                        <fontDescription key="fontDescription" name="Roboto-Regular" family="Roboto" pointSize="13"/>
+                                                        <textInputTraits key="textInputTraits"/>
+                                                    </textField>
+                                                </subviews>
+                                            </stackView>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="8jQ-nk-JRv">
+                                                <rect key="frame" x="0.0" y="126" width="250" height="56"/>
+                                                <subviews>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Server List:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VXz-ia-0dt">
+                                                        <rect key="frame" x="0.0" y="0.0" width="250" height="21"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="height" constant="21" id="3nz-Tz-ddc"/>
+                                                        </constraints>
+                                                        <fontDescription key="fontDescription" name="Roboto-Regular" family="Roboto" pointSize="13"/>
+                                                        <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                    <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="Anycast (Closest Data Center)" minimumFontSize="9" translatesAutoresizingMaskIntoConstraints="NO" id="DkK-5W-mkA">
+                                                        <rect key="frame" x="0.0" y="26" width="250" height="30"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                                        <color key="tintColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="height" constant="30" id="zhs-HF-0vo"/>
+                                                        </constraints>
+                                                        <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                        <fontDescription key="fontDescription" name="Roboto-Regular" family="Roboto" pointSize="13"/>
+                                                        <textInputTraits key="textInputTraits"/>
+                                                    </textField>
+                                                </subviews>
+                                            </stackView>
+                                        </subviews>
+                                    </stackView>
+                                    <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="15" translatesAutoresizingMaskIntoConstraints="NO" id="ELP-fU-JzC">
+                                        <rect key="frame" x="0.0" y="270" width="250" height="48"/>
                                         <subviews>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="J8M-6K-NGO">
-                                                <rect key="frame" x="0.0" y="0.0" width="140" height="48"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="117.5" height="48"/>
                                                 <color key="backgroundColor" red="0.45882352941176469" green="0.45882352941176469" blue="0.45882352941176469" alpha="1" colorSpace="calibratedRGB"/>
                                                 <fontDescription key="fontDescription" name="Roboto-Regular" family="Roboto" pointSize="17"/>
                                                 <state key="normal" title="SUBMIT">
@@ -924,7 +974,7 @@
                                                 </connections>
                                             </button>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Q3f-5k-BSe">
-                                                <rect key="frame" x="150" y="0.0" width="140" height="48"/>
+                                                <rect key="frame" x="132.5" y="0.0" width="117.5" height="48"/>
                                                 <color key="backgroundColor" red="0.45882352941176469" green="0.45882352941176469" blue="0.45882352941176469" alpha="1" colorSpace="calibratedRGB"/>
                                                 <fontDescription key="fontDescription" name="Roboto-Regular" family="Roboto" pointSize="17"/>
                                                 <state key="normal" title="CANCEL">
@@ -940,40 +990,12 @@
                                         </constraints>
                                     </stackView>
                                 </subviews>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                                <constraints>
-                                    <constraint firstAttribute="trailing" secondItem="ELP-fU-JzC" secondAttribute="trailing" constant="15" id="BLN-Gd-bBU"/>
-                                    <constraint firstItem="th9-oh-yp7" firstAttribute="top" secondItem="3aD-mA-v2c" secondAttribute="top" id="Dt8-zr-2ad"/>
-                                    <constraint firstAttribute="trailing" secondItem="PiF-hn-318" secondAttribute="trailing" constant="15" id="F4i-FH-bER"/>
-                                    <constraint firstItem="ELP-fU-JzC" firstAttribute="leading" secondItem="3aD-mA-v2c" secondAttribute="leading" constant="15" id="FFC-sC-hz1"/>
-                                    <constraint firstAttribute="trailing" secondItem="DkK-5W-mkA" secondAttribute="trailing" constant="15" id="IoO-J1-GJ9"/>
-                                    <constraint firstItem="th9-oh-yp7" firstAttribute="leading" secondItem="3aD-mA-v2c" secondAttribute="leading" id="M9W-oM-CGM"/>
-                                    <constraint firstAttribute="bottom" secondItem="th9-oh-yp7" secondAttribute="bottom" id="PKB-6g-sHv"/>
-                                    <constraint firstItem="th9-oh-yp7" firstAttribute="centerY" secondItem="3aD-mA-v2c" secondAttribute="centerY" id="Q2X-0N-edq"/>
-                                    <constraint firstItem="3vD-4F-BRo" firstAttribute="leading" secondItem="3aD-mA-v2c" secondAttribute="leading" constant="15" id="ach-63-bcX"/>
-                                    <constraint firstAttribute="trailing" secondItem="th9-oh-yp7" secondAttribute="trailing" id="eGf-as-l2v"/>
-                                    <constraint firstAttribute="trailing" secondItem="3vD-4F-BRo" secondAttribute="trailing" constant="15" id="eyD-xb-gnt"/>
-                                    <constraint firstItem="fcN-T8-vdq" firstAttribute="leading" secondItem="3aD-mA-v2c" secondAttribute="leading" constant="10" id="frF-WL-kSu"/>
-                                    <constraint firstItem="PiF-hn-318" firstAttribute="leading" secondItem="3aD-mA-v2c" secondAttribute="leading" constant="15" id="hBK-Nb-51p"/>
-                                    <constraint firstItem="DkK-5W-mkA" firstAttribute="top" secondItem="VXz-ia-0dt" secondAttribute="bottom" constant="11" id="j2a-LY-CX0"/>
-                                    <constraint firstItem="3vD-4F-BRo" firstAttribute="top" secondItem="fcN-T8-vdq" secondAttribute="bottom" constant="5" id="jI0-fQ-Fat"/>
-                                    <constraint firstItem="ELP-fU-JzC" firstAttribute="top" secondItem="3vD-4F-BRo" secondAttribute="bottom" constant="15" id="jlb-XU-qGF"/>
-                                    <constraint firstItem="DkK-5W-mkA" firstAttribute="leading" secondItem="3aD-mA-v2c" secondAttribute="leading" constant="15" id="n8s-No-3wg"/>
-                                    <constraint firstItem="th9-oh-yp7" firstAttribute="centerX" secondItem="3aD-mA-v2c" secondAttribute="centerX" id="qVV-1r-ojM"/>
-                                    <constraint firstAttribute="trailing" secondItem="fcN-T8-vdq" secondAttribute="trailing" constant="10" id="u1o-GT-NfF"/>
-                                    <constraint firstItem="f4M-Wl-N2D" firstAttribute="top" secondItem="DkK-5W-mkA" secondAttribute="bottom" constant="11" id="vgq-17-3O9"/>
-                                    <constraint firstItem="PiF-hn-318" firstAttribute="top" secondItem="f4M-Wl-N2D" secondAttribute="bottom" constant="5" id="vu6-aW-n1o"/>
-                                    <constraint firstItem="fcN-T8-vdq" firstAttribute="top" secondItem="PiF-hn-318" secondAttribute="bottom" constant="11" id="zWh-nG-Oyp"/>
-                                </constraints>
-                            </scrollView>
+                            </stackView>
                         </subviews>
                         <color key="backgroundColor" red="0.26274509800000001" green="0.26274509800000001" blue="0.26274509800000001" alpha="1" colorSpace="calibratedRGB"/>
                         <constraints>
-                            <constraint firstItem="3aD-mA-v2c" firstAttribute="leading" secondItem="sOH-Zz-1Pk" secondAttribute="leading" id="3Kn-b7-Gbk"/>
-                            <constraint firstAttribute="trailing" secondItem="3aD-mA-v2c" secondAttribute="trailing" id="3Zh-Uw-oST"/>
-                            <constraint firstItem="eq4-Ef-hoN" firstAttribute="top" secondItem="3aD-mA-v2c" secondAttribute="bottom" id="47Y-Qe-I4m"/>
-                            <constraint firstItem="3aD-mA-v2c" firstAttribute="top" secondItem="TPQ-Qc-Ebb" secondAttribute="bottom" id="EXi-Q1-chQ"/>
-                            <constraint firstItem="3aD-mA-v2c" firstAttribute="centerY" secondItem="sOH-Zz-1Pk" secondAttribute="centerY" id="LdV-Ak-R5f"/>
+                            <constraint firstItem="fTt-xc-mOv" firstAttribute="centerY" secondItem="sOH-Zz-1Pk" secondAttribute="centerY" id="S0l-rM-voB"/>
+                            <constraint firstItem="fTt-xc-mOv" firstAttribute="centerX" secondItem="sOH-Zz-1Pk" secondAttribute="centerX" id="aXa-MV-ryA"/>
                         </constraints>
                     </view>
                     <nil key="simulatedStatusBarMetrics"/>
@@ -981,15 +1003,14 @@
                         <outlet property="addressPCast" destination="3vD-4F-BRo" id="h25-Nq-Suh"/>
                         <outlet property="addressServer" destination="PiF-hn-318" id="d6e-xW-27m"/>
                         <outlet property="buttonCancel" destination="Q3f-5k-BSe" id="BAS-bx-oA0"/>
-                        <outlet property="buttonEmail" destination="OCA-Vm-7RJ" id="P4a-94-XEv"/>
                         <outlet property="buttonOk" destination="J8M-6K-NGO" id="8gU-K7-EHr"/>
-                        <outlet property="scrollPopover" destination="3aD-mA-v2c" id="OHt-by-2TI"/>
+                        <outlet property="buttonShare" destination="OCA-Vm-7RJ" id="P4a-94-XEv"/>
                         <outlet property="serverList" destination="DkK-5W-mkA" id="pU6-Oj-GrI"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="y3m-b2-bZV" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1931" y="168"/>
+            <point key="canvasLocation" x="1929.375" y="167.95774647887325"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="VjY-g7-Ft3">
