@@ -20,6 +20,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public final class AsyncService {
+
   private ExecutorService service;
   private static AsyncService instance = new AsyncService();
 
@@ -27,11 +28,11 @@ public final class AsyncService {
     this.service = Executors.newFixedThreadPool(1);
   }
 
-  public ExecutorService getExecutorService() {
+  public synchronized ExecutorService getExecutorService() {
     return this.service;
   }
 
-  public void cancelAll() {
+  public synchronized void cancelAll() {
     this.service.shutdownNow();
     this.service = Executors.newFixedThreadPool(1);
   }

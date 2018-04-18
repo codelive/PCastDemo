@@ -508,6 +508,8 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
       AndroidContext.setContext(this);
       this.pcast = PCastFactory.createPCast(pcastUrl);
     }
+    this.phenixApplication.setPCast(MainActivity.this.pcast);
+
     this.pcast.initialize(new PCastInitializeOptions(false, true));
     this.pcast.start(authenticationToken, new PCast.AuthenticationCallback() {
           public void onEvent(PCast var1, final RequestStatus status, final String sessionId) {
@@ -515,7 +517,6 @@ public final class MainActivity extends AppCompatActivity implements IMainActivi
               @Override
               public void run() {
                 if (status == RequestStatus.OK) {
-                  MainActivity.this.phenixApplication.setPCast(MainActivity.this.pcast);
                   MainActivity.this.sessionId = sessionId;
                   if (MainActivity.this.isOnlyVideoOrAudio) {
                     MainActivity.this.onlyVideoOrAudio(MainActivity.this.isVideo);

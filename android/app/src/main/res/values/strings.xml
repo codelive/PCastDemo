@@ -25,6 +25,9 @@
   <string name="network_limit">Network limited</string>
   <string name="notification_share_title">Share screen</string>
   <string name="notification_share_subtitle">Touch the to open home</string>
+  <string name="phenix_log_file_name">PhenixLog.txt</string>
+  <string name="phenix_log_share_subject">Phenix Log File</string>
+  <string name="phenix_log_share_title">Share Phenix Log File</string>
   <string name="server_address">Server address:</string>
   <string name="pcast_address">PCast address:</string>
   <string name="list_server">Server List: </string>
