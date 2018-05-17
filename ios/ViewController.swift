@@ -349,21 +349,13 @@ final class ViewController:
   func setupSubviews() {
     self.streamIdLabel.layer.cornerRadius = self.streamIdLabel.frame.height / 2
     self.streamIdLabel.layer.masksToBounds = true
-    var versionString = ""
+    let versionString = getVersionString()
     for buttonTag in 101...102 {
       if let menuButton = self.view.viewWithTag(buttonTag) {
         menuButton.layer.borderColor = UIColor.rgb(red: 200, green: 200, blue: 200, alpha: 1.0).cgColor
         menuButton.layer.cornerRadius = 38/2
         menuButton.layer.borderWidth = 1.0
       }
-    }
-
-    if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
-      versionString = "v" + version
-    }
-
-    if let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String {
-      versionString += " (\(build))"
     }
 
     self.versionNumber.text = versionString
@@ -990,6 +982,49 @@ final class ViewController:
   }
 }
 
+final private class LogItemSource: NSObject, UIActivityItemSource {
+  init (_ messages: String, viewController: ViewController) {
+    self.viewController = viewController
+
+    super.init()
+
+    self.logFile = URL(fileURLWithPath: NSTemporaryDirectory())
+        .appendingPathComponent(self.getPhenixLogsFileName())
+        .appendingPathExtension("txt")
+
+    try? messages.write(to: self.logFile!, atomically: true, encoding: String.Encoding.ascii)
+  }
+
+  deinit {
+    if let logFile = self.logFile {
+      DispatchQueue.global(qos: .utility).async { [logFile] in
+        try? FileManager.default.removeItem(at: logFile)
+      }
+    }
+  }
+
+  func activityViewControllerPlaceholderItem(_ activityViewController: UIActivityViewController) -> Any {
+    return "Phenix log"
+  }
+
+  func activityViewController(
+      _ activityViewController: UIActivityViewController, itemForActivityType activityType: UIActivityType) -> Any? {
+    return self.logFile
+  }
+
+  func activityViewController(
+      activityViewController: UIActivityViewController, subjectForActivityType activityType: String?) -> String {
+    return "Logs from \(self.viewController.getAppName()) - \(self.viewController.getVersionString())"
+  }
+
+  private let viewController: ViewController
+  private var logFile: URL? = nil
+
+  private func getPhenixLogsFileName() -> String {
+    return "\(self.viewController.getAppName()) - \(self.viewController.getVersionString()) - Phenix Log"
+  }
+}
+
 extension ViewController: CapabilityDelegate {
   // delegate to get data back from pop-over
   func selectCapability(selection: CapabilitySelection) {
@@ -1011,11 +1046,48 @@ extension ViewController: SecretUrlPopoverDelegate, MFMailComposeViewControllerD
     let documentsDirectory = paths[0]
     let fileName = PhenixNameForLogFile
     let logFilePath = (documentsDirectory as NSString).appendingPathComponent(fileName)
-
     let logFileUrl = NSURL(fileURLWithPath: logFilePath);
-    let activityViewController = UIActivityViewController(activityItems: [logFileUrl], applicationActivities: nil);
 
+    let activityViewController = UIActivityViewController(
+        activityItems: [LogItemSource(getPhenixLogs(), viewController: self), logFileUrl], applicationActivities: nil);
     self.present(activityViewController, animated: true, completion: nil);
+  }
+
+  func getAppName() -> String {
+    return Bundle.main.infoDictionary?["CFBundleDisplayName"] as? String ?? "Unknown app"
+  }
+
+  func getVersionString() -> String {
+    let infoDictionary = Bundle.main.infoDictionary
+    var versionString = ""
+    if let version = infoDictionary?["CFBundleShortVersionString"] as? String {
+      versionString = "v" + version
+    }
+
+    if let build = infoDictionary?["CFBundleVersion"] as? String {
+      versionString += " (\(build))"
+    }
+
+    return versionString
+  }
+
+  private func getPhenixLogs() -> String {
+    var messagesString = ""
+    guard let pcast = Phenix.shared.pcast else {
+      return messagesString
+    }
+
+    let dispatchGroup = DispatchGroup();
+    dispatchGroup.enter()
+    pcast.collectLogMessages { (pcast, status, messages) in
+      if status == .ok, let messages = messages {
+        messagesString += messages
+      }
+      dispatchGroup.leave()
+    }
+    dispatchGroup.wait()
+
+    return messagesString
   }
 }
 
